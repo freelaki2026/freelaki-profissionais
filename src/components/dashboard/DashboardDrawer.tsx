@@ -79,7 +79,7 @@ const DashboardDrawer = ({ open, onClose, profile }: DashboardDrawerProps) => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed inset-y-0 right-0 z-50 flex w-[82%] flex-col bg-white">
+            className="fixed inset-y-0 right-0 z-50 flex w-[82%] flex-col bg-white"
           >
             <div className="px-6 pt-14">
               <button onClick={onClose} className="absolute left-4 top-14">
