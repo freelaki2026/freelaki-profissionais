@@ -285,14 +285,38 @@ const DashboardPage = () => {
                 </button>
               </div>
             ) : isOnline ? (
-              <div className="flex px-6 pb-3 pt-1">
-                <div
-                  className="flex h-[110px] w-[200px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[hsl(var(--border))] bg-white"
-                  style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
-                >
-                  <Zap className="h-6 w-6 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" />
-                  <span className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">Aguardando...</span>
+              <div className="flex flex-col items-center">
+                <div className="flex gap-3 px-6 pb-1 pt-1 opacity-[0.35] pointer-events-none">
+                  <CarouselOppCard
+                    opp={{
+                      id: "mock-1",
+                      title: "Cobertura de evento",
+                      description: null,
+                      budget: null,
+                      status: null,
+                      category_name: "Fotógrafo",
+                      category_icon: "📷",
+                      location_address: "Alphaville, SP",
+                      scheduled_at: (() => { const d = new Date(); d.setHours(15, 0, 0, 0); return d.toISOString(); })(),
+                    }}
+                  />
+                  <CarouselOppCard
+                    opp={{
+                      id: "mock-2",
+                      title: "Vídeo institucional",
+                      description: null,
+                      budget: null,
+                      status: null,
+                      category_name: "Filmmaker",
+                      category_icon: "🎬",
+                      location_address: "Pinheiros, SP",
+                      scheduled_at: (() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(10, 0, 0, 0); return d.toISOString(); })(),
+                    }}
+                  />
                 </div>
+                <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))] text-center">
+                  Exemplo de como aparecerão suas oportunidades
+                </p>
               </div>
             ) : null}
           </div>

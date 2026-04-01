@@ -1,7 +1,8 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { Home, Briefcase, FileText, User, type LucideIcon } from "lucide-react";
 
 interface NavItem {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   path: string;
   action?: () => void;
@@ -16,16 +17,18 @@ const BottomNav = ({ onScrollToOpportunities }: BottomNavProps) => {
   const location = useLocation();
 
   const items: NavItem[] = [
-    { icon: "🏠", label: "Início", path: "/dashboard" },
-    { icon: "💼", label: "Oportunidades", path: "/dashboard", action: onScrollToOpportunities },
-    { icon: "📋", label: "Contratos", path: "/contratos" },
-    { icon: "👤", label: "Perfil", path: "/perfil" },
+    { icon: Home, label: "Início", path: "/dashboard" },
+    { icon: Briefcase, label: "Oportunidades", path: "/dashboard", action: onScrollToOpportunities },
+    { icon: FileText, label: "Contratos", path: "/contratos" },
+    { icon: User, label: "Perfil", path: "/perfil" },
   ];
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-[hsl(var(--border))] bg-white">
       {items.map((item, i) => {
         const active = i === 0 && location.pathname === "/dashboard";
+        const Icon = item.icon;
+        const color = active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))";
         return (
           <button
             key={i}
@@ -38,7 +41,7 @@ const BottomNav = ({ onScrollToOpportunities }: BottomNavProps) => {
             {active && (
               <div className="absolute -top-px h-0.5 w-8 rounded-full bg-[hsl(var(--primary))]" />
             )}
-            <span className="text-[22px]">{item.icon}</span>
+            <Icon size={22} color={color} />
             <span
               className={`text-[10px] font-medium ${
                 active ? "text-[hsl(var(--primary))]" : "text-[hsl(var(--muted-foreground))]"
