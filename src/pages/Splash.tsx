@@ -1,26 +1,52 @@
-import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Splash = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      navigate(session ? "/dashboard" : "/login", { replace: true });
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <motion.div
-        className="flex flex-col items-center gap-2"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
-      >
-        <h1 className="text-5xl font-bold tracking-tight text-foreground">
-          Freelaki
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-foreground animate-fade-in">
+      {/* Logo */}
+      <div className="flex flex-col items-center">
+        <span className="text-[32px] mb-2 text-primary">⚡</span>
+        <h1 className="text-[38px] font-bold text-background tracking-[-1px] leading-none">
+          freelaki
         </h1>
-        <motion.span
-          className="text-base font-medium tracking-[0.3em] uppercase text-primary"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-        >
-          Profissionais
-        </motion.span>
-      </motion.div>
+        <span className="mt-1 text-sm font-light tracking-[4px] text-muted-foreground">
+          profissionais
+        </span>
+      </div>
+
+      {/* Loading dots */}
+      <div className="fixed bottom-12 flex items-center gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className="block h-1.5 w-1.5 rounded-full bg-primary"
+            style={{
+              animation: "pulse-dot 0.9s ease-in-out infinite",
+              animationDelay: `${i * 300}ms`,
+            }}
+          />
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+          40% { opacity: 1; transform: scale(1.2); }
+        }
+      `}</style>
     </div>
   );
 };
