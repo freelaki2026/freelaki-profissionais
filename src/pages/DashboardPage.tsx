@@ -31,7 +31,66 @@ interface Opp {
   category_icon?: string;
 }
 
-const DashboardPage = () => {
+const formatSchedule = (scheduledAt: string | null | undefined): string => {
+  if (!scheduledAt) return "A combinar";
+  const date = new Date(scheduledAt);
+  if (isToday(date)) return `Hoje às ${format(date, "HH:mm")}`;
+  if (isTomorrow(date)) return `Amanhã às ${format(date, "HH:mm")}`;
+  return format(date, "EEE, d MMM", { locale: ptBR });
+};
+
+const extractShortAddress = (address: string | null | undefined): string => {
+  if (!address) return "";
+  const parts = address.split(",").map((s) => s.trim());
+  return parts.length >= 2 ? `${parts[parts.length - 2]}` : parts[0];
+};
+
+const CarouselOppCard = ({ opp }: { opp: Opp }) => {
+  const navigate = useNavigate();
+  const shortAddr = extractShortAddress(opp.location_address);
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.1 }}
+      onClick={() => navigate(`/oportunidade/${opp.id}`)}
+      className="flex h-[110px] w-[200px] shrink-0 flex-col rounded-[20px] border border-[hsl(var(--border))] bg-white p-3.5 text-left"
+      style={{ scrollSnapAlign: "start", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+    >
+      {/* Badge */}
+      <span
+        className="inline-flex max-w-full items-center gap-1 truncate rounded-full px-2 py-[3px] text-[11px] font-semibold"
+        style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
+      >
+        <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
+        <span className="truncate">{opp.category_name || "Geral"}</span>
+      </span>
+
+      {/* Title */}
+      <p
+        className="mt-2 text-[13px] font-semibold text-foreground"
+        style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+      >
+        {opp.title}
+      </p>
+
+      {/* Address + Date */}
+      <div className="mt-1.5 flex items-center gap-2">
+        {shortAddr && (
+          <span className="flex min-w-0 flex-1 items-center gap-0.5 truncate text-[11px] text-[hsl(var(--muted-foreground))]">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{shortAddr}</span>
+          </span>
+        )}
+        <span className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[11px] font-medium text-[hsl(var(--primary))]">
+          <Calendar className="h-3 w-3" />
+          {formatSchedule(opp.scheduled_at)}
+        </span>
+      </div>
+    </motion.button>
+  );
+};
+
   const { user } = useAuth();
   const { toast } = useToast();
   const oppRef = useRef<HTMLDivElement>(null);
