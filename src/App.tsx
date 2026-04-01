@@ -25,7 +25,6 @@ import {
   Ajuda,
   Contratos,
   Suporte,
-  OportunidadeDetalhe,
 } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
