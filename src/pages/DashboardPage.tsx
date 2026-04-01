@@ -239,9 +239,7 @@ const DashboardPage = () => {
     <div className="flex min-h-screen flex-col bg-black">
       {/* HEADER */}
       <div className="flex items-center justify-between px-6 pt-[52px] pb-5">
-        <button onClick={() => setDrawerOpen(true)}>
-          <Menu className="h-6 w-6 text-white" />
-        </button>
+        <div className="w-[22px]" />
         <div className="flex items-center gap-1.5">
           <Zap className="h-4 w-4 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" />
           <span className="text-base font-bold text-white">freelaki</span>
