@@ -10,9 +10,10 @@ interface NavItem {
 
 interface BottomNavProps {
   onScrollToOpportunities?: () => void;
+  onOpenDrawer?: () => void;
 }
 
-const BottomNav = ({ onScrollToOpportunities }: BottomNavProps) => {
+const BottomNav = ({ onScrollToOpportunities, onOpenDrawer }: BottomNavProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,7 +21,7 @@ const BottomNav = ({ onScrollToOpportunities }: BottomNavProps) => {
     { icon: Home, label: "Início", path: "/dashboard" },
     { icon: Briefcase, label: "Oportunidades", path: "/dashboard", action: onScrollToOpportunities },
     { icon: FileText, label: "Contratos", path: "/contratos" },
-    { icon: User, label: "Perfil", path: "/perfil" },
+    { icon: User, label: "Perfil", path: "/dashboard", action: onOpenDrawer },
   ];
 
   return (
