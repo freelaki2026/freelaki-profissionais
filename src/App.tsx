@@ -13,6 +13,7 @@ import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
 import DashboardPage from "@/pages/DashboardPage";
+import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
 import {
   Cadastro,
   Termos,
