@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Zap, Bell, Menu } from "lucide-react";
+import { Zap, Bell, Menu, ArrowRight, MapPin, Calendar } from "lucide-react";
+import { format, isToday, isTomorrow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -22,9 +25,71 @@ interface Opp {
   description: string | null;
   budget: number | null;
   status: string | null;
+  scheduled_at?: string | null;
+  location_address?: string | null;
   category_name?: string;
   category_icon?: string;
 }
+
+const formatSchedule = (scheduledAt: string | null | undefined): string => {
+  if (!scheduledAt) return "A combinar";
+  const date = new Date(scheduledAt);
+  if (isToday(date)) return `Hoje às ${format(date, "HH:mm")}`;
+  if (isTomorrow(date)) return `Amanhã às ${format(date, "HH:mm")}`;
+  return format(date, "EEE, d MMM", { locale: ptBR });
+};
+
+const extractShortAddress = (address: string | null | undefined): string => {
+  if (!address) return "";
+  const parts = address.split(",").map((s) => s.trim());
+  return parts.length >= 2 ? `${parts[parts.length - 2]}` : parts[0];
+};
+
+const CarouselOppCard = ({ opp }: { opp: Opp }) => {
+  const navigate = useNavigate();
+  const shortAddr = extractShortAddress(opp.location_address);
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.1 }}
+      onClick={() => navigate(`/oportunidade/${opp.id}`)}
+      className="flex h-[110px] w-[200px] shrink-0 flex-col rounded-[20px] border border-[hsl(var(--border))] bg-white p-3.5 text-left"
+      style={{ scrollSnapAlign: "start", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+    >
+      {/* Badge */}
+      <span
+        className="inline-flex max-w-full items-center gap-1 truncate rounded-full px-2 py-[3px] text-[11px] font-semibold"
+        style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
+      >
+        <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
+        <span className="truncate">{opp.category_name || "Geral"}</span>
+      </span>
+
+      {/* Title */}
+      <p
+        className="mt-2 text-[13px] font-semibold text-foreground"
+        style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+      >
+        {opp.title}
+      </p>
+
+      {/* Address + Date */}
+      <div className="mt-1.5 flex items-center gap-2">
+        {shortAddr && (
+          <span className="flex min-w-0 flex-1 items-center gap-0.5 truncate text-[11px] text-[hsl(var(--muted-foreground))]">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{shortAddr}</span>
+          </span>
+        )}
+        <span className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[11px] font-medium text-[hsl(var(--primary))]">
+          <Calendar className="h-3 w-3" />
+          {formatSchedule(opp.scheduled_at)}
+        </span>
+      </div>
+    </motion.button>
+  );
+};
 
 const DashboardPage = () => {
   const { user } = useAuth();
@@ -63,7 +128,7 @@ const DashboardPage = () => {
     // Available: open opportunities matching user's categories
     const { data: avail } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, category_id, categories(name, icon)")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
       .eq("status", "open")
       .in(
         "category_id",
@@ -83,6 +148,8 @@ const DashboardPage = () => {
           description: o.description,
           budget: o.budget,
           status: o.status,
+          scheduled_at: o.scheduled_at,
+          location_address: o.location_address,
           category_name: o.categories?.name,
           category_icon: o.categories?.icon,
         }))
@@ -184,41 +251,48 @@ const DashboardPage = () => {
         transition={{ duration: 0.35 }}
         className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5"
       >
-        {/* AVAILABLE */}
+        {/* AVAILABLE — Carousel */}
         <div ref={oppRef}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-1">
             <span className="text-base font-semibold text-foreground">Disponíveis</span>
             <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[hsl(var(--primary))] px-2.5 text-xs font-medium text-white">
               {available.length}
             </span>
           </div>
 
-          <div className="relative mt-3">
-            {!isOnline && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-[#F7F7F7]/85">
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  Fique online para ver oportunidades
-                </p>
-              </div>
-            )}
-
+          <div className="relative mt-3 -mx-4">
             {loadingOpps ? (
               <div className="flex justify-center py-8">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-[hsl(var(--primary))] border-t-transparent" />
               </div>
             ) : available.length > 0 ? (
-              available.map((opp) => (
-                <OpportunityCard key={opp.id} opp={opp} variant="available" />
-              ))
+              <div
+                className={`flex gap-3 overflow-x-auto px-6 pb-3 pt-1 ${!isOnline ? "opacity-40 pointer-events-none" : ""}`}
+                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+              >
+                <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
+                {available.map((opp) => (
+                  <CarouselOppCard key={opp.id} opp={opp} />
+                ))}
+                {/* Ver Mais card */}
+                <button
+                  onClick={scrollToOpp}
+                  className="flex h-[110px] w-[80px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[hsl(var(--primary))] bg-[hsl(var(--primary))/0.06]"
+                  style={{ scrollSnapAlign: "start" }}
+                >
+                  <ArrowRight className="h-6 w-6 text-[hsl(var(--primary))]" />
+                  <span className="mt-1 text-[11px] font-medium text-[hsl(var(--primary))]">Ver todas</span>
+                </button>
+              </div>
             ) : isOnline ? (
-              <div className="flex flex-col items-center py-10">
-                <Zap className="h-8 w-8 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" />
-                <p className="mt-3 text-[15px] font-semibold text-foreground">
-                  Nenhuma oportunidade agora
-                </p>
-                <p className="mt-1 text-[13px] text-[hsl(var(--muted-foreground))]">
-                  Fique online. Notificaremos você.
-                </p>
+              <div className="flex px-6 pb-3 pt-1">
+                <div
+                  className="flex h-[110px] w-[200px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[hsl(var(--border))] bg-white"
+                  style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                >
+                  <Zap className="h-6 w-6 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" />
+                  <span className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">Aguardando...</span>
+                </div>
               </div>
             ) : null}
           </div>
