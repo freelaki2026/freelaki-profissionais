@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Briefcase, FileText, User, type LucideIcon } from "lucide-react";
+import { Home, Briefcase, FileText, Menu, type LucideIcon } from "lucide-react";
 
 interface NavItem {
   icon: LucideIcon;
@@ -21,7 +21,7 @@ const BottomNav = ({ onScrollToOpportunities, onOpenDrawer }: BottomNavProps) =>
     { icon: Home, label: "Início", path: "/dashboard" },
     { icon: Briefcase, label: "Oportunidades", path: "/dashboard", action: onScrollToOpportunities },
     { icon: FileText, label: "Contratos", path: "/contratos" },
-    { icon: User, label: "Perfil", path: "/dashboard", action: onOpenDrawer },
+    { icon: Menu, label: "Menu", path: "/dashboard", action: onOpenDrawer },
   ];
 
   return (
