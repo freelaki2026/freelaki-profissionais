@@ -37,7 +37,7 @@ const App = () => (
           {/* Rotas públicas */}
           <Route path="/" element={<Splash />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/cadastro" element={<CadastroStep1 />} />
           <Route path="/termos" element={<Termos />} />
           <Route path="/categorias" element={<Categorias />} />
 
