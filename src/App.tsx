@@ -11,10 +11,10 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Splash from "@/pages/Splash";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
+import CategoriasPage from "@/pages/CategoriasPage";
 import {
   Cadastro,
   Termos,
-  Categorias,
   Dashboard,
   Perfil,
   Documentos,
