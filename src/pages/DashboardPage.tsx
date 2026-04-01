@@ -45,21 +45,32 @@ const extractShortAddress = (address: string | null | undefined): string => {
   return parts.length >= 2 ? `${parts[parts.length - 2]}` : parts[0];
 };
 
-const CarouselOppCard = ({ opp }: { opp: Opp }) => {
+const CarouselOppCard = ({ opp, isMock = false }: { opp: Opp; isMock?: boolean }) => {
   const navigate = useNavigate();
   const shortAddr = extractShortAddress(opp.location_address);
 
   return (
     <motion.button
-      whileTap={{ scale: 0.97 }}
-      transition={{ duration: 0.1 }}
-      onClick={() => navigate(`/oportunidade/${opp.id}`)}
-      className="flex h-[110px] w-[200px] shrink-0 flex-col rounded-[20px] border border-[hsl(var(--border))] bg-white p-3.5 text-left"
-      style={{ scrollSnapAlign: "start", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+      whileTap={isMock ? undefined : { scale: 0.97 }}
+      transition={{ duration: 0.15, ease: "ease" }}
+      onClick={isMock ? undefined : () => navigate(`/oportunidade/${opp.id}`)}
+      className="relative flex h-[160px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
+      style={{
+        scrollSnapAlign: "start",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
+        pointerEvents: isMock ? "none" : undefined,
+      }}
     >
-      {/* Badge */}
+      {/* Mock Preview badge */}
+      {isMock && (
+        <span className="absolute top-3 right-3 rounded-full bg-[#F7F7F7] px-2 py-[3px] text-[10px] font-medium text-[hsl(var(--muted-foreground))]">
+          Preview
+        </span>
+      )}
+
+      {/* Category Badge */}
       <span
-        className="inline-flex max-w-full items-center gap-1 truncate rounded-full px-2 py-[3px] text-[11px] font-semibold"
+        className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
         style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
       >
         <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
@@ -68,22 +79,21 @@ const CarouselOppCard = ({ opp }: { opp: Opp }) => {
 
       {/* Title */}
       <p
-        className="mt-2 text-[13px] font-semibold text-foreground"
-        style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+        className="mt-2.5 text-[15px] font-bold text-foreground leading-[1.3]"
+        style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
       >
         {opp.title}
       </p>
 
-      {/* Address + Date */}
-      <div className="mt-1.5 flex items-center gap-2">
+      {/* Footer */}
+      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
         {shortAddr && (
-          <span className="flex min-w-0 flex-1 items-center gap-0.5 truncate text-[11px] text-[hsl(var(--muted-foreground))]">
+          <span className="flex items-center gap-0.5 text-[11px] text-[hsl(var(--muted-foreground))] max-w-[100px] truncate">
             <MapPin className="h-3 w-3 shrink-0" />
             <span className="truncate">{shortAddr}</span>
           </span>
         )}
-        <span className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[11px] font-medium text-[hsl(var(--primary))]">
-          <Calendar className="h-3 w-3" />
+        <span className="rounded-full bg-black px-2.5 py-1 text-[11px] font-semibold text-white whitespace-nowrap">
           {formatSchedule(opp.scheduled_at)}
         </span>
       </div>
