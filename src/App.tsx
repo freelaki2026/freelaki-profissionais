@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import CadastroStep1 from "@/pages/Cadastro";
+import CadastroStep2 from "@/pages/CadastroStep2";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 import Splash from "@/pages/Splash";
