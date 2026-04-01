@@ -52,7 +52,7 @@ const CarouselOppCard = ({ opp, isMock = false }: { opp: Opp; isMock?: boolean }
   return (
     <motion.button
       whileTap={isMock ? undefined : { scale: 0.97 }}
-      transition={{ duration: 0.15, ease: "ease" }}
+      transition={{ duration: 0.15 }}
       onClick={isMock ? undefined : () => navigate(`/oportunidade/${opp.id}`)}
       className="relative flex h-[160px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
       style={{
