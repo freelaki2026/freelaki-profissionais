@@ -11,10 +11,10 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Splash from "@/pages/Splash";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
+import CategoriasPage from "@/pages/CategoriasPage";
 import {
   Cadastro,
   Termos,
-  Categorias,
   Dashboard,
   Perfil,
   Documentos,
@@ -43,7 +43,7 @@ const App = () => (
           <Route path="/cadastro/etapa2" element={<CadastroStep2 />} />
           <Route path="/cadastro/etapa3" element={<CadastroStep3 />} />
           <Route path="/termos" element={<Termos />} />
-          <Route path="/categorias" element={<Categorias />} />
+          <Route path="/categorias" element={<ProtectedRoute><CategoriasPage /></ProtectedRoute>} />
 
           {/* Rotas protegidas */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
