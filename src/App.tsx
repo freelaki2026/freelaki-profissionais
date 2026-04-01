@@ -12,10 +12,10 @@ import Splash from "@/pages/Splash";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
+import DashboardPage from "@/pages/DashboardPage";
 import {
   Cadastro,
   Termos,
-  Dashboard,
   Perfil,
   Documentos,
   Endereco,
@@ -46,7 +46,7 @@ const App = () => (
           <Route path="/categorias" element={<ProtectedRoute><CategoriasPage /></ProtectedRoute>} />
 
           {/* Rotas protegidas */}
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
           <Route path="/documentos" element={<ProtectedRoute><Documentos /></ProtectedRoute>} />
           <Route path="/endereco" element={<ProtectedRoute><Endereco /></ProtectedRoute>} />
