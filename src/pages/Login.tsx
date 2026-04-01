@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import FreelakiButton from "@/components/ui/FreelakiButton";
 import FreelakiInput from "@/components/ui/FreelakiInput";
 import {
   Dialog,
@@ -11,6 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import FreelakiButton from "@/components/ui/FreelakiButton";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -67,29 +68,42 @@ const Login = () => {
   const isDisabled = !email.trim() || !password.trim();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* Header / Logo */}
-      <div className="flex justify-center" style={{ marginTop: 56 }}>
-        <span>
-          <span className="text-[22px] font-bold text-foreground" style={{ letterSpacing: -0.5 }}>
-            freelaki
-          </span>
-          <span className="text-[14px] font-normal text-muted-foreground ml-1">
-            profissionais
-          </span>
-        </span>
+    <div className="flex min-h-screen flex-col bg-black">
+      {/* UPPER — 40% black hero */}
+      <div className="relative flex flex-col" style={{ minHeight: "40vh" }}>
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-6" style={{ paddingTop: 52 }}>
+          <Zap size={20} className="text-primary" fill="currentColor" />
+          <span className="text-[18px] font-bold tracking-tight text-white">freelaki</span>
+        </div>
+
+        {/* Hero text */}
+        <div className="flex flex-1 flex-col justify-center px-6 pb-10">
+          <h1 className="leading-[1.1]" style={{ fontSize: 42 }}>
+            <span className="font-light text-white">Suas</span>
+            <br />
+            <span className="font-extrabold text-primary">oportunidades</span>
+            <br />
+            <span className="font-light text-white">te esperam.</span>
+          </h1>
+          <p className="mt-3 text-[14px] font-light text-[hsl(var(--muted-foreground))]">
+            Faça login e fique online.
+          </p>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="px-6">
-        <h1 className="text-[26px] font-semibold text-foreground" style={{ marginTop: 40 }}>
-          Bem-vindo de volta
-        </h1>
-        <p className="text-[14px] text-muted-foreground" style={{ marginTop: 6 }}>
-          Acesse suas oportunidades
-        </p>
+      {/* LOWER — white card */}
+      <div
+        className="relative flex flex-1 flex-col bg-background animate-slide-up"
+        style={{ borderRadius: "28px 28px 0 0", padding: "32px 24px", marginTop: -8 }}
+      >
+        <span
+          className="text-[11px] font-semibold tracking-[2px] text-muted-foreground"
+        >
+          ACESSE SUA CONTA
+        </span>
 
-        <div style={{ marginTop: 32 }}>
+        <div style={{ marginTop: 20 }}>
           <FreelakiInput
             label="Email"
             type="email"
@@ -123,38 +137,37 @@ const Login = () => {
           <button
             type="button"
             onClick={() => setResetOpen(true)}
-            className="text-[14px] font-medium text-primary"
+            className="text-[13px] font-medium text-primary"
           >
             Esqueci minha senha
           </button>
         </div>
 
-        <div style={{ marginTop: 24 }}>
-          <FreelakiButton
-            variant="primary"
-            loading={loading}
-            disabled={isDisabled}
-            onClick={handleLogin}
-          >
-            Entrar
-          </FreelakiButton>
-        </div>
+        {/* Primary CTA */}
+        <button
+          disabled={isDisabled || loading}
+          onClick={handleLogin}
+          className="mt-7 flex h-[54px] w-full items-center justify-center gap-1 bg-primary text-white font-bold text-[16px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
+          style={{ borderRadius: 14 }}
+        >
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <>Entrar →</>
+          )}
+        </button>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3" style={{ margin: "20px 0" }}>
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-[14px] text-muted-foreground">ou</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
-
-        <FreelakiButton variant="secondary" onClick={() => navigate("/cadastro")}>
+        {/* Secondary CTA */}
+        <button
+          onClick={() => navigate("/cadastro")}
+          className="mt-3 flex h-[54px] w-full items-center justify-center font-semibold text-[16px] text-foreground transition-colors hover:bg-muted"
+          style={{ borderRadius: 14, backgroundColor: "#F7F7F7" }}
+        >
           Criar conta
-        </FreelakiButton>
-      </div>
+        </button>
 
-      {/* Footer */}
-      <div className="fixed bottom-6 left-0 w-full text-center px-6">
-        <p className="text-[12px] text-muted-foreground">
+        {/* Footer */}
+        <p className="mt-5 text-center text-[12px] text-muted-foreground">
           Ao continuar, você aceita os{" "}
           <button
             type="button"
