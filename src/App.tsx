@@ -12,10 +12,10 @@ import Splash from "@/pages/Splash";
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
+import DashboardPage from "@/pages/DashboardPage";
 import {
   Cadastro,
   Termos,
-  Dashboard,
   Perfil,
   Documentos,
   Endereco,
