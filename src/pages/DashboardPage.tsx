@@ -65,7 +65,7 @@ const DashboardPage = () => {
     // Available: open opportunities matching user's categories
     const { data: avail } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, category_id, categories(name, icon)")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
       .eq("status", "open")
       .in(
         "category_id",
