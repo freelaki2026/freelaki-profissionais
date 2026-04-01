@@ -188,41 +188,48 @@ const DashboardPage = () => {
         transition={{ duration: 0.35 }}
         className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5"
       >
-        {/* AVAILABLE */}
+        {/* AVAILABLE — Carousel */}
         <div ref={oppRef}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-1">
             <span className="text-base font-semibold text-foreground">Disponíveis</span>
             <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[hsl(var(--primary))] px-2.5 text-xs font-medium text-white">
               {available.length}
             </span>
           </div>
 
-          <div className="relative mt-3">
-            {!isOnline && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-[#F7F7F7]/85">
-                <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  Fique online para ver oportunidades
-                </p>
-              </div>
-            )}
-
+          <div className="relative mt-3 -mx-4">
             {loadingOpps ? (
               <div className="flex justify-center py-8">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-[hsl(var(--primary))] border-t-transparent" />
               </div>
             ) : available.length > 0 ? (
-              available.map((opp) => (
-                <OpportunityCard key={opp.id} opp={opp} variant="available" />
-              ))
+              <div
+                className={`flex gap-3 overflow-x-auto px-6 pb-3 pt-1 ${!isOnline ? "opacity-40 pointer-events-none" : ""}`}
+                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+              >
+                <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
+                {available.map((opp) => (
+                  <CarouselOppCard key={opp.id} opp={opp} />
+                ))}
+                {/* Ver Mais card */}
+                <button
+                  onClick={scrollToOpp}
+                  className="flex h-[110px] w-[80px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[hsl(var(--primary))] bg-[hsl(var(--primary))/0.06]"
+                  style={{ scrollSnapAlign: "start" }}
+                >
+                  <ArrowRight className="h-6 w-6 text-[hsl(var(--primary))]" />
+                  <span className="mt-1 text-[11px] font-medium text-[hsl(var(--primary))]">Ver todas</span>
+                </button>
+              </div>
             ) : isOnline ? (
-              <div className="flex flex-col items-center py-10">
-                <Zap className="h-8 w-8 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" />
-                <p className="mt-3 text-[15px] font-semibold text-foreground">
-                  Nenhuma oportunidade agora
-                </p>
-                <p className="mt-1 text-[13px] text-[hsl(var(--muted-foreground))]">
-                  Fique online. Notificaremos você.
-                </p>
+              <div className="flex px-6 pb-3 pt-1">
+                <div
+                  className="flex h-[110px] w-[200px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[hsl(var(--border))] bg-white"
+                  style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                >
+                  <Zap className="h-6 w-6 fill-[hsl(var(--primary))] text-[hsl(var(--primary))]" />
+                  <span className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">Aguardando...</span>
+                </div>
               </div>
             ) : null}
           </div>
