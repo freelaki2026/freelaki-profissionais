@@ -22,6 +22,8 @@ interface Opp {
   description: string | null;
   budget: number | null;
   status: string | null;
+  scheduled_at?: string | null;
+  location_address?: string | null;
   category_name?: string;
   category_icon?: string;
 }
