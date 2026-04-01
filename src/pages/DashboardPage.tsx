@@ -91,6 +91,7 @@ const CarouselOppCard = ({ opp }: { opp: Opp }) => {
   );
 };
 
+const DashboardPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const oppRef = useRef<HTMLDivElement>(null);
