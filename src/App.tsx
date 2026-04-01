@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import DocumentosPage from "@/pages/DocumentosPage";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +19,6 @@ import PerfilPage from "@/pages/PerfilPage";
 import {
   Cadastro,
   Termos,
-  Documentos,
   Endereco,
   DadosPessoais,
   DadosBancarios,
@@ -48,7 +48,7 @@ const App = () => (
           {/* Rotas protegidas */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
-          <Route path="/documentos" element={<ProtectedRoute><Documentos /></ProtectedRoute>} />
+          <Route path="/documentos" element={<ProtectedRoute><DocumentosPage /></ProtectedRoute>} />
           <Route path="/endereco" element={<ProtectedRoute><Endereco /></ProtectedRoute>} />
           <Route path="/dados-pessoais" element={<ProtectedRoute><DadosPessoais /></ProtectedRoute>} />
           <Route path="/dados-bancarios" element={<ProtectedRoute><DadosBancarios /></ProtectedRoute>} />
