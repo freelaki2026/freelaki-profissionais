@@ -378,20 +378,15 @@ const OportunidadeDetalhePage = () => {
               className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Icon */}
               <div className="flex justify-center">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                   <path d="M13 2L4.09 12.24a1 1 0 00.77 1.62H11v6.14a1 1 0 001.8.55L21.91 10.31a1 1 0 00-.77-1.62H13V2.86a1 1 0 00-1.8-.55z" fill="#276EF1" />
                 </svg>
               </div>
-
-              <h2 className="mt-3 text-center text-xl font-bold text-foreground">
-                Confirmar aceite?
-              </h2>
+              <h2 className="mt-3 text-center text-xl font-bold text-foreground">Confirmar aceite?</h2>
               <p className="mt-2 text-center text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
                 Ao aceitar, você se compromete a realizar este serviço. Cancelamentos geram penalidades.
               </p>
-
               <button
                 onClick={handleAccept}
                 disabled={accepting}
@@ -409,6 +404,86 @@ const OportunidadeDetalhePage = () => {
                 className="mt-2.5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-foreground"
               >
                 Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* NEXT STEPS MODAL */}
+      <AnimatePresence>
+        {showNextSteps && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.56)" }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-center">
+                <span className="text-[40px]">✅</span>
+              </div>
+              <h2 className="mt-3 text-center text-[22px] font-extrabold text-foreground">
+                Oportunidade aceita!
+              </h2>
+              <p className="mt-1 text-center text-sm font-medium text-[hsl(var(--muted-foreground))]">
+                O que acontece agora?
+              </p>
+
+              {/* Steps */}
+              <div className="mt-5 flex flex-col gap-3">
+                {[
+                  {
+                    num: "1",
+                    title: "Aguarde a confirmação do cliente",
+                    sub: "O contratante tem até 30 minutos para revisar seu perfil e confirmar.",
+                  },
+                  {
+                    num: "2",
+                    title: "Você receberá uma notificação",
+                    sub: "Assim que confirmado, você será notificado com todos os detalhes do serviço.",
+                  },
+                  {
+                    num: "3",
+                    title: "Assine o contrato digital",
+                    sub: "Um contrato será gerado e enviado por email para ambas as partes assinarem.",
+                  },
+                ].map((step) => (
+                  <div key={step.num} className="flex gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-[13px] font-bold text-white">
+                      {step.num}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{step.title}</p>
+                      <p className="mt-0.5 text-xs text-[hsl(var(--muted-foreground))]">{step.sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Warning */}
+              <div className="mt-4 flex gap-2 rounded-xl bg-[#FFF3E0] p-3">
+                <span className="shrink-0 text-sm">⚠️</span>
+                <p className="text-xs leading-relaxed text-[#B45309]">
+                  Cancelamentos após confirmação geram penalidades. Em caso de imprevisto, acione o suporte.
+                </p>
+              </div>
+
+              {/* CTA */}
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white"
+              >
+                Ir para o início
               </button>
             </motion.div>
           </motion.div>
