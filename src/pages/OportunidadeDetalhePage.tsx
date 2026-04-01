@@ -140,18 +140,62 @@ const OportunidadeDetalhePage = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[hsl(var(--primary))] border-t-transparent" />
+      <div className="flex min-h-screen flex-col bg-white">
+        {/* Skeleton header */}
+        <div className="bg-black px-6" style={{ paddingTop: 52, paddingBottom: 24 }}>
+          <div className="mx-auto h-5 w-32 animate-shimmer rounded-lg" style={{ background: "linear-gradient(90deg, #333 25%, #444 50%, #333 75%)", backgroundSize: "200% 100%" }} />
+        </div>
+        {/* Skeleton body */}
+        <div className="flex-1 px-6 pt-8">
+          <div className="h-7 w-24 animate-shimmer rounded-full" style={{ background: "linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%)", backgroundSize: "200% 100%" }} />
+          <div className="mt-4 h-8 w-4/5 animate-shimmer rounded-lg" style={{ background: "linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%)", backgroundSize: "200% 100%" }} />
+          <div className="mt-2 h-5 w-3/5 animate-shimmer rounded-lg" style={{ background: "linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%)", backgroundSize: "200% 100%" }} />
+          <div className="mt-3 h-16 w-full animate-shimmer rounded-lg" style={{ background: "linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%)", backgroundSize: "200% 100%" }} />
+          <div className="my-5 h-px bg-[#E5E5E5]" />
+          <div className="grid grid-cols-2 gap-3">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="h-20 animate-shimmer rounded-xl" style={{ background: "linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%)", backgroundSize: "200% 100%" }} />
+            ))}
+          </div>
+          <div className="mt-4 h-20 animate-shimmer rounded-2xl" style={{ background: "linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%)", backgroundSize: "200% 100%" }} />
+        </div>
+        <style>{`
+          @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+          .animate-shimmer { animation: shimmer 1.5s infinite linear; }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (networkError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6">
+        <span className="text-[32px]">⚠️</span>
+        <h2 className="mt-4 text-lg font-semibold text-white">Erro ao carregar</h2>
+        <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">Verifique sua conexão e tente novamente.</p>
+        <button
+          onClick={loadOpp}
+          className="mt-8 flex h-[52px] items-center justify-center rounded-2xl bg-[hsl(var(--primary))] px-8 text-base font-bold text-white"
+        >
+          Tentar novamente
+        </button>
       </div>
     );
   }
 
   if (!opp) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6">
-        <p className="text-[15px] text-[hsl(var(--muted-foreground))]">Oportunidade não encontrada.</p>
-        <button onClick={() => navigate(-1)} className="mt-4 text-[hsl(var(--primary))] font-semibold text-sm">
-          ← Voltar
+      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L4.09 12.24a1 1 0 00.77 1.62H11v6.14a1 1 0 001.8.55L21.91 10.31a1 1 0 00-.77-1.62H13V2.86a1 1 0 00-1.8-.55z" fill="#276EF1" />
+        </svg>
+        <h2 className="mt-4 text-lg font-semibold text-white">Oportunidade não encontrada</h2>
+        <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">Ela pode ter sido aceita por outro profissional.</p>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="mt-8 flex h-[52px] items-center justify-center rounded-2xl bg-[hsl(var(--primary))] px-8 text-base font-bold text-white"
+        >
+          ← Voltar ao início
         </button>
       </div>
     );
