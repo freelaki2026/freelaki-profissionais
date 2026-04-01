@@ -358,7 +358,7 @@ const DashboardPage = () => {
       <DashboardDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
 
       {/* BOTTOM NAV */}
-      <BottomNav onScrollToOpportunities={scrollToOpp} />
+      <BottomNav onScrollToOpportunities={scrollToOpp} onOpenDrawer={() => setDrawerOpen(true)} />
     </div>
   );
 };
