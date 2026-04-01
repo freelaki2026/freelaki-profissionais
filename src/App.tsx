@@ -7,8 +7,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 import Splash from "@/pages/Splash";
 import NotFound from "@/pages/NotFound";
+import Login from "@/pages/Login";
 import {
-  Login,
   Cadastro,
   Termos,
   Categorias,
