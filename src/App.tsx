@@ -14,6 +14,7 @@ import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
+import PerfilPage from "@/pages/PerfilPage";
 import {
   Cadastro,
   Termos,
