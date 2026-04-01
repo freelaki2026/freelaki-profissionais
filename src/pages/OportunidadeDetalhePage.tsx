@@ -66,6 +66,7 @@ const OportunidadeDetalhePage = () => {
   const [loading, setLoading] = useState(true);
   const [networkError, setNetworkError] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showNextSteps, setShowNextSteps] = useState(false);
   const [accepting, setAccepting] = useState(false);
 
   const loadOpp = async () => {
