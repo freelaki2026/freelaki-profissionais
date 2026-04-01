@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 
-const Index = () => {
+const Splash = () => {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background font-heading">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
       <motion.div
         className="flex flex-col items-center gap-2"
         initial={{ opacity: 0, y: 16 }}
@@ -25,4 +25,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Splash;
