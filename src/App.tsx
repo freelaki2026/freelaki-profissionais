@@ -13,6 +13,7 @@ import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
 import DashboardPage from "@/pages/DashboardPage";
+import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
 import {
   Cadastro,
   Termos,
@@ -24,7 +25,6 @@ import {
   Ajuda,
   Contratos,
   Suporte,
-  OportunidadeDetalhe,
 } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
@@ -55,7 +55,7 @@ const App = () => (
           <Route path="/ajuda" element={<ProtectedRoute><Ajuda /></ProtectedRoute>} />
           <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
           <Route path="/suporte" element={<ProtectedRoute><Suporte /></ProtectedRoute>} />
-          <Route path="/oportunidade/:id" element={<ProtectedRoute><OportunidadeDetalhe /></ProtectedRoute>} />
+          <Route path="/oportunidade/:id" element={<ProtectedRoute><OportunidadeDetalhePage /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

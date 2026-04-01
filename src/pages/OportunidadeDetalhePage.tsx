@@ -1,0 +1,372 @@
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, MapPin, DollarSign, Calendar, Tag } from "lucide-react";
+import { format, isToday, isTomorrow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+
+interface OppDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  budget: number | null;
+  status: string | null;
+  scheduled_at: string | null;
+  location_address: string | null;
+  category_name: string;
+  category_icon: string;
+  category_description: string | null;
+  client_name: string | null;
+  client_avatar: string | null;
+  client_verified: boolean;
+}
+
+const formatScheduleDetail = (scheduledAt: string | null): string => {
+  if (!scheduledAt) return "A combinar";
+  const date = new Date(scheduledAt);
+  if (isToday(date)) return `Hoje às ${format(date, "HH:mm")}`;
+  if (isTomorrow(date)) return `Amanhã às ${format(date, "HH:mm")}`;
+  return format(date, "EEEE, d 'de' MMMM 'às' HH:mm", { locale: ptBR });
+};
+
+const getStatusBadge = (status: string | null) => {
+  switch (status) {
+    case "open":
+      return { label: "● Disponível", bg: "#E8F5E9", color: "#2E7D32" };
+    case "accepted":
+      return { label: "● Aceita", bg: "#E3F2FD", color: "#1565C0" };
+    case "completed":
+      return { label: "● Encerrada", bg: "#F7F7F7", color: "#767676" };
+    case "cancelled":
+      return { label: "● Cancelada", bg: "#FFEBEE", color: "#C62828" };
+    default:
+      return { label: "● Desconhecido", bg: "#F7F7F7", color: "#767676" };
+  }
+};
+
+const getInitials = (name: string | null) => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+};
+
+const OportunidadeDetalhePage = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [opp, setOpp] = useState<OppDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    const load = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("opportunities")
+        .select(
+          "id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
+        )
+        .eq("id", id)
+        .single();
+
+      if (data) {
+        const cat = (data as any).categories;
+        const prof = (data as any).profiles;
+        setOpp({
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          budget: data.budget,
+          status: data.status,
+          scheduled_at: data.scheduled_at,
+          location_address: data.location_address,
+          category_name: cat?.name || "Geral",
+          category_icon: cat?.icon || "📦",
+          category_description: cat?.description || null,
+          client_name: prof?.full_name || null,
+          client_avatar: prof?.avatar_url || null,
+          client_verified: prof?.is_approved || false,
+        });
+      }
+      if (error) {
+        toast.error("Erro ao carregar oportunidade.");
+      }
+      setLoading(false);
+    };
+    load();
+  }, [id]);
+
+  const handleAccept = async () => {
+    if (!user || !opp) return;
+    setAccepting(true);
+
+    const { error } = await supabase
+      .from("opportunities")
+      .update({
+        status: "accepted",
+        accepted_by: user.id,
+        accepted_at: new Date().toISOString(),
+      })
+      .eq("id", opp.id)
+      .eq("status", "open");
+
+    if (!error) {
+      toast.success("Oportunidade aceita! 🎉");
+      setShowModal(false);
+      navigate("/dashboard");
+    } else {
+      toast.error("Esta oportunidade já foi aceita por outro profissional.");
+      setShowModal(false);
+    }
+    setAccepting(false);
+  };
+
+  const statusBadge = opp ? getStatusBadge(opp.status) : null;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[hsl(var(--primary))] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!opp) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-white px-6">
+        <p className="text-[15px] text-[hsl(var(--muted-foreground))]">Oportunidade não encontrada.</p>
+        <button onClick={() => navigate(-1)} className="mt-4 text-[hsl(var(--primary))] font-semibold text-sm">
+          ← Voltar
+        </button>
+      </div>
+    );
+  }
+
+  const details = [
+    {
+      icon: <MapPin className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />,
+      label: "Local",
+      value: opp.location_address || "Não informado",
+    },
+    {
+      icon: <DollarSign className="h-4 w-4 text-[#2E7D32]" />,
+      label: "Valor",
+      value: opp.budget ? `R$ ${opp.budget.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "A combinar",
+      valueColor: opp.budget ? "#2E7D32" : undefined,
+      valueBold: !!opp.budget,
+    },
+    {
+      icon: <Calendar className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />,
+      label: "Data",
+      value: formatScheduleDetail(opp.scheduled_at),
+    },
+    {
+      icon: <Tag className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />,
+      label: "Categoria",
+      value: opp.category_description || opp.category_name,
+      clamp: true,
+    },
+  ];
+
+  return (
+    <div className="flex min-h-screen flex-col bg-white">
+      {/* HEADER */}
+      <div className="relative flex items-center justify-between bg-black px-6" style={{ paddingTop: 52, paddingBottom: 24 }}>
+        <button onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-6 w-6 text-white" />
+        </button>
+        <span className="absolute left-1/2 -translate-x-1/2 text-[17px] font-semibold text-white">
+          Oportunidade
+        </span>
+        <div className="w-6" />
+      </div>
+
+      {/* STATUS BADGE */}
+      {statusBadge && (
+        <div className="flex justify-center" style={{ marginTop: -14, zIndex: 10, position: "relative" }}>
+          <span
+            className="rounded-full px-4 py-1.5 text-[13px] font-semibold"
+            style={{ background: statusBadge.bg, color: statusBadge.color }}
+          >
+            {statusBadge.label}
+          </span>
+        </div>
+      )}
+
+      {/* BODY */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex-1 px-6 pb-32 pt-5"
+      >
+        {/* Category badge */}
+        <div className="flex items-center gap-2">
+          <span className="text-[28px] leading-none">{opp.category_icon}</span>
+          <span
+            className="rounded-full px-3 py-1 text-[13px] font-semibold"
+            style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
+          >
+            {opp.category_name}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h1 className="mt-3 text-[24px] font-extrabold leading-[1.2] text-foreground">
+          {opp.title}
+        </h1>
+
+        {/* Description */}
+        {opp.description && (
+          <p className="mt-2.5 text-sm leading-[1.7] text-[hsl(var(--muted-foreground))]">
+            {opp.description}
+          </p>
+        )}
+
+        {/* Divider */}
+        <div className="my-4 h-px bg-[hsl(var(--border))]" />
+
+        {/* Details grid */}
+        <div className="grid grid-cols-2 gap-3">
+          {details.map((d, i) => (
+            <div key={i} className="rounded-xl bg-[#F7F7F7] p-3">
+              <div className="flex items-center gap-1.5">
+                {d.icon}
+                <span className="text-[11px] text-[hsl(var(--muted-foreground))]">{d.label}</span>
+              </div>
+              <p
+                className={`mt-1.5 text-sm ${d.valueBold ? "font-bold" : "font-semibold"} text-foreground`}
+                style={{
+                  color: d.valueColor || undefined,
+                  ...(d.clamp
+                    ? {
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical" as const,
+                        overflow: "hidden",
+                      }
+                    : {}),
+                }}
+              >
+                {d.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Client card */}
+        <div className="mt-4 rounded-2xl bg-[#F7F7F7] p-3.5">
+          <span className="text-[10px] font-semibold tracking-[2px] text-[hsl(var(--muted-foreground))]">
+            CONTRATANTE
+          </span>
+          <div className="mt-2.5 flex items-center gap-3">
+            {opp.client_avatar ? (
+              <img
+                src={opp.client_avatar}
+                alt={opp.client_name || ""}
+                className="h-11 w-11 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[hsl(var(--primary))] text-sm font-bold text-white">
+                {getInitials(opp.client_name)}
+              </div>
+            )}
+            <div>
+              <p className="text-[15px] font-semibold text-foreground">
+                {opp.client_name || "Cliente"}
+              </p>
+              {opp.client_verified && (
+                <span className="text-[11px] font-medium text-[#2E7D32]">Verificado ✓</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* FOOTER */}
+      <div className="fixed bottom-0 left-0 right-0 border-t border-[hsl(var(--border))] bg-white px-6 py-4">
+        {opp.status === "open" ? (
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowModal(true)}
+            className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white"
+          >
+            Aceitar Oportunidade ⚡
+          </motion.button>
+        ) : (
+          <div className="rounded-2xl bg-[#F7F7F7] py-4 text-center text-sm text-[hsl(var(--muted-foreground))]">
+            Esta oportunidade não está mais disponível
+          </div>
+        )}
+      </div>
+
+      {/* CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !accepting && setShowModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Icon */}
+              <div className="flex justify-center">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                  <path d="M13 2L4.09 12.24a1 1 0 00.77 1.62H11v6.14a1 1 0 001.8.55L21.91 10.31a1 1 0 00-.77-1.62H13V2.86a1 1 0 00-1.8-.55z" fill="#276EF1" />
+                </svg>
+              </div>
+
+              <h2 className="mt-3 text-center text-xl font-bold text-foreground">
+                Confirmar aceite?
+              </h2>
+              <p className="mt-2 text-center text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">
+                Ao aceitar, você se compromete a realizar este serviço. Cancelamentos geram penalidades.
+              </p>
+
+              <button
+                onClick={handleAccept}
+                disabled={accepting}
+                className="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white disabled:opacity-50"
+              >
+                {accepting ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  "Confirmar e aceitar"
+                )}
+              </button>
+              <button
+                onClick={() => setShowModal(false)}
+                disabled={accepting}
+                className="mt-2.5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-foreground"
+              >
+                Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default OportunidadeDetalhePage;
