@@ -68,43 +68,47 @@ const OportunidadeDetalhePage = () => {
   const [showModal, setShowModal] = useState(false);
   const [accepting, setAccepting] = useState(false);
 
-  useEffect(() => {
+  const loadOpp = async () => {
     if (!id) return;
-    const load = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("opportunities")
-        .select(
-          "id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
-        )
-        .eq("id", id)
-        .single();
+    setLoading(true);
+    setNetworkError(false);
+    const { data, error } = await supabase
+      .from("opportunities")
+      .select(
+        "id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
+      )
+      .eq("id", id)
+      .single();
 
-      if (data) {
-        const cat = (data as any).categories;
-        const prof = (data as any).profiles;
-        setOpp({
-          id: data.id,
-          title: data.title,
-          description: data.description,
-          budget: data.budget,
-          status: data.status,
-          scheduled_at: data.scheduled_at,
-          location_address: data.location_address,
-          category_name: cat?.name || "Geral",
-          category_icon: cat?.icon || "📦",
-          category_description: cat?.description || null,
-          client_name: prof?.full_name || null,
-          client_avatar: prof?.avatar_url || null,
-          client_verified: prof?.is_approved || false,
-        });
+    if (data) {
+      const cat = (data as any).categories;
+      const prof = (data as any).profiles;
+      setOpp({
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        budget: data.budget,
+        status: data.status,
+        scheduled_at: data.scheduled_at,
+        location_address: data.location_address,
+        category_name: cat?.name || "Geral",
+        category_icon: cat?.icon || "📦",
+        category_description: cat?.description || null,
+        client_name: prof?.full_name || null,
+        client_avatar: prof?.avatar_url || null,
+        client_verified: prof?.is_approved || false,
+      });
+    } else if (error) {
+      // PGRST116 = not found (single row expected but 0 returned)
+      if (error.code !== "PGRST116") {
+        setNetworkError(true);
       }
-      if (error) {
-        toast.error("Erro ao carregar oportunidade.");
-      }
-      setLoading(false);
-    };
-    load();
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadOpp();
   }, [id]);
 
   const handleAccept = async () => {
