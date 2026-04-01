@@ -45,21 +45,32 @@ const extractShortAddress = (address: string | null | undefined): string => {
   return parts.length >= 2 ? `${parts[parts.length - 2]}` : parts[0];
 };
 
-const CarouselOppCard = ({ opp }: { opp: Opp }) => {
+const CarouselOppCard = ({ opp, isMock = false }: { opp: Opp; isMock?: boolean }) => {
   const navigate = useNavigate();
   const shortAddr = extractShortAddress(opp.location_address);
 
   return (
     <motion.button
-      whileTap={{ scale: 0.97 }}
-      transition={{ duration: 0.1 }}
-      onClick={() => navigate(`/oportunidade/${opp.id}`)}
-      className="flex h-[110px] w-[200px] shrink-0 flex-col rounded-[20px] border border-[hsl(var(--border))] bg-white p-3.5 text-left"
-      style={{ scrollSnapAlign: "start", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+      whileTap={isMock ? undefined : { scale: 0.97 }}
+      transition={{ duration: 0.15 }}
+      onClick={isMock ? undefined : () => navigate(`/oportunidade/${opp.id}`)}
+      className="relative flex h-[160px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
+      style={{
+        scrollSnapAlign: "start",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
+        pointerEvents: isMock ? "none" : undefined,
+      }}
     >
-      {/* Badge */}
+      {/* Mock Preview badge */}
+      {isMock && (
+        <span className="absolute top-3 right-3 rounded-full bg-[#F7F7F7] px-2 py-[3px] text-[10px] font-medium text-[hsl(var(--muted-foreground))]">
+          Preview
+        </span>
+      )}
+
+      {/* Category Badge */}
       <span
-        className="inline-flex max-w-full items-center gap-1 truncate rounded-full px-2 py-[3px] text-[11px] font-semibold"
+        className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
         style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
       >
         <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
@@ -68,22 +79,21 @@ const CarouselOppCard = ({ opp }: { opp: Opp }) => {
 
       {/* Title */}
       <p
-        className="mt-2 text-[13px] font-semibold text-foreground"
-        style={{ display: "-webkit-box", WebkitLineClamp: 1, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+        className="mt-2.5 text-[15px] font-bold text-foreground leading-[1.3]"
+        style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
       >
         {opp.title}
       </p>
 
-      {/* Address + Date */}
-      <div className="mt-1.5 flex items-center gap-2">
+      {/* Footer */}
+      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
         {shortAddr && (
-          <span className="flex min-w-0 flex-1 items-center gap-0.5 truncate text-[11px] text-[hsl(var(--muted-foreground))]">
+          <span className="flex items-center gap-0.5 text-[11px] text-[hsl(var(--muted-foreground))] max-w-[100px] truncate">
             <MapPin className="h-3 w-3 shrink-0" />
             <span className="truncate">{shortAddr}</span>
           </span>
         )}
-        <span className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[11px] font-medium text-[hsl(var(--primary))]">
-          <Calendar className="h-3 w-3" />
+        <span className="rounded-full bg-black px-2.5 py-1 text-[11px] font-semibold text-white whitespace-nowrap">
           {formatSchedule(opp.scheduled_at)}
         </span>
       </div>
@@ -255,9 +265,11 @@ const DashboardPage = () => {
         <div ref={oppRef}>
           <div className="flex items-center gap-2 px-1">
             <span className="text-base font-semibold text-foreground">Disponíveis</span>
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[hsl(var(--primary))] px-2.5 text-xs font-medium text-white">
-              {available.length}
-            </span>
+            {available.length > 0 && (
+              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[hsl(var(--primary))] px-2.5 text-xs font-medium text-white">
+                {available.length}
+              </span>
+            )}
           </div>
 
           <div className="relative mt-3 -mx-4">
@@ -267,17 +279,17 @@ const DashboardPage = () => {
               </div>
             ) : available.length > 0 ? (
               <div
-                className={`flex gap-3 overflow-x-auto px-6 pb-3 pt-1 ${!isOnline ? "opacity-40 pointer-events-none" : ""}`}
-                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+                className={`flex gap-3.5 overflow-x-auto px-6 pb-4 pt-2 ${!isOnline ? "opacity-40 pointer-events-none" : ""}`}
+                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch", cursor: "grab" }}
               >
-                <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
+                <style>{`div:active { cursor: grabbing; } .carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
                 {available.map((opp) => (
                   <CarouselOppCard key={opp.id} opp={opp} />
                 ))}
                 {/* Ver Mais card */}
                 <button
                   onClick={scrollToOpp}
-                  className="flex h-[110px] w-[80px] shrink-0 flex-col items-center justify-center rounded-[20px] border border-[hsl(var(--primary))] bg-[hsl(var(--primary))/0.06]"
+                  className="flex h-[160px] w-[80px] shrink-0 flex-col items-center justify-center rounded-[24px] border border-[hsl(var(--primary))] bg-[hsl(var(--primary))/0.06] mb-2"
                   style={{ scrollSnapAlign: "start" }}
                 >
                   <ArrowRight className="h-6 w-6 text-[hsl(var(--primary))]" />
@@ -285,38 +297,37 @@ const DashboardPage = () => {
                 </button>
               </div>
             ) : isOnline ? (
-              <div className="flex flex-col items-center">
-                <div className="flex gap-3 px-6 pb-1 pt-1 opacity-[0.35] pointer-events-none">
-                  <CarouselOppCard
-                    opp={{
-                      id: "mock-1",
-                      title: "Cobertura de evento",
-                      description: null,
-                      budget: null,
-                      status: null,
-                      category_name: "Fotógrafo",
-                      category_icon: "📷",
-                      location_address: "Alphaville, SP",
-                      scheduled_at: (() => { const d = new Date(); d.setHours(15, 0, 0, 0); return d.toISOString(); })(),
-                    }}
-                  />
-                  <CarouselOppCard
-                    opp={{
-                      id: "mock-2",
-                      title: "Vídeo institucional",
-                      description: null,
-                      budget: null,
-                      status: null,
-                      category_name: "Filmmaker",
-                      category_icon: "🎬",
-                      location_address: "Pinheiros, SP",
-                      scheduled_at: (() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(10, 0, 0, 0); return d.toISOString(); })(),
-                    }}
-                  />
-                </div>
-                <p className="mt-1 text-[11px] text-[hsl(var(--muted-foreground))] text-center">
-                  Exemplo de como aparecerão suas oportunidades
-                </p>
+              <div className="flex gap-3.5 overflow-x-auto px-6 pb-4 pt-2 pointer-events-none"
+                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
+              >
+                <CarouselOppCard
+                  isMock
+                  opp={{
+                    id: "mock-1",
+                    title: "Cobertura de evento",
+                    description: null,
+                    budget: null,
+                    status: null,
+                    category_name: "Fotógrafo",
+                    category_icon: "📷",
+                    location_address: "Alphaville, SP",
+                    scheduled_at: (() => { const d = new Date(); d.setHours(15, 0, 0, 0); return d.toISOString(); })(),
+                  }}
+                />
+                <CarouselOppCard
+                  isMock
+                  opp={{
+                    id: "mock-2",
+                    title: "Vídeo institucional",
+                    description: null,
+                    budget: null,
+                    status: null,
+                    category_name: "Filmmaker",
+                    category_icon: "🎬",
+                    location_address: "Pinheiros, SP",
+                    scheduled_at: (() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(10, 0, 0, 0); return d.toISOString(); })(),
+                  }}
+                />
               </div>
             ) : null}
           </div>
