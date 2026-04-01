@@ -85,6 +85,8 @@ const DashboardPage = () => {
           description: o.description,
           budget: o.budget,
           status: o.status,
+          scheduled_at: o.scheduled_at,
+          location_address: o.location_address,
           category_name: o.categories?.name,
           category_icon: o.categories?.icon,
         }))
