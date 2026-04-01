@@ -82,7 +82,7 @@ const DashboardDrawer = ({ open, onClose, profile }: DashboardDrawerProps) => {
             className="fixed inset-y-0 right-0 z-50 flex w-[82%] flex-col bg-white">
           >
             <div className="px-6 pt-14">
-              <button onClick={onClose} className="absolute right-4 top-14">
+              <button onClick={onClose} className="absolute left-4 top-14">
                 <X className="h-5 w-5 text-foreground/40" />
               </button>
 
