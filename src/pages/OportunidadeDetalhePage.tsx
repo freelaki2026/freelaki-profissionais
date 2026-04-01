@@ -127,9 +127,8 @@ const OportunidadeDetalhePage = () => {
       .eq("status", "open");
 
     if (!error) {
-      toast.success("Oportunidade aceita! 🎉");
       setShowModal(false);
-      navigate("/dashboard");
+      setTimeout(() => setShowNextSteps(true), 150);
     } else {
       toast.error("Esta oportunidade já foi aceita por outro profissional.");
       setShowModal(false);
