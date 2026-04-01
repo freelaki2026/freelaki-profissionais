@@ -20,7 +20,6 @@ import PerfilPage from "@/pages/PerfilPage";
 import {
   Cadastro,
   Termos,
-  Endereco,
   DadosPessoais,
   DadosBancarios,
   Ajuda,
