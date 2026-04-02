@@ -12,7 +12,7 @@ interface BottomNavProps {
   onOpenDrawer?: () => void;
 }
 
-const BottomNav = ({ onScrollToOpportunities, onOpenDrawer }: BottomNavProps) => {
+const BottomNav = ({ onOpenDrawer }: BottomNavProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
