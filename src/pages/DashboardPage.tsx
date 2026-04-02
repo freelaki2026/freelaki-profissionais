@@ -725,8 +725,14 @@ const DashboardPage = () => {
         .offline-ring-2 { animation-delay: 0.4s; }
         .offline-ring-3 { animation-delay: 0.8s; }
         .offline-bolt { animation: offlineBoltBreath 2s ease-in-out infinite; }
+        @keyframes boltFlash {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.4); }
+          100% { transform: scale(1); }
+        }
+        .bolt-flash { animation: boltFlash 300ms ease-out !important; }
         @media (prefers-reduced-motion: reduce) {
-          .offline-ring, .offline-bolt { animation: none; }
+          .offline-ring, .offline-bolt, .bolt-flash { animation: none !important; }
         }
       `}</style>
     </div>
