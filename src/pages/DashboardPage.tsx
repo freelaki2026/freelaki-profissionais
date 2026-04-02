@@ -506,7 +506,7 @@ const DashboardPage = () => {
       <DashboardDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
 
       {/* BOTTOM NAV */}
-      <BottomNav onScrollToOpportunities={scrollToOpp} onOpenDrawer={() => setDrawerOpen(true)} />
+      <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
 
       <style>{`
         @keyframes dashPulseOuter {
