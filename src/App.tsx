@@ -18,10 +18,10 @@ import DashboardPage from "@/pages/DashboardPage";
 import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
 import PerfilPage from "@/pages/PerfilPage";
 import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
+import DadosBancariosPage from "@/pages/DadosBancariosPage";
 import {
   Cadastro,
   Termos,
-  DadosBancarios,
   Ajuda,
   Contratos,
   Suporte,
