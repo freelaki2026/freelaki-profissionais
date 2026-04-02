@@ -17,10 +17,10 @@ import CategoriasPage from "@/pages/CategoriasPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
 import PerfilPage from "@/pages/PerfilPage";
+import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import {
   Cadastro,
   Termos,
-  DadosPessoais,
   DadosBancarios,
   Ajuda,
   Contratos,
