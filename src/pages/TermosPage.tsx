@@ -32,7 +32,7 @@ const TermosPage = () => {
     if (!user) return;
     const fetchData = async () => {
       const [termsRes, accRes] = await Promise.all([
-        supabase.from("terms").select("*").eq("is_active", true).limit(1).single(),
+        supabase.from("terms").select("*").eq("is_active", true).limit(1).maybeSingle(),
         supabase
           .from("terms_acceptance")
           .select("*")
