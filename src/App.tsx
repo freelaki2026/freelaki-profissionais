@@ -23,6 +23,7 @@ import AjudaPage from "@/pages/AjudaPage";
 import TermosPage from "@/pages/TermosPage";
 import ContratosPage from "@/pages/ContratosPage";
 import SuportePage from "@/pages/SuportePage";
+import ConfirmarEmailPage from "@/pages/ConfirmarEmailPage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/cadastro/etapa2" element={<CadastroStep2 />} />
           <Route path="/cadastro/etapa3" element={<CadastroStep3 />} />
           <Route path="/termos" element={<TermosPage />} />
+          <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
           <Route path="/categorias" element={<ProtectedRoute><CategoriasPage /></ProtectedRoute>} />
 
           {/* Rotas protegidas */}
