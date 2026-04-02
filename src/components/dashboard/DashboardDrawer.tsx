@@ -28,8 +28,9 @@ const menuItems = [
   { icon: MapPin, label: "Endereço", path: "/endereco" },
   { icon: CreditCard, label: "Dados Pessoais", path: "/dados-pessoais" },
   { icon: Landmark, label: "Dados Bancários", path: "/dados-bancarios" },
-  { icon: HelpCircle, label: "Ajuda e FAQ", path: "/ajuda" },
   { icon: ScrollText, label: "Contratos", path: "/contratos" },
+  { icon: MessageSquare, label: "Mensagens", path: "/mensagens" },
+  { icon: HelpCircle, label: "Ajuda e FAQ", path: "/ajuda" },
   { icon: MessageCircle, label: "Suporte", path: "/suporte" },
   { icon: Shield, label: "Termos de Uso", path: "/termos" },
 ];
