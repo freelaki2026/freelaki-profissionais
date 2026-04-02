@@ -21,9 +21,9 @@ import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import DadosBancariosPage from "@/pages/DadosBancariosPage";
 import AjudaPage from "@/pages/AjudaPage";
 import TermosPage from "@/pages/TermosPage";
+import ContratosPage from "@/pages/ContratosPage";
 import {
   Cadastro,
-  Contratos,
   Suporte,
 } from "@/pages/PlaceholderPages";
 
@@ -53,7 +53,7 @@ const App = () => (
           <Route path="/dados-pessoais" element={<ProtectedRoute><DadosPessoaisPage /></ProtectedRoute>} />
           <Route path="/dados-bancarios" element={<ProtectedRoute><DadosBancariosPage /></ProtectedRoute>} />
           <Route path="/ajuda" element={<ProtectedRoute><AjudaPage /></ProtectedRoute>} />
-          <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
+          <Route path="/contratos" element={<ProtectedRoute><ContratosPage /></ProtectedRoute>} />
           <Route path="/suporte" element={<ProtectedRoute><Suporte /></ProtectedRoute>} />
           <Route path="/oportunidade/:id" element={<ProtectedRoute><OportunidadeDetalhePage /></ProtectedRoute>} />
 
