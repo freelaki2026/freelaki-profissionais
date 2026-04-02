@@ -395,7 +395,16 @@ const DashboardPage = () => {
           <Zap size={24} fill="#276EF1" color="#276EF1" />
           <span className="font-bold text-white" style={{ fontSize: 22, letterSpacing: "-0.5px" }}>freelaki</span>
         </div>
-        <button><Bell className="h-[22px] w-[22px] text-white" /></button>
+        <button onClick={() => setNotifOpen(true)} className="relative"
+          style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}>
+          <Bell className="h-[22px] w-[22px]" style={{ color: unreadCount > 0 ? "#F59E0B" : "#FFFFFF" }} />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
+              style={{ background: "#F59E0B", color: "#000" }}>
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* STATE-BASED CONTENT */}
