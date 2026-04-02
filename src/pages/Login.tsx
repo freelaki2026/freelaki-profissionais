@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import FreelakiInput from "@/components/ui/FreelakiInput";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { parseError } from "@/lib/errors";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
