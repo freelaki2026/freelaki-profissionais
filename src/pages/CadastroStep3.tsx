@@ -91,7 +91,21 @@ const CadastroStep3 = () => {
 
   const handleCreate = async () => {
     setLoading(true);
+    setCpfError(false);
     try {
+      // 0. Check duplicate CPF/CNPJ
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("cpf_cnpj", step2.cpf_cnpj)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        setCpfError(true);
+        setLoading(false);
+        return;
+      }
+
       // 1. Sign up
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: step1.email,
