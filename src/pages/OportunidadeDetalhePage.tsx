@@ -152,6 +152,7 @@ const OportunidadeDetalhePage = () => {
     if (!error) {
       setShowModal(false);
       setTimeout(() => setShowNextSteps(true), 150);
+      window.dispatchEvent(new CustomEvent("opportunity_accepted", { detail: { id: opp.id } }));
     } else {
       toast.error("Esta oportunidade já foi aceita por outro profissional.");
       setShowModal(false);

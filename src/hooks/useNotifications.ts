@@ -65,7 +65,7 @@ export function useNotifications() {
   const markAllAsRead = useCallback(async () => {
     if (!user) return;
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    await supabase.from("notifications").update({ is_read: true } as any).eq("profile_id", user.id);
+    await supabase.from("notifications").update({ is_read: true } as any).eq("profile_id", user.id).eq("is_read", false);
   }, [user]);
 
   const addLocal = useCallback((notif: Omit<Notification, "id">) => {
