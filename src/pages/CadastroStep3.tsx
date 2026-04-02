@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Zap, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import FreelakiButton from "@/components/ui/FreelakiButton";
+import ErrorBanner from "@/components/ui/ErrorBanner";
+import { parseError } from "@/lib/errors";
 import { supabase } from "@/integrations/supabase/client";
 
 /* ───── step indicator ───── */
@@ -58,10 +60,9 @@ const CadastroStep3 = () => {
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [cpfError, setCpfError] = useState(false);
-  const [emailError, setEmailError] = useState(false);
+  const [error, setError] = useState<{ code: string; message: string; hint?: string } | null>(null);
+  const [errorType, setErrorType] = useState<"cpf" | "email" | "generic" | null>(null);
 
-  // Read data from previous steps
   const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
   const [step2, setStep2] = useState<{ cpf_cnpj: string; cpf_cnpj_type: string } | null>(null);
 
@@ -93,8 +94,8 @@ const CadastroStep3 = () => {
 
   const handleCreate = async () => {
     setLoading(true);
-    setCpfError(false);
-    setEmailError(false);
+    setError(null);
+    setErrorType(null);
     try {
       // 0. Check duplicate CPF/CNPJ via RPC
       const cpfCnpjLimpo = step2.cpf_cnpj.replace(/\D/g, "");
@@ -103,13 +104,15 @@ const CadastroStep3 = () => {
       });
 
       if (rpcError) {
-        toast.error("Erro ao verificar documento. Tente novamente.");
+        setError(parseError(rpcError));
+        setErrorType("generic");
         setLoading(false);
         return;
       }
 
       if (cpfExists === true) {
-        setCpfError(true);
+        setError({ code: "CAD-001", message: "CPF/CNPJ já cadastrado em outra conta.", hint: "Se acredita ser um erro, contate suporte@freelaqui.com.br" });
+        setErrorType("cpf");
         setLoading(false);
         return;
       }
@@ -120,13 +123,15 @@ const CadastroStep3 = () => {
       });
 
       if (emailRpcError) {
-        toast.error("Erro ao verificar email. Tente novamente.");
+        setError(parseError(emailRpcError));
+        setErrorType("generic");
         setLoading(false);
         return;
       }
 
       if (emailExists === true) {
-        setEmailError(true);
+        setError({ code: "AUTH-001", message: "Este email já está cadastrado.", hint: "Faça login ou recupere sua senha." });
+        setErrorType("email");
         setLoading(false);
         return;
       }
@@ -143,19 +148,22 @@ const CadastroStep3 = () => {
 
       if (signUpError) {
         if (signUpError.message.includes("profiles_cpf_cnpj_unique") || signUpError.message.includes("cpf_cnpj")) {
-          setCpfError(true);
-          return;
+          setError({ code: "CAD-001", message: "CPF/CNPJ já cadastrado em outra conta.", hint: "Se acredita ser um erro, contate suporte@freelaqui.com.br" });
+          setErrorType("cpf");
         } else if (signUpError.message.includes("User already registered")) {
-          setEmailError(true);
+          setError({ code: "AUTH-001", message: "Este email já está cadastrado.", hint: "Faça login ou recupere sua senha." });
+          setErrorType("email");
         } else {
-          toast.error("Erro ao criar conta. Tente novamente.");
+          setError(parseError(signUpError));
+          setErrorType("generic");
         }
         return;
       }
 
       const userId = signUpData.user?.id;
       if (!userId) {
-        toast.error("Erro ao criar conta. Tente novamente.");
+        setError({ code: "ERR-000", message: "Erro ao criar conta.", hint: "Tente novamente." });
+        setErrorType("generic");
         return;
       }
 
@@ -197,8 +205,9 @@ const CadastroStep3 = () => {
 
       // 6. Redirect to email confirmation
       navigate("/confirmar-email", { replace: true, state: { email: step1.email } });
-    } catch {
-      toast.error("Erro ao criar conta. Tente novamente.");
+    } catch (err) {
+      setError(parseError(err));
+      setErrorType("generic");
     } finally {
       setLoading(false);
     }
@@ -256,55 +265,46 @@ const CadastroStep3 = () => {
           ))}
         </div>
 
-        {/* CPF/CNPJ duplicate error */}
-        {cpfError && (
-          <div style={{ marginTop: 16, background: "#FFEBEE", borderRadius: 12, padding: "12px 16px" }}>
-            <div className="flex items-start gap-2">
-              <AlertCircle size={16} color="#C62828" className="shrink-0" style={{ marginTop: 2 }} />
-              <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
-                Este CPF/CNPJ já está cadastrado em outra conta.
-                {"\n"}Se acredita ser um erro, entre em contato com suporte@freelaqui.com.br
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/cadastro/etapa2")}
-              style={{ marginTop: 10, fontSize: 13, color: "#276EF1", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+        {/* Error banner */}
+        {error && (
+          <div style={{ marginTop: 16 }}>
+            <ErrorBanner
+              code={error.code}
+              message={error.message}
+              hint={error.hint}
+              onDismiss={() => { setError(null); setErrorType(null); }}
             >
-              ← Voltar e corrigir
-            </button>
-          </div>
-        )}
-
-        {/* Email duplicate error */}
-        {emailError && (
-          <div style={{ marginTop: 16, background: "#FFEBEE", borderRadius: 12, padding: "12px 16px" }}>
-            <div className="flex items-start gap-2">
-              <AlertCircle size={16} color="#C62828" className="shrink-0" style={{ marginTop: 2 }} />
-              <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
-                Este email já está cadastrado em outra conta.
-                {"\n"}Faça login ou recupere sua senha.
-              </p>
-            </div>
-            <div className="flex gap-2" style={{ marginTop: 10 }}>
-              <button
-                onClick={() => navigate("/login")}
-                style={{
-                  fontSize: 13, fontWeight: 600, color: "#fff", background: "#276EF1",
-                  border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
-                }}
-              >
-                Fazer login →
-              </button>
-              <button
-                onClick={() => navigate("/cadastro")}
-                style={{
-                  fontSize: 13, fontWeight: 600, color: "#276EF1", background: "#F7F7F7",
-                  border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
-                }}
-              >
-                ← Voltar e corrigir
-              </button>
-            </div>
+              {errorType === "cpf" && (
+                <button
+                  onClick={() => navigate("/cadastro/etapa2")}
+                  style={{ fontSize: 13, color: "#276EF1", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  ← Voltar e corrigir
+                </button>
+              )}
+              {errorType === "email" && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => navigate("/login")}
+                    style={{
+                      fontSize: 13, fontWeight: 600, color: "#fff", background: "#276EF1",
+                      border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
+                    }}
+                  >
+                    Fazer login →
+                  </button>
+                  <button
+                    onClick={() => navigate("/cadastro")}
+                    style={{
+                      fontSize: 13, fontWeight: 600, color: "#276EF1", background: "#F7F7F7",
+                      border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
+                    }}
+                  >
+                    ← Voltar e corrigir
+                  </button>
+                </div>
+              )}
+            </ErrorBanner>
           </div>
         )}
 

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Zap } from "lucide-react";
-import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import FreelakiInput from "@/components/ui/FreelakiInput";
+import ErrorBanner from "@/components/ui/ErrorBanner";
+import { parseError } from "@/lib/errors";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -21,10 +23,12 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<{ code: string; message: string; hint?: string } | null>(null);
 
   const [resetOpen, setResetOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState<{ code: string; message: string; hint?: string } | null>(null);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -34,18 +38,12 @@ const Login = () => {
 
   const handleLogin = async () => {
     setLoading(true);
+    setError(null);
     try {
       await signIn(email, password);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      const msg = err?.message || "";
-      if (msg.includes("Invalid login credentials")) {
-        toast.error("Email ou senha incorretos");
-      } else if (msg.includes("Email not confirmed")) {
-        toast.error("Confirme seu email antes de entrar");
-      } else {
-        toast.error("Erro ao fazer login");
-      }
+      setError(parseError(err));
     } finally {
       setLoading(false);
     }
@@ -53,13 +51,14 @@ const Login = () => {
 
   const handleReset = async () => {
     setResetLoading(true);
+    setResetError(null);
     try {
       await resetPassword(resetEmail);
       toast.success("Link de recuperação enviado para seu email");
       setResetOpen(false);
       setResetEmail("");
-    } catch {
-      toast.error("Erro ao enviar link de recuperação");
+    } catch (err) {
+      setResetError(parseError(err));
     } finally {
       setResetLoading(false);
     }
@@ -109,7 +108,7 @@ const Login = () => {
             type="email"
             placeholder="seu@email.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => { setEmail(e.target.value); setError(null); }}
           />
         </div>
 
@@ -119,7 +118,7 @@ const Login = () => {
             type={showPassword ? "text" : "password"}
             placeholder="••••••••"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value); setError(null); }}
             icon={
               <button
                 type="button"
@@ -142,6 +141,18 @@ const Login = () => {
             Esqueci minha senha
           </button>
         </div>
+
+        {/* Error banner */}
+        {error && (
+          <div style={{ marginTop: 12 }}>
+            <ErrorBanner
+              code={error.code}
+              message={error.message}
+              hint={error.hint}
+              onDismiss={() => setError(null)}
+            />
+          </div>
+        )}
 
         {/* Primary CTA */}
         <button
@@ -180,7 +191,7 @@ const Login = () => {
       </div>
 
       {/* Reset Password Modal */}
-      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+      <Dialog open={resetOpen} onOpenChange={(open) => { setResetOpen(open); if (!open) setResetError(null); }}>
         <DialogContent className="mx-4 max-w-sm rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-foreground">Recuperar senha</DialogTitle>
@@ -191,8 +202,16 @@ const Login = () => {
               type="email"
               placeholder="seu@email.com"
               value={resetEmail}
-              onChange={(e) => setResetEmail(e.target.value)}
+              onChange={(e) => { setResetEmail(e.target.value); setResetError(null); }}
             />
+            {resetError && (
+              <ErrorBanner
+                code={resetError.code}
+                message={resetError.message}
+                hint={resetError.hint}
+                onDismiss={() => setResetError(null)}
+              />
+            )}
             <FreelakiButton
               variant="primary"
               loading={resetLoading}

@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Mail, AlertCircle, Clock, Zap, Loader2 } from "lucide-react";
+import { Mail, AlertCircle, Clock, Zap } from "lucide-react";
 import { toast } from "sonner";
 import FreelakiButton from "@/components/ui/FreelakiButton";
+import ErrorBanner from "@/components/ui/ErrorBanner";
+import { parseError } from "@/lib/errors";
 import { supabase } from "@/integrations/supabase/client";
 
 const ConfirmarEmailPage = () => {
@@ -13,8 +15,8 @@ const ConfirmarEmailPage = () => {
   const [resending, setResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [checking, setChecking] = useState(false);
+  const [error, setError] = useState<{ code: string; message: string; hint?: string } | null>(null);
 
-  // Redirect if no email in state
   useEffect(() => {
     if (!email) navigate("/cadastro", { replace: true });
   }, [email, navigate]);
@@ -39,18 +41,19 @@ const ConfirmarEmailPage = () => {
 
   const handleResend = useCallback(async () => {
     setResending(true);
+    setError(null);
     try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
-      if (error) {
-        toast.error("Erro ao reenviar. Tente novamente.");
+      const { error: resendError } = await supabase.auth.resend({ type: "signup", email });
+      if (resendError) {
+        setError(parseError(resendError));
       } else {
         toast("Email reenviado! Verifique sua caixa de entrada.", {
           style: { background: "#000", color: "#fff" },
         });
         setCountdown(60);
       }
-    } catch {
-      toast.error("Erro ao reenviar.");
+    } catch (err) {
+      setError(parseError(err));
     } finally {
       setResending(false);
     }
@@ -58,15 +61,16 @@ const ConfirmarEmailPage = () => {
 
   const handleCheckConfirmation = useCallback(async () => {
     setChecking(true);
+    setError(null);
     try {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user?.email_confirmed_at) {
         navigate("/categorias", { replace: true });
       } else {
-        toast.error("Email ainda não confirmado. Verifique sua caixa de entrada.");
+        setError({ code: "AUTH-003", message: "Email ainda não confirmado.", hint: "Verifique sua caixa de entrada e clique no link." });
       }
-    } catch {
-      toast.error("Erro ao verificar. Tente novamente.");
+    } catch (err) {
+      setError(parseError(err));
     } finally {
       setChecking(false);
     }
@@ -100,7 +104,6 @@ const ConfirmarEmailPage = () => {
 
         {/* Animated envelope */}
         <div className="relative" style={{ marginTop: 40, width: 72, height: 72 }}>
-          {/* Pulse circle */}
           <div
             className="absolute inset-0 rounded-full"
             style={{
@@ -145,6 +148,18 @@ const ConfirmarEmailPage = () => {
             </div>
           ))}
         </div>
+
+        {/* Error banner */}
+        {error && (
+          <div style={{ marginBottom: 16 }}>
+            <ErrorBanner
+              code={error.code}
+              message={error.message}
+              hint={error.hint}
+              onDismiss={() => setError(null)}
+            />
+          </div>
+        )}
 
         {/* Resend button */}
         <FreelakiButton
