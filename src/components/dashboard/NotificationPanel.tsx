@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MessageCircle, User, Zap, ScrollText, Bell, BellOff } from "lucide-react";
