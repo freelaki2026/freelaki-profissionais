@@ -419,20 +419,37 @@ const DashboardPage = () => {
   }, []);
 
   const toggleOnline = async () => {
-    if (!user) return;
+    if (!user || transitionPhase !== "idle") return;
     setTogglingOnline(true);
     const newVal = !isOnline;
     const { error } = await supabase.from("profiles").update({ is_online: newVal }).eq("id", user.id);
-    if (!error) {
-      setIsOnline(newVal);
-      if (newVal) loadOpportunities();
-    } else {
+    if (error) {
       toast({ title: "Erro ao alterar status.", variant: "destructive" });
+      setTogglingOnline(false);
+      return;
     }
-    setTogglingOnline(false);
-  };
+    setIsOnline(newVal);
 
-  
+    if (newVal) {
+      // OFFLINE → ONLINE transition
+      loadOpportunities();
+      setTransitionPhase("going-online");
+      // Phase 1: flash bolt (500ms), then fade out offline (400ms), then show online (400ms)
+      setTimeout(() => {
+        setShowOnlineLayout(true);
+        setTransitionPhase("idle");
+        setTogglingOnline(false);
+      }, 900);
+    } else {
+      // ONLINE → OFFLINE transition
+      setTransitionPhase("going-offline");
+      setTimeout(() => {
+        setShowOnlineLayout(false);
+        setTransitionPhase("idle");
+        setTogglingOnline(false);
+      }, 600);
+    }
+  };
 
   const approvalStatus = profile?.approval_status || "incomplete";
   const isApproved = approvalStatus === "approved";
