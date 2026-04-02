@@ -514,14 +514,6 @@ const DashboardPage = () => {
                         {available.map((opp) => (
                           <CarouselOppCard key={opp.id} opp={opp} />
                         ))}
-                        <button
-                          onClick={scrollToOpp}
-                          className="flex h-[160px] w-[80px] shrink-0 flex-col items-center justify-center rounded-[24px] border border-[#276EF1] mb-2"
-                          style={{ scrollSnapAlign: "start", background: "rgba(39,110,241,0.06)" }}
-                        >
-                          <ArrowRight className="h-6 w-6 text-[#276EF1]" />
-                          <span className="mt-1 text-[11px] font-medium text-[#276EF1]">Ver todas</span>
-                        </button>
                       </div>
                     ) : (
                       <div
