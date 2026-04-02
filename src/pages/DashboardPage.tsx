@@ -614,6 +614,22 @@ const DashboardPage = () => {
           50% { transform: rotate(-12deg); }
           75% { transform: rotate(6deg); }
         }
+        @keyframes offlinePulseRing {
+          0% { transform: scale(0.8); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: scale(1.3); opacity: 0; }
+        }
+        @keyframes offlineBoltBreath {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.06); }
+        }
+        .offline-ring { animation: offlinePulseRing 2s ease-out infinite; }
+        .offline-ring-2 { animation-delay: 0.4s; }
+        .offline-ring-3 { animation-delay: 0.8s; }
+        .offline-bolt { animation: offlineBoltBreath 2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .offline-ring, .offline-bolt { animation: none; }
+        }
       `}</style>
     </div>
   );
