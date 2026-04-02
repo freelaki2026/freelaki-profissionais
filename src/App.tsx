@@ -20,9 +20,9 @@ import PerfilPage from "@/pages/PerfilPage";
 import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import DadosBancariosPage from "@/pages/DadosBancariosPage";
 import AjudaPage from "@/pages/AjudaPage";
+import TermosPage from "@/pages/TermosPage";
 import {
   Cadastro,
-  Termos,
   Contratos,
   Suporte,
 } from "@/pages/PlaceholderPages";
