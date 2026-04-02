@@ -435,7 +435,7 @@ const DashboardPage = () => {
     setTogglingOnline(false);
   };
 
-  const scrollToOpp = () => { oppRef.current?.scrollIntoView({ behavior: "smooth" }); };
+  
 
   const approvalStatus = profile?.approval_status || "incomplete";
   const isApproved = approvalStatus === "approved";
