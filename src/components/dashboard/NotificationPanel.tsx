@@ -33,9 +33,22 @@ interface Props {
 
 const NotificationPanel = ({ open, onClose, notifications, unreadCount, onMarkAsRead, onMarkAllAsRead }: Props) => {
   const navigate = useNavigate();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-mark all as read after 2 seconds of panel being open
+  useEffect(() => {
+    if (open && unreadCount > 0) {
+      timerRef.current = setTimeout(() => {
+        onMarkAllAsRead();
+      }, 2000);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [open, unreadCount > 0]);
 
   const handleClick = (notif: Notification) => {
-    onMarkAsRead(notif.id);
+    if (!notif.is_read) onMarkAsRead(notif.id);
     onClose();
     if (notif.action_url) {
       setTimeout(() => navigate(notif.action_url!), 150);
