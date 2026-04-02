@@ -19,7 +19,7 @@ const BottomNav = ({ onScrollToOpportunities, onOpenDrawer }: BottomNavProps) =>
 
   const items: NavItem[] = [
     { icon: Home, label: "Início", path: "/dashboard" },
-    { icon: Briefcase, label: "Oportunidades", path: "/dashboard", action: onScrollToOpportunities },
+    { icon: Zap, label: "Oportunidades", path: "/oportunidades" },
     { icon: FileText, label: "Contratos", path: "/contratos" },
     { icon: Menu, label: "Menu", path: "/dashboard", action: onOpenDrawer },
   ];
