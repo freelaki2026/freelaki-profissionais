@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   X, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap,
+  Info, LogOut, Zap, MessageSquare,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 
