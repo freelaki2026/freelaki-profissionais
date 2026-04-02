@@ -671,6 +671,7 @@ export type Database = {
     }
     Functions: {
       check_cpf_cnpj_exists: { Args: { p_cpf_cnpj: string }; Returns: boolean }
+      check_email_exists: { Args: { p_email: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
