@@ -26,7 +26,7 @@ const BottomNav = ({ onOpenDrawer }: BottomNavProps) => {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-[hsl(var(--border))] bg-white">
       {items.map((item, i) => {
-        const active = i === 0 && location.pathname === "/dashboard";
+        const active = !item.action && location.pathname === item.path;
         const Icon = item.icon;
         const color = active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))";
         return (
