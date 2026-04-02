@@ -536,6 +536,15 @@ const DashboardPage = () => {
       {/* BOTTOM NAV */}
       <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
 
+      <NotificationPanel
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
+      />
+
       <style>{`
         @keyframes dashPulseOuter {
           0%, 100% { transform: scale(1); }
@@ -544,6 +553,12 @@ const DashboardPage = () => {
         @keyframes dashPulseMiddle {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.12); }
+        }
+        @keyframes bellShake {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(12deg); }
+          50% { transform: rotate(-12deg); }
+          75% { transform: rotate(6deg); }
         }
       `}</style>
     </div>
