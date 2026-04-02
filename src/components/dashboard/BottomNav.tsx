@@ -9,7 +9,6 @@ interface NavItem {
 }
 
 interface BottomNavProps {
-  onScrollToOpportunities?: () => void;
   onOpenDrawer?: () => void;
 }
 
