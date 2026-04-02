@@ -325,6 +325,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          action_url: string | null
+          body: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          profile_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          action_url?: string | null
+          body: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          profile_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          action_url?: string | null
+          body?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          profile_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opportunities: {
         Row: {
           accepted_at: string | null
