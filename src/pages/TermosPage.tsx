@@ -32,7 +32,7 @@ const TermosPage = () => {
     if (!user) return;
     const fetchData = async () => {
       const [termsRes, accRes] = await Promise.all([
-        supabase.from("terms").select("*").eq("is_active", true).limit(1).single(),
+        supabase.from("terms").select("*").eq("is_active", true).limit(1).maybeSingle(),
         supabase
           .from("terms_acceptance")
           .select("*")
@@ -127,7 +127,7 @@ const TermosPage = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="flex-1 overflow-y-auto"
+        className="flex-1 overflow-y-auto hide-scrollbar"
         style={{
           background: "#FFFFFF",
           borderRadius: "24px 24px 0 0",
