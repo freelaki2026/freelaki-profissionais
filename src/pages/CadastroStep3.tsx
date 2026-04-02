@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, Check } from "lucide-react";
+import { Zap, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import { supabase } from "@/integrations/supabase/client";
