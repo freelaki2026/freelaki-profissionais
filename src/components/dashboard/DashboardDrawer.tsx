@@ -144,7 +144,13 @@ const DashboardDrawer = ({ open, onClose, profile }: DashboardDrawerProps) => {
                       className="flex w-full items-center gap-3.5 border-b border-[#F0F0F0] py-3.5 text-left"
                     >
                       <Icon size={20} color="#276EF1" />
-                      <span className="text-[15px] font-medium text-foreground">{item.label}</span>
+                      <span className="flex-1 text-[15px] font-medium text-foreground">{item.label}</span>
+                      {item.path === "/mensagens" && unreadMsgs > 0 && (
+                        <span className="rounded-full px-2 py-0.5 text-[11px] font-bold"
+                          style={{ background: "#F59E0B", color: "#000" }}>
+                          {unreadMsgs}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
