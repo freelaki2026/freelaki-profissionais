@@ -29,20 +29,20 @@ const TermosPage = () => {
   const [accepting, setAccepting] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
     const fetchData = async () => {
-      const [termsRes, accRes] = await Promise.all([
-        supabase.from("terms").select("*").eq("is_active", true).limit(1).maybeSingle(),
-        supabase
+      const termsRes = await supabase.from("terms").select("*").eq("is_active", true).limit(1).maybeSingle();
+      if (termsRes.data) setTerm(termsRes.data);
+
+      if (user) {
+        const accRes = await supabase
           .from("terms_acceptance")
           .select("*")
           .eq("profile_id", user.id)
           .order("accepted_at", { ascending: false })
           .limit(1)
-          .maybeSingle(),
-      ]);
-      if (termsRes.data) setTerm(termsRes.data);
-      if (accRes.data) setAcceptance(accRes.data);
+          .maybeSingle();
+        if (accRes.data) setAcceptance(accRes.data);
+      }
       setLoading(false);
     };
     fetchData();
