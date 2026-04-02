@@ -248,6 +248,8 @@ const DashboardPage = () => {
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(true);
   const [userCategories, setUserCategories] = useState<string[]>([]);
+  const [transitionPhase, setTransitionPhase] = useState<"idle" | "going-online" | "going-offline">("idle");
+  const [showOnlineLayout, setShowOnlineLayout] = useState(false);
 
   // Load profile
   useEffect(() => {
