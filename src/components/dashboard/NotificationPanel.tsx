@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, MessageCircle, User, Zap, ScrollText, Bell, BellOff } from "lucide-react";
@@ -33,19 +33,12 @@ interface Props {
 
 const NotificationPanel = ({ open, onClose, notifications, unreadCount, onMarkAsRead, onMarkAllAsRead }: Props) => {
   const navigate = useNavigate();
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto-mark all as read after 2 seconds of panel being open
   useEffect(() => {
     if (open && unreadCount > 0) {
-      timerRef.current = setTimeout(() => {
-        onMarkAllAsRead();
-      }, 1500);
+      onMarkAllAsRead();
     }
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [open, unreadCount > 0]);
+  }, [open, unreadCount, onMarkAllAsRead]);
 
   const handleClick = (notif: Notification) => {
     if (!notif.is_read) onMarkAsRead(notif.id);
