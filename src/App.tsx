@@ -16,6 +16,7 @@ import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
+import OportunidadesPage from "@/pages/OportunidadesPage";
 import PerfilPage from "@/pages/PerfilPage";
 import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import DadosBancariosPage from "@/pages/DadosBancariosPage";
