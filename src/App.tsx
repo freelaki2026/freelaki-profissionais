@@ -25,6 +25,8 @@ import TermosPage from "@/pages/TermosPage";
 import ContratosPage from "@/pages/ContratosPage";
 import SuportePage from "@/pages/SuportePage";
 import ConfirmarEmailPage from "@/pages/ConfirmarEmailPage";
+import MensagensPage from "@/pages/MensagensPage";
+import ChatClientePage from "@/pages/ChatClientePage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
