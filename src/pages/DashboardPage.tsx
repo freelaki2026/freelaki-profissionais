@@ -349,24 +349,48 @@ const DashboardPage = () => {
     if (!isOnline || !user) return;
     const channel = supabase
       .channel("opportunities-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, (payload) => {
-        loadOpportunities();
-        const opp = payload.new as any;
-        if (opp && isOnline) {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, async (payload) => {
+        const newOp = payload.new as any;
+        if (newOp && userCategories.includes(newOp.category_id)) {
+          // Fetch full data with category join for the new opportunity
+          const { data } = await supabase
+            .from("opportunities")
+            .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
+            .eq("id", newOp.id)
+            .single();
+          if (data && data.status === "open") {
+            const mapped: Opp = {
+              id: data.id, title: data.title, description: data.description,
+              budget: data.budget, status: data.status, scheduled_at: data.scheduled_at,
+              location_address: data.location_address,
+              category_name: (data as any).categories?.name, category_icon: (data as any).categories?.icon,
+            };
+            setAvailable((prev) => [mapped, ...prev.filter((o) => o.id !== data.id)]);
+          }
           insertNotification({
             type: "oportunidade",
             title: "⚡ Nova oportunidade!",
-            body: `${opp.title}${opp.budget ? ` — R$ ${Number(opp.budget).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : ""}`,
-            action_url: `/oportunidade/${opp.id}`,
+            body: `${newOp.title}${newOp.budget ? ` — R$ ${Number(newOp.budget).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : ""}`,
+            action_url: `/oportunidade/${newOp.id}`,
           });
           setBellShake(true);
           setTimeout(() => setBellShake(false), 300);
         }
       })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, () => loadOpportunities())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
+        const updated = payload.new as any;
+        if (updated.status !== "open") {
+          // Remove from available immediately
+          setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
+          // If accepted by current user, add to accepted list
+          if (updated.accepted_by === user.id) {
+            loadOpportunities(); // Reload to get full accepted data
+          }
+        }
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [isOnline, user, loadOpportunities]);
+  }, [isOnline, user, userCategories, insertNotification]);
 
   const toggleOnline = async () => {
     if (!user) return;

@@ -112,6 +112,29 @@ const OportunidadeDetalhePage = () => {
     loadOpp();
   }, [id]);
 
+  // Realtime: watch for status changes on this specific opportunity
+  useEffect(() => {
+    if (!id || !user) return;
+    const channel = supabase
+      .channel(`oportunidade_${id}`)
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "opportunities",
+        filter: `id=eq.${id}`,
+      }, (payload) => {
+        const updated = payload.new as any;
+        if (updated.status !== "open") {
+          setOpp((prev) => prev ? { ...prev, status: updated.status } : prev);
+          if (updated.accepted_by !== user.id) {
+            toast.error("Esta oportunidade acabou de ser aceita por outro profissional.");
+          }
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, user]);
+
   const handleAccept = async () => {
     if (!user || !opp) return;
     setAccepting(true);
