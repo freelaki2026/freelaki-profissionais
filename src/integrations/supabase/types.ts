@@ -670,7 +670,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_cpf_cnpj_exists: { Args: { p_cpf_cnpj: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

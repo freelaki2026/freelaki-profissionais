@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, Check } from "lucide-react";
+import { Zap, Check, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,14 +94,19 @@ const CadastroStep3 = () => {
     setLoading(true);
     setCpfError(false);
     try {
-      // 0. Check duplicate CPF/CNPJ
-      const { data: existing } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("cpf_cnpj", step2.cpf_cnpj)
-        .limit(1);
+      // 0. Check duplicate CPF/CNPJ via RPC
+      const cpfCnpjLimpo = step2.cpf_cnpj.replace(/\D/g, "");
+      const { data: cpfExists, error: rpcError } = await supabase.rpc("check_cpf_cnpj_exists", {
+        p_cpf_cnpj: cpfCnpjLimpo,
+      });
 
-      if (existing && existing.length > 0) {
+      if (rpcError) {
+        toast.error("Erro ao verificar documento. Tente novamente.");
+        setLoading(false);
+        return;
+      }
+
+      if (cpfExists === true) {
         setCpfError(true);
         setLoading(false);
         return;
@@ -118,7 +123,10 @@ const CadastroStep3 = () => {
       });
 
       if (signUpError) {
-        if (signUpError.message.includes("User already registered")) {
+        if (signUpError.message.includes("profiles_cpf_cnpj_unique") || signUpError.message.includes("cpf_cnpj")) {
+          setCpfError(true);
+          return;
+        } else if (signUpError.message.includes("User already registered")) {
           toast.error("Este email já está cadastrado. Faça login.");
         } else {
           toast.error("Erro ao criar conta. Tente novamente.");
@@ -232,10 +240,13 @@ const CadastroStep3 = () => {
         {/* CPF/CNPJ duplicate error */}
         {cpfError && (
           <div style={{ marginTop: 16, background: "#FFEBEE", borderRadius: 12, padding: "12px 16px" }}>
-            <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
-              ⚠️ Este CPF/CNPJ já está cadastrado em outra conta.
-              {"\n"}Se acredita ser um erro, entre em contato com o suporte.
-            </p>
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} color="#C62828" className="shrink-0" style={{ marginTop: 2 }} />
+              <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
+                Este CPF/CNPJ já está cadastrado em outra conta.
+                {"\n"}Se acredita ser um erro, entre em contato com suporte@freelaqui.com.br
+              </p>
+            </div>
             <button
               onClick={() => navigate("/cadastro/etapa2")}
               style={{ marginTop: 10, fontSize: 13, color: "#276EF1", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
