@@ -40,7 +40,7 @@ const NotificationPanel = ({ open, onClose, notifications, unreadCount, onMarkAs
     if (open && unreadCount > 0) {
       timerRef.current = setTimeout(() => {
         onMarkAllAsRead();
-      }, 2000);
+      }, 1500);
     }
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
