@@ -97,7 +97,27 @@ const CadastroStep3 = () => {
     setError(null);
     setErrorType(null);
     try {
-      // 0. Check duplicate CPF/CNPJ via RPC
+      // 0. Check duplicate phone via RPC
+      const phoneClean = phoneDigits;
+      const { data: phoneExists, error: phoneRpcError } = await supabase.rpc("check_phone_exists", {
+        p_phone: phoneClean,
+      });
+
+      if (phoneRpcError) {
+        setError(parseError(phoneRpcError));
+        setErrorType("generic");
+        setLoading(false);
+        return;
+      }
+
+      if (phoneExists === true) {
+        setError({ code: "CAD-003", message: "Este telefone já está cadastrado em outra conta.", hint: "Volte à etapa 1 e corrija o número." });
+        setErrorType("phone");
+        setLoading(false);
+        return;
+      }
+
+      // 0b. Check duplicate CPF/CNPJ via RPC
       const cpfCnpjLimpo = step2.cpf_cnpj.replace(/\D/g, "");
       const { data: cpfExists, error: rpcError } = await supabase.rpc("check_cpf_cnpj_exists", {
         p_cpf_cnpj: cpfCnpjLimpo,
