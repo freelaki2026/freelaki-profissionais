@@ -516,26 +516,10 @@ const DashboardPage = () => {
                         ))}
                       </div>
                     ) : (
-                      <div
-                        className="flex gap-3.5 overflow-x-auto px-6 pb-4 pt-2 pointer-events-none"
-                        style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
-                      >
-                        <CarouselOppCard
-                          isMock
-                          opp={{
-                            id: "mock-1", title: "Cobertura de evento", description: null, budget: null, status: null,
-                            category_name: "Fotógrafo", category_icon: "📷", location_address: "Alphaville, SP",
-                            scheduled_at: (() => { const d = new Date(); d.setHours(15, 0, 0, 0); return d.toISOString(); })(),
-                          }}
-                        />
-                        <CarouselOppCard
-                          isMock
-                          opp={{
-                            id: "mock-2", title: "Vídeo institucional", description: null, budget: null, status: null,
-                            category_name: "Filmmaker", category_icon: "🎬", location_address: "Pinheiros, SP",
-                            scheduled_at: (() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(10, 0, 0, 0); return d.toISOString(); })(),
-                          }}
-                        />
+                      <div className="flex flex-col items-center py-10">
+                        <Zap size={28} fill="#276EF1" color="#276EF1" />
+                        <p className="mt-3 text-[14px] font-semibold text-foreground">Nenhuma oportunidade no momento</p>
+                        <p className="mt-1.5 text-[13px] text-[#767676]">Fique online. Avisaremos assim que surgir algo.</p>
                       </div>
                     )}
                   </div>
