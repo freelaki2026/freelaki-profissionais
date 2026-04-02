@@ -253,6 +253,7 @@ const DashboardPage = () => {
   const [available, setAvailable] = useState<Opp[]>([]);
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(true);
+  const [userCategories, setUserCategories] = useState<string[]>([]);
 
   // Load profile
   useEffect(() => {
