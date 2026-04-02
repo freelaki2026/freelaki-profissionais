@@ -52,7 +52,7 @@ const App = () => (
           <Route path="/endereco" element={<ProtectedRoute><EnderecoPage /></ProtectedRoute>} />
           <Route path="/dados-pessoais" element={<ProtectedRoute><DadosPessoaisPage /></ProtectedRoute>} />
           <Route path="/dados-bancarios" element={<ProtectedRoute><DadosBancariosPage /></ProtectedRoute>} />
-          <Route path="/ajuda" element={<ProtectedRoute><Ajuda /></ProtectedRoute>} />
+          <Route path="/ajuda" element={<ProtectedRoute><AjudaPage /></ProtectedRoute>} />
           <Route path="/contratos" element={<ProtectedRoute><Contratos /></ProtectedRoute>} />
           <Route path="/suporte" element={<ProtectedRoute><Suporte /></ProtectedRoute>} />
           <Route path="/oportunidade/:id" element={<ProtectedRoute><OportunidadeDetalhePage /></ProtectedRoute>} />
