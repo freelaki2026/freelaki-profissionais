@@ -297,18 +297,18 @@ const DashboardPage = () => {
     if (!user) return;
     setLoadingOpps(true);
 
+    const { data: cats } = await supabase
+      .from("professional_categories")
+      .select("category_id")
+      .eq("profile_id", user.id);
+    const catIds = cats?.map((r) => r.category_id!).filter(Boolean) || [];
+    setUserCategories(catIds);
+
     const { data: avail } = await supabase
       .from("opportunities")
       .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
       .eq("status", "open")
-      .in(
-        "category_id",
-        (await supabase
-          .from("professional_categories")
-          .select("category_id")
-          .eq("profile_id", user.id)
-        ).data?.map((r) => r.category_id!) || []
-      )
+      .in("category_id", catIds.length > 0 ? catIds : ["__none__"])
       .order("created_at", { ascending: false });
 
     if (avail) {
