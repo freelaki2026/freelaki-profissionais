@@ -16,6 +16,7 @@ import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
 import DashboardPage from "@/pages/DashboardPage";
 import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
+import OportunidadesPage from "@/pages/OportunidadesPage";
 import PerfilPage from "@/pages/PerfilPage";
 import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import DadosBancariosPage from "@/pages/DadosBancariosPage";
@@ -47,6 +48,7 @@ const App = () => (
 
           {/* Rotas protegidas */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/oportunidades" element={<ProtectedRoute><OportunidadesPage /></ProtectedRoute>} />
           <Route path="/perfil" element={<ProtectedRoute><PerfilPage /></ProtectedRoute>} />
           <Route path="/documentos" element={<ProtectedRoute><DocumentosPage /></ProtectedRoute>} />
           <Route path="/endereco" element={<ProtectedRoute><EnderecoPage /></ProtectedRoute>} />
