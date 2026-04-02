@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, FileText, X } from "lucide-react";
+import { ArrowLeft, FileText, X, Lock, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 
 type TabKey = "assinar" | "assinados" | "todos";
@@ -36,6 +37,7 @@ interface ContractItem extends ContractRow {
   client_avatar: string | null;
   category_name: string;
   category_icon: string | null;
+  isMock?: boolean;
 }
 
 const tabs: { key: TabKey; label: string }[] = [
@@ -57,6 +59,37 @@ const statusBadge = (status: string | null, clientSigned: boolean | null, profSi
   return { label: "Aguardando cliente", bg: "#FFF3E0", color: "#B45309" };
 };
 
+const buildMockContract = (userName: string): ContractItem => {
+  const today = new Date();
+  const todayStr = format(today, "dd/MM/yyyy");
+  return {
+    id: "mock-signed-1",
+    opportunity_id: null,
+    client_id: null,
+    professional_id: null,
+    professional_signed: true,
+    professional_signed_at: today.toISOString(),
+    client_signed: true,
+    client_signed_at: today.toISOString(),
+    status: "both_signed",
+    contract_text: `CONTRATANTE: Marina Souza\n\nCONTRATADO: ${userName}\n\nSERVIÇO: Cobertura fotográfica de casamento\n\nLOCAL: Villa Real Eventos — Alphaville, SP\n\nDATA: ${todayStr}\n\nVALOR: R$ 850,00 (oitocentos e cinquenta reais)\n\nO CONTRATADO se compromete a realizar cobertura fotográfica completa do evento, entregando as imagens editadas em até 30 dias após o evento.\n\nO pagamento será realizado pela plataforma Freelaki após confirmação da conclusão do serviço.\n\nASSINATURAS DIGITAIS:\n\n✓ Contratante: Marina Souza\n  Assinado em: ${todayStr} às 14:32\n\n✓ Contratado: ${userName}\n  Assinado em: ${todayStr} às 15:10`,
+    pdf_url: null,
+    created_at: today.toISOString(),
+    sign_token_professional: null,
+    sign_token_client: null,
+    updated_at: today.toISOString(),
+    job_title: "Cobertura de Casamento - Villa Real",
+    budget: 850,
+    scheduled_at: today.toISOString(),
+    location_address: "Villa Real Eventos — Alphaville, SP",
+    client_name: "Marina Souza",
+    client_avatar: null,
+    category_name: "Fotógrafo",
+    category_icon: "📷",
+    isMock: true,
+  };
+};
+
 const ContratosPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -66,6 +99,15 @@ const ContratosPage = () => {
   const [selectedContract, setSelectedContract] = useState<ContractItem | null>(null);
   const [showSignModal, setShowSignModal] = useState(false);
   const [signing, setSigning] = useState(false);
+  const [userName, setUserName] = useState("Profissional");
+
+  // Fetch user name
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("full_name").eq("id", user.id).single().then(({ data }) => {
+      if (data?.full_name) setUserName(data.full_name);
+    });
+  }, [user]);
 
   const fetchContracts = useCallback(async () => {
     if (!user) return;
@@ -125,11 +167,21 @@ const ContratosPage = () => {
 
   useEffect(() => { fetchContracts(); }, [fetchContracts]);
 
-  const filtered = contracts.filter((c) => {
-    if (activeTab === "assinar") return c.client_signed && !c.professional_signed;
-    if (activeTab === "assinados") return c.status === "both_signed";
-    return true;
-  });
+  // Build filtered list with mock injection
+  const mockContract = buildMockContract(userName);
+
+  const filtered = (() => {
+    const real = contracts.filter((c) => {
+      if (activeTab === "assinar") return c.client_signed && !c.professional_signed;
+      if (activeTab === "assinados") return c.status === "both_signed";
+      return true;
+    });
+    // Inject mock in "assinados" and "todos" tabs
+    if (activeTab === "assinados" || activeTab === "todos") {
+      return [...real, mockContract];
+    }
+    return real;
+  })();
 
   const formatDate = (iso: string | null) => {
     if (!iso) return "";
@@ -139,7 +191,7 @@ const ContratosPage = () => {
 
   const formatBudget = (v: number | null) => {
     if (v == null) return "—";
-    return `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`;
+    return `R$ ${v.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
   };
 
   const handleSign = async (contract: ContractItem) => {
@@ -156,9 +208,7 @@ const ContratosPage = () => {
     if (error) {
       toast.error("Erro ao assinar contrato.");
     } else {
-      toast("Contrato assinado! 🎉", {
-        style: { background: "#000", color: "#fff", border: "none" },
-      });
+      toast("Contrato assinado! 🎉", { style: { background: "#000", color: "#fff", border: "none" } });
       setSelectedContract(null);
       setShowSignModal(false);
       fetchContracts();
@@ -168,6 +218,8 @@ const ContratosPage = () => {
 
   const needsSign = (c: ContractItem) => c.client_signed && !c.professional_signed;
   const canDownload = (c: ContractItem) => c.status === "both_signed" && c.pdf_url;
+
+  const isMockSelected = selectedContract?.isMock;
 
   return (
     <div className="flex min-h-screen flex-col" style={{ background: "#000" }}>
@@ -231,7 +283,6 @@ const ContratosPage = () => {
                   className="mb-3 cursor-pointer"
                   style={{ background: "#FFF", borderRadius: 16, padding: 16, border: "1px solid #E5E5E5" }}
                 >
-                  {/* Top */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {c.category_icon && <span style={{ fontSize: 14 }}>{c.category_icon}</span>}
@@ -241,8 +292,6 @@ const ContratosPage = () => {
                       {badge.label}
                     </span>
                   </div>
-
-                  {/* Middle */}
                   <p style={{ fontWeight: 700, fontSize: 15, color: "#000", marginTop: 8 }}>{c.job_title}</p>
                   <p style={{ fontSize: 13, color: "#767676", marginTop: 4 }}>{c.client_name}</p>
                   <div className="flex items-center gap-3 mt-1">
@@ -250,8 +299,7 @@ const ContratosPage = () => {
                     {c.scheduled_at && <span style={{ fontSize: 13, color: "#767676" }}>📅 {formatDate(c.scheduled_at)}</span>}
                   </div>
 
-                  {/* Footer */}
-                  {(needsSign(c) || canDownload(c)) && (
+                  {!c.isMock && (needsSign(c) || canDownload(c)) && (
                     <div style={{ marginTop: 12, borderTop: "1px solid #F7F7F7", paddingTop: 12 }}>
                       {needsSign(c) && (
                         <button
@@ -300,7 +348,6 @@ const ContratosPage = () => {
               className="fixed bottom-0 left-0 right-0 z-50 overflow-y-auto"
               style={{ background: "#FFF", borderRadius: "24px 24px 0 0", padding: 24, maxHeight: "85vh" }}
             >
-              {/* Handle */}
               <div className="flex justify-center mb-5">
                 <div style={{ width: 40, height: 4, background: "#E5E5E5", borderRadius: 2 }} />
               </div>
@@ -308,6 +355,74 @@ const ContratosPage = () => {
               {(() => {
                 const c = selectedContract;
                 const badge = statusBadge(c.status, c.client_signed, c.professional_signed);
+
+                if (c.isMock) {
+                  // Mock contract preview
+                  return (
+                    <>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: badge.bg, color: badge.color }}>
+                        {badge.label}
+                      </span>
+                      <h2 style={{ fontWeight: 700, fontSize: 20, color: "#000", marginTop: 8 }}>{c.job_title}</h2>
+
+                      <div className="mt-3 space-y-1">
+                        <p style={{ fontSize: 13, color: "#767676" }}>👤 {c.client_name}</p>
+                        <p style={{ fontSize: 13, color: "#2E7D32", fontWeight: 600 }}>💰 {formatBudget(c.budget)}</p>
+                        {c.location_address && <p style={{ fontSize: 13, color: "#767676" }}>📍 {c.location_address}</p>}
+                      </div>
+
+                      <div style={{ height: 1, background: "#E5E5E5", margin: "16px 0" }} />
+
+                      {/* Contract header */}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <Zap size={16} fill="#000" color="#000" />
+                          <span style={{ fontWeight: 800, fontSize: 18, color: "#000" }}>FREELAKI</span>
+                        </div>
+                        <p style={{ fontWeight: 600, fontSize: 13, color: "#767676", marginTop: 2 }}>
+                          CONTRATO DE PRESTAÇÃO DE SERVIÇOS
+                        </p>
+                        <div style={{ height: 1, background: "#E5E5E5", margin: "12px 0" }} />
+                      </div>
+
+                      {/* Contract body */}
+                      <div className="mt-2">
+                        {(c.contract_text || "").split("\n").map((line, i) => (
+                          <p key={i} style={{ fontSize: 13, color: "#767676", lineHeight: 1.8 }}>
+                            {line || "\u00A0"}
+                          </p>
+                        ))}
+                      </div>
+
+                      {/* Footer */}
+                      <p className="text-center" style={{ fontSize: 11, color: "#767676", marginTop: 16 }}>
+                        Este contrato foi gerado e assinado digitalmente{"\n"}
+                        pela plataforma Freelaki. Código: FLK-2025-0001
+                      </p>
+
+                      {/* Read-only warning */}
+                      <div className="flex items-center gap-2" style={{ background: "#F7F7F7", borderRadius: 12, padding: 12, marginTop: 16 }}>
+                        <Lock size={14} color="#767676" className="shrink-0" />
+                        <span style={{ fontSize: 12, color: "#767676" }}>
+                          Contrato somente para visualização. Não é possível editar.
+                        </span>
+                      </div>
+
+                      {/* Download PDF button */}
+                      <div style={{ marginTop: 16 }}>
+                        <FreelakiButton
+                          variant="secondary"
+                          onClick={() => toast("Em breve disponível!", { style: { background: "#000", color: "#fff" } })}
+                          className="w-full"
+                        >
+                          Baixar PDF
+                        </FreelakiButton>
+                      </div>
+                    </>
+                  );
+                }
+
+                // Real contract
                 return (
                   <>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, background: badge.bg, color: badge.color }}>
@@ -355,7 +470,7 @@ const ContratosPage = () => {
 
       {/* Sign Confirmation Modal */}
       <AnimatePresence>
-        {showSignModal && selectedContract && (
+        {showSignModal && selectedContract && !selectedContract.isMock && (
           <>
             <motion.div
               initial={{ opacity: 0 }}

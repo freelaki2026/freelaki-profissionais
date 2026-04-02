@@ -372,9 +372,9 @@ const DashboardPage = () => {
       {/* HEADER */}
       <div className="flex items-center justify-between px-6 pt-[52px] pb-5">
         <div className="w-[22px]" />
-        <div className="flex items-center gap-1.5">
-          <Zap className="h-4 w-4 fill-[#276EF1] text-[#276EF1]" />
-          <span className="text-base font-bold text-white">freelaki</span>
+        <div className="flex items-center" style={{ gap: 10 }}>
+          <Zap size={24} fill="#276EF1" color="#276EF1" />
+          <span className="font-bold text-white" style={{ fontSize: 22, letterSpacing: "-0.5px" }}>freelaki</span>
         </div>
         <button><Bell className="h-[22px] w-[22px] text-white" /></button>
       </div>
