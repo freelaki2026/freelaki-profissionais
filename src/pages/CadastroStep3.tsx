@@ -94,14 +94,19 @@ const CadastroStep3 = () => {
     setLoading(true);
     setCpfError(false);
     try {
-      // 0. Check duplicate CPF/CNPJ
-      const { data: existing } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("cpf_cnpj", step2.cpf_cnpj)
-        .limit(1);
+      // 0. Check duplicate CPF/CNPJ via RPC
+      const cpfCnpjLimpo = step2.cpf_cnpj.replace(/\D/g, "");
+      const { data: cpfExists, error: rpcError } = await supabase.rpc("check_cpf_cnpj_exists", {
+        p_cpf_cnpj: cpfCnpjLimpo,
+      });
 
-      if (existing && existing.length > 0) {
+      if (rpcError) {
+        toast.error("Erro ao verificar documento. Tente novamente.");
+        setLoading(false);
+        return;
+      }
+
+      if (cpfExists === true) {
         setCpfError(true);
         setLoading(false);
         return;
