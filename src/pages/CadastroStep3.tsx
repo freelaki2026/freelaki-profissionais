@@ -94,6 +94,7 @@ const CadastroStep3 = () => {
   const handleCreate = async () => {
     setLoading(true);
     setCpfError(false);
+    setEmailError(false);
     try {
       // 0. Check duplicate CPF/CNPJ via RPC
       const cpfCnpjLimpo = step2.cpf_cnpj.replace(/\D/g, "");
