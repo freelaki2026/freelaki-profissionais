@@ -297,6 +297,14 @@ const CadastroStep3 = () => {
               hint={error.hint}
               onDismiss={() => { setError(null); setErrorType(null); }}
             >
+              {errorType === "phone" && (
+                <button
+                  onClick={() => navigate("/cadastro")}
+                  style={{ fontSize: 13, color: "#276EF1", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  ← Voltar e corrigir
+                </button>
+              )}
               {errorType === "cpf" && (
                 <button
                   onClick={() => navigate("/cadastro/etapa2")}
