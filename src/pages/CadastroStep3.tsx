@@ -59,6 +59,7 @@ const CadastroStep3 = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cpfError, setCpfError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
 
   // Read data from previous steps
   const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
