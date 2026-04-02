@@ -61,7 +61,7 @@ const CadastroStep3 = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ code: string; message: string; hint?: string } | null>(null);
-  const [errorType, setErrorType] = useState<"cpf" | "email" | "generic" | null>(null);
+  const [errorType, setErrorType] = useState<"cpf" | "email" | "phone" | "generic" | null>(null);
 
   const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
   const [step2, setStep2] = useState<{ cpf_cnpj: string; cpf_cnpj_type: string } | null>(null);
