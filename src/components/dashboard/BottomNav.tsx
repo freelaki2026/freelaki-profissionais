@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, Briefcase, FileText, Menu, type LucideIcon } from "lucide-react";
+import { Home, Zap, FileText, Menu, type LucideIcon } from "lucide-react";
 
 interface NavItem {
   icon: LucideIcon;
