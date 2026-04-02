@@ -242,8 +242,11 @@ const DashboardPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const oppRef = useRef<HTMLDivElement>(null);
+  const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [bellShake, setBellShake] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isOnline, setIsOnline] = useState(false);
   const [togglingOnline, setTogglingOnline] = useState(false);
