@@ -114,6 +114,23 @@ const CadastroStep3 = () => {
         return;
       }
 
+      // 0b. Check duplicate email via RPC
+      const { data: emailExists, error: emailRpcError } = await supabase.rpc("check_email_exists", {
+        p_email: step1.email.toLowerCase().trim(),
+      });
+
+      if (emailRpcError) {
+        toast.error("Erro ao verificar email. Tente novamente.");
+        setLoading(false);
+        return;
+      }
+
+      if (emailExists === true) {
+        setEmailError(true);
+        setLoading(false);
+        return;
+      }
+
       // 1. Sign up
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: step1.email,
@@ -129,7 +146,7 @@ const CadastroStep3 = () => {
           setCpfError(true);
           return;
         } else if (signUpError.message.includes("User already registered")) {
-          toast.error("Este email já está cadastrado. Faça login.");
+          setEmailError(true);
         } else {
           toast.error("Erro ao criar conta. Tente novamente.");
         }
