@@ -97,6 +97,8 @@ export default function DadosBancariosPage() {
       const { data } = await supabase.from("bank_accounts").select("*").eq("profile_id", user.id).maybeSingle();
       if (data) {
         setHasSavedData(true);
+        setSavedData(data as Record<string, unknown>);
+        setShowSavedCard(true);
         setMethod(data.payment_type === "conta" ? "conta" : "pix");
         if (data.payment_type === "pix") {
           setPixKeyType((data.pix_key_type as PixKeyType) || "CPF");
@@ -118,6 +120,33 @@ export default function DadosBancariosPage() {
       setLoading(false);
     })();
   }, [user]);
+
+  const maskKeyForDisplay = (key: string, type: string) => {
+    if (!key) return "";
+    if (type === "Email") {
+      const [local, domain] = key.split("@");
+      if (!domain) return key;
+      return local.slice(0, 3) + "***@" + domain;
+    }
+    if (type === "CPF") {
+      const d = key.replace(/\D/g, "");
+      return `***.***.*${d.slice(7, 9)}-${d.slice(9, 11)}`;
+    }
+    if (type === "CNPJ") {
+      const d = key.replace(/\D/g, "");
+      return `**.***.***/${d.slice(8, 12)}-${d.slice(12, 14)}`;
+    }
+    if (type === "Telefone") {
+      const d = key.replace(/\D/g, "");
+      return `+${d.slice(0, 2)} (**) ****-${d.slice(d.length - 4)}`;
+    }
+    return key.slice(0, 6) + "***" + key.slice(-4);
+  };
+
+  const maskAccount = (acc: string) => {
+    if (!acc || acc.length <= 3) return acc;
+    return "***" + acc.slice(-3);
+  };
 
   const handleMethodChange = (m: "pix" | "conta") => {
     if (m === method) return;
