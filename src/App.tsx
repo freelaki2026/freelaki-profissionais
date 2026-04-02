@@ -22,10 +22,8 @@ import DadosBancariosPage from "@/pages/DadosBancariosPage";
 import AjudaPage from "@/pages/AjudaPage";
 import TermosPage from "@/pages/TermosPage";
 import ContratosPage from "@/pages/ContratosPage";
-import {
-  Cadastro,
-  Suporte,
-} from "@/pages/PlaceholderPages";
+import SuportePage from "@/pages/SuportePage";
+import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
 
@@ -54,7 +52,7 @@ const App = () => (
           <Route path="/dados-bancarios" element={<ProtectedRoute><DadosBancariosPage /></ProtectedRoute>} />
           <Route path="/ajuda" element={<ProtectedRoute><AjudaPage /></ProtectedRoute>} />
           <Route path="/contratos" element={<ProtectedRoute><ContratosPage /></ProtectedRoute>} />
-          <Route path="/suporte" element={<ProtectedRoute><Suporte /></ProtectedRoute>} />
+          <Route path="/suporte" element={<ProtectedRoute><SuportePage /></ProtectedRoute>} />
           <Route path="/oportunidade/:id" element={<ProtectedRoute><OportunidadeDetalhePage /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
