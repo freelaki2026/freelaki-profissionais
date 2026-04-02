@@ -240,10 +240,13 @@ const CadastroStep3 = () => {
         {/* CPF/CNPJ duplicate error */}
         {cpfError && (
           <div style={{ marginTop: 16, background: "#FFEBEE", borderRadius: 12, padding: "12px 16px" }}>
-            <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
-              ⚠️ Este CPF/CNPJ já está cadastrado em outra conta.
-              {"\n"}Se acredita ser um erro, entre em contato com o suporte.
-            </p>
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} color="#C62828" className="shrink-0" style={{ marginTop: 2 }} />
+              <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
+                Este CPF/CNPJ já está cadastrado em outra conta.
+                {"\n"}Se acredita ser um erro, entre em contato com suporte@freelaqui.com.br
+              </p>
+            </div>
             <button
               onClick={() => navigate("/cadastro/etapa2")}
               style={{ marginTop: 10, fontSize: 13, color: "#276EF1", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
