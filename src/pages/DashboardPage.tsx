@@ -553,9 +553,32 @@ const DashboardPage = () => {
                 </div>
               </>
             ) : (
-              <p className="mt-6 text-center text-[13px] text-[#767676]">
-                Fique online para ver as oportunidades disponíveis
-              </p>
+              <div className="flex flex-1 flex-col items-center justify-center px-6" style={{ paddingTop: 40, paddingBottom: 40 }}>
+                {/* Pulsing rings + bolt */}
+                <div className="offline-anim-container relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
+                  <div className="offline-ring offline-ring-1 absolute rounded-full" style={{ width: 80, height: 80, border: "1.5px solid rgba(39,110,241,0.5)" }} />
+                  <div className="offline-ring offline-ring-2 absolute rounded-full" style={{ width: 120, height: 120, border: "1px solid rgba(39,110,241,0.3)" }} />
+                  <div className="offline-ring offline-ring-3 absolute rounded-full" style={{ width: 160, height: 160, border: "1px solid rgba(39,110,241,0.15)" }} />
+                  <svg className="offline-bolt relative" width="48" height="48" viewBox="0 0 24 24" fill="#276EF1" stroke="#276EF1" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }}>
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                </div>
+
+                <p className="mt-8 text-[18px] font-bold text-white">Você está offline</p>
+                <p className="mt-1.5 text-[13px] text-[#767676]">Fique online para receber oportunidades</p>
+
+                <button
+                  disabled={togglingOnline}
+                  onClick={toggleOnline}
+                  className="mt-7 flex h-[52px] w-[200px] items-center justify-center rounded-[16px] bg-[#276EF1] text-[16px] font-bold text-white disabled:opacity-50"
+                >
+                  {togglingOnline ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    "Ficar Online →"
+                  )}
+                </button>
+              </div>
             )}
           </motion.div>
         </>
@@ -590,6 +613,22 @@ const DashboardPage = () => {
           25% { transform: rotate(12deg); }
           50% { transform: rotate(-12deg); }
           75% { transform: rotate(6deg); }
+        }
+        @keyframes offlinePulseRing {
+          0% { transform: scale(0.8); opacity: 0; }
+          50% { opacity: 1; }
+          100% { transform: scale(1.3); opacity: 0; }
+        }
+        @keyframes offlineBoltBreath {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.06); }
+        }
+        .offline-ring { animation: offlinePulseRing 2s ease-out infinite; }
+        .offline-ring-2 { animation-delay: 0.4s; }
+        .offline-ring-3 { animation-delay: 0.8s; }
+        .offline-bolt { animation: offlineBoltBreath 2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .offline-ring, .offline-bolt { animation: none; }
         }
       `}</style>
     </div>
