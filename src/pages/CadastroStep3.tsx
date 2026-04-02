@@ -58,6 +58,7 @@ const CadastroStep3 = () => {
   const navigate = useNavigate();
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cpfError, setCpfError] = useState(false);
 
   // Read data from previous steps
   const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
@@ -91,7 +92,21 @@ const CadastroStep3 = () => {
 
   const handleCreate = async () => {
     setLoading(true);
+    setCpfError(false);
     try {
+      // 0. Check duplicate CPF/CNPJ
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("cpf_cnpj", step2.cpf_cnpj)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        setCpfError(true);
+        setLoading(false);
+        return;
+      }
+
       // 1. Sign up
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: step1.email,
@@ -213,6 +228,22 @@ const CadastroStep3 = () => {
             </div>
           ))}
         </div>
+
+        {/* CPF/CNPJ duplicate error */}
+        {cpfError && (
+          <div style={{ marginTop: 16, background: "#FFEBEE", borderRadius: 12, padding: "12px 16px" }}>
+            <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
+              ⚠️ Este CPF/CNPJ já está cadastrado em outra conta.
+              {"\n"}Se acredita ser um erro, entre em contato com o suporte.
+            </p>
+            <button
+              onClick={() => navigate("/cadastro/etapa2")}
+              style={{ marginTop: 10, fontSize: 13, color: "#276EF1", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            >
+              ← Voltar e corrigir
+            </button>
+          </div>
+        )}
 
         {/* Confirmation checkbox */}
         <label className="flex cursor-pointer items-start gap-3" style={{ marginTop: 20 }}>

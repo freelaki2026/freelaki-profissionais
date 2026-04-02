@@ -181,32 +181,41 @@ const CadastroStep1 = () => {
           </div>
 
           {/* Confirm */}
-          <FreelakiInput
-            label="Confirmar senha"
-            type={showConfirm ? "text" : "password"}
-            placeholder="••••••••"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className={
-              pwMatch
-                ? "border-[#2E7D32] focus:border-[#2E7D32]"
-                : undefined
-            }
-            icon={
-              pwMatch ? (
-                <Check size={20} color="#2E7D32" strokeWidth={3} />
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  className="text-muted-foreground"
-                  tabIndex={-1}
-                >
-                  {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              )
-            }
-          />
+          <div>
+            <FreelakiInput
+              label="Confirmar senha"
+              type={showConfirm ? "text" : "password"}
+              placeholder="••••••••"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className={
+                confirm.length > 0
+                  ? pwMatch
+                    ? "border-[#2E7D32] focus:border-[#2E7D32]"
+                    : "border-[#E53935] focus:border-[#E53935]"
+                  : undefined
+              }
+              icon={
+                pwMatch ? (
+                  <Check size={20} color="#2E7D32" strokeWidth={3} />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="text-muted-foreground"
+                    tabIndex={-1}
+                  >
+                    {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                )
+              }
+            />
+            {confirm.length > 0 && !pwMatch && (
+              <p className="mt-1" style={{ fontSize: 12, color: "#E53935" }}>
+                As senhas não coincidem
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Terms checkbox */}
