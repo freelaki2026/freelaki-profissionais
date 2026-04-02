@@ -19,10 +19,10 @@ import OportunidadeDetalhePage from "@/pages/OportunidadeDetalhePage";
 import PerfilPage from "@/pages/PerfilPage";
 import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import DadosBancariosPage from "@/pages/DadosBancariosPage";
+import AjudaPage from "@/pages/AjudaPage";
 import {
   Cadastro,
   Termos,
-  Ajuda,
   Contratos,
   Suporte,
 } from "@/pages/PlaceholderPages";
