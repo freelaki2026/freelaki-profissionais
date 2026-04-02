@@ -248,6 +248,8 @@ const DashboardPage = () => {
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(true);
   const [userCategories, setUserCategories] = useState<string[]>([]);
+  const [transitionPhase, setTransitionPhase] = useState<"idle" | "going-online" | "going-offline">("idle");
+  const [showOnlineLayout, setShowOnlineLayout] = useState(false);
 
   // Load profile
   useEffect(() => {
@@ -261,6 +263,7 @@ const DashboardPage = () => {
         if (data) {
           setProfile(data);
           setIsOnline(data.is_online ?? false);
+          setShowOnlineLayout(data.is_online ?? false);
         }
       });
   }, [user]);
@@ -416,20 +419,37 @@ const DashboardPage = () => {
   }, []);
 
   const toggleOnline = async () => {
-    if (!user) return;
+    if (!user || transitionPhase !== "idle") return;
     setTogglingOnline(true);
     const newVal = !isOnline;
     const { error } = await supabase.from("profiles").update({ is_online: newVal }).eq("id", user.id);
-    if (!error) {
-      setIsOnline(newVal);
-      if (newVal) loadOpportunities();
-    } else {
+    if (error) {
       toast({ title: "Erro ao alterar status.", variant: "destructive" });
+      setTogglingOnline(false);
+      return;
     }
-    setTogglingOnline(false);
-  };
+    setIsOnline(newVal);
 
-  
+    if (newVal) {
+      // OFFLINE → ONLINE transition
+      loadOpportunities();
+      setTransitionPhase("going-online");
+      // Phase 1: flash bolt (500ms), then fade out offline (400ms), then show online (400ms)
+      setTimeout(() => {
+        setShowOnlineLayout(true);
+        setTransitionPhase("idle");
+        setTogglingOnline(false);
+      }, 900);
+    } else {
+      // ONLINE → OFFLINE transition
+      setTransitionPhase("going-offline");
+      setTimeout(() => {
+        setShowOnlineLayout(false);
+        setTransitionPhase("idle");
+        setTogglingOnline(false);
+      }, 600);
+    }
+  };
 
   const approvalStatus = profile?.approval_status || "incomplete";
   const isApproved = approvalStatus === "approved";
@@ -469,20 +489,34 @@ const DashboardPage = () => {
         ) : (
           <DocumentsPendingState />
         )
-      ) : isOnline ? (
-        <>
+      ) : showOnlineLayout ? (
+        <div
+          className="flex flex-1 flex-col"
+          style={{
+            opacity: transitionPhase === "going-offline" ? 0 : 1,
+            transition: "opacity 300ms ease",
+          }}
+        >
           {/* Online Card */}
           <OnlineOfflineCard isOnline={isOnline} loading={togglingOnline} onToggle={toggleOnline} />
 
           {/* Body */}
-          <motion.div
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.35 }}
+          <div
             className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5"
+            style={{
+              opacity: transitionPhase === "going-offline" ? 0 : 1,
+              transition: "opacity 300ms ease",
+            }}
           >
             {/* AVAILABLE — Carousel */}
-            <div ref={oppRef}>
+            <div
+              ref={oppRef}
+              style={{
+                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
+                opacity: transitionPhase === "idle" ? 1 : 0,
+                transition: "transform 400ms ease 100ms, opacity 400ms ease 100ms",
+              }}
+            >
               <div className="flex items-center gap-2 px-1">
                 <span className="text-base font-semibold text-foreground">Disponíveis</span>
                 {available.length > 0 && (
@@ -518,7 +552,14 @@ const DashboardPage = () => {
             </div>
 
             {/* ACCEPTED */}
-            <div className="mt-6">
+            <div
+              className="mt-6"
+              style={{
+                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
+                opacity: transitionPhase === "idle" ? 1 : 0,
+                transition: "transform 400ms ease 200ms, opacity 400ms ease 200ms",
+              }}
+            >
               <div className="flex items-center gap-2">
                 <span className="text-base font-semibold text-foreground">Aceitas</span>
                 {accepted.length > 0 && (
@@ -549,27 +590,88 @@ const DashboardPage = () => {
                 </AnimatePresence>
               </div>
             </div>
-          </motion.div>
-        </>
+          </div>
+        </div>
       ) : (
         /* OFFLINE — full black bg with centered animation */
-        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24" style={{ background: "#000000" }}>
+        <div
+          className="flex flex-1 flex-col items-center justify-center px-6 pb-24"
+          style={{
+            background: "#000000",
+            opacity: transitionPhase === "going-online" ? 0 : 1,
+            transition: transitionPhase === "going-online" ? "opacity 400ms ease 500ms" : "opacity 300ms ease",
+          }}
+        >
           <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
-            <div className="offline-ring offline-ring-1 absolute rounded-full" style={{ width: 80, height: 80, border: "1.5px solid rgba(39,110,241,0.5)" }} />
-            <div className="offline-ring offline-ring-2 absolute rounded-full" style={{ width: 120, height: 120, border: "1px solid rgba(39,110,241,0.3)" }} />
-            <div className="offline-ring offline-ring-3 absolute rounded-full" style={{ width: 160, height: 160, border: "1px solid rgba(39,110,241,0.15)" }} />
-            <svg className="offline-bolt relative" width="48" height="48" viewBox="0 0 24 24" fill="#276EF1" stroke="#276EF1" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }}>
+            <div
+              className="offline-ring offline-ring-1 absolute rounded-full"
+              style={{
+                width: 80, height: 80,
+                border: "1.5px solid rgba(39,110,241,0.5)",
+                opacity: transitionPhase === "going-online" ? 0 : undefined,
+                transform: transitionPhase === "going-online" ? "scale(1.5)" : undefined,
+                transition: "transform 400ms ease, opacity 400ms ease",
+              }}
+            />
+            <div
+              className="offline-ring offline-ring-2 absolute rounded-full"
+              style={{
+                width: 120, height: 120,
+                border: "1px solid rgba(39,110,241,0.3)",
+                opacity: transitionPhase === "going-online" ? 0 : undefined,
+                transform: transitionPhase === "going-online" ? "scale(1.5)" : undefined,
+                transition: "transform 400ms ease 50ms, opacity 400ms ease 50ms",
+              }}
+            />
+            <div
+              className="offline-ring offline-ring-3 absolute rounded-full"
+              style={{
+                width: 160, height: 160,
+                border: "1px solid rgba(39,110,241,0.15)",
+                opacity: transitionPhase === "going-online" ? 0 : undefined,
+                transform: transitionPhase === "going-online" ? "scale(1.5)" : undefined,
+                transition: "transform 400ms ease 100ms, opacity 400ms ease 100ms",
+              }}
+            />
+            <svg
+              className={`offline-bolt relative ${transitionPhase === "going-online" ? "bolt-flash" : ""}`}
+              width="48" height="48" viewBox="0 0 24 24"
+              fill={transitionPhase === "going-online" ? "#00C853" : "#276EF1"}
+              stroke={transitionPhase === "going-online" ? "#00C853" : "#276EF1"}
+              strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
+              style={{ zIndex: 1, transition: "fill 300ms ease, stroke 300ms ease" }}
+            >
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
             </svg>
           </div>
 
-          <p className="mt-8 text-[18px] font-bold text-white">Você está offline</p>
-          <p className="mt-1.5 text-[13px] text-[#767676]">Fique online para receber oportunidades</p>
+          <p
+            className="mt-8 text-[18px] font-bold text-white"
+            style={{
+              opacity: transitionPhase === "going-online" ? 0 : 1,
+              transition: "opacity 200ms ease",
+            }}
+          >
+            Você está offline
+          </p>
+          <p
+            className="mt-1.5 text-[13px] text-[#767676]"
+            style={{
+              opacity: transitionPhase === "going-online" ? 0 : 1,
+              transition: "opacity 200ms ease",
+            }}
+          >
+            Fique online para receber oportunidades
+          </p>
 
           <button
             disabled={togglingOnline}
             onClick={toggleOnline}
             className="mt-7 flex h-[52px] w-[200px] items-center justify-center rounded-[16px] bg-[#276EF1] text-[16px] font-bold text-white disabled:opacity-50"
+            style={{
+              opacity: transitionPhase === "going-online" ? 0 : 1,
+              transition: "opacity 200ms ease",
+            }}
           >
             {togglingOnline ? (
               <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -623,8 +725,14 @@ const DashboardPage = () => {
         .offline-ring-2 { animation-delay: 0.4s; }
         .offline-ring-3 { animation-delay: 0.8s; }
         .offline-bolt { animation: offlineBoltBreath 2s ease-in-out infinite; }
+        @keyframes boltFlash {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.4); }
+          100% { transform: scale(1); }
+        }
+        .bolt-flash { animation: boltFlash 300ms ease-out !important; }
         @media (prefers-reduced-motion: reduce) {
-          .offline-ring, .offline-bolt { animation: none; }
+          .offline-ring, .offline-bolt, .bolt-flash { animation: none !important; }
         }
       `}</style>
     </div>
