@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
 import { ArrowLeft, Paperclip, Send } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,6 +37,7 @@ const getDateLabel = (iso: string | null) => {
 const SuportePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { insertNotification } = useNotifications();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -77,6 +79,12 @@ const SuportePage = () => {
           scrollToBottom();
           if (newMsg.sender === "support") {
             navigator.vibrate?.(100);
+            insertNotification({
+              type: "suporte",
+              title: "Nova mensagem do suporte",
+              body: newMsg.message.substring(0, 80) + (newMsg.message.length > 80 ? "..." : ""),
+              action_url: "/suporte",
+            });
           }
         }
       )

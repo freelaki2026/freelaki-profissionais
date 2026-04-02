@@ -7,9 +7,11 @@ import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
 import BottomNav from "@/components/dashboard/BottomNav";
 import OpportunityCard from "@/components/dashboard/OpportunityCard";
+import NotificationPanel from "@/components/dashboard/NotificationPanel";
 
 interface Profile {
   full_name: string | null;
@@ -240,8 +242,11 @@ const DashboardPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const oppRef = useRef<HTMLDivElement>(null);
+  const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [bellShake, setBellShake] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isOnline, setIsOnline] = useState(false);
   const [togglingOnline, setTogglingOnline] = useState(false);
@@ -343,7 +348,21 @@ const DashboardPage = () => {
     if (!isOnline || !user) return;
     const channel = supabase
       .channel("opportunities-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "opportunities" }, () => loadOpportunities())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, (payload) => {
+        loadOpportunities();
+        const opp = payload.new as any;
+        if (opp && isOnline) {
+          insertNotification({
+            type: "oportunidade",
+            title: "⚡ Nova oportunidade!",
+            body: `${opp.title}${opp.budget ? ` — R$ ${Number(opp.budget).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : ""}`,
+            action_url: `/oportunidade/${opp.id}`,
+          });
+          setBellShake(true);
+          setTimeout(() => setBellShake(false), 300);
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, () => loadOpportunities())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [isOnline, user, loadOpportunities]);
@@ -376,7 +395,16 @@ const DashboardPage = () => {
           <Zap size={24} fill="#276EF1" color="#276EF1" />
           <span className="font-bold text-white" style={{ fontSize: 22, letterSpacing: "-0.5px" }}>freelaki</span>
         </div>
-        <button><Bell className="h-[22px] w-[22px] text-white" /></button>
+        <button onClick={() => setNotifOpen(true)} className="relative"
+          style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}>
+          <Bell className="h-[22px] w-[22px]" style={{ color: unreadCount > 0 ? "#F59E0B" : "#FFFFFF" }} />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
+              style={{ background: "#F59E0B", color: "#000" }}>
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* STATE-BASED CONTENT */}
@@ -508,6 +536,15 @@ const DashboardPage = () => {
       {/* BOTTOM NAV */}
       <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
 
+      <NotificationPanel
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
+      />
+
       <style>{`
         @keyframes dashPulseOuter {
           0%, 100% { transform: scale(1); }
@@ -516,6 +553,12 @@ const DashboardPage = () => {
         @keyframes dashPulseMiddle {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.12); }
+        }
+        @keyframes bellShake {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(12deg); }
+          50% { transform: rotate(-12deg); }
+          75% { transform: rotate(6deg); }
         }
       `}</style>
     </div>
