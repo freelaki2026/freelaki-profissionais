@@ -20,9 +20,9 @@ import PerfilPage from "@/pages/PerfilPage";
 import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import DadosBancariosPage from "@/pages/DadosBancariosPage";
 import AjudaPage from "@/pages/AjudaPage";
+import TermosPage from "@/pages/TermosPage";
 import {
   Cadastro,
-  Termos,
   Contratos,
   Suporte,
 } from "@/pages/PlaceholderPages";
@@ -42,7 +42,7 @@ const App = () => (
           <Route path="/cadastro" element={<CadastroStep1 />} />
           <Route path="/cadastro/etapa2" element={<CadastroStep2 />} />
           <Route path="/cadastro/etapa3" element={<CadastroStep3 />} />
-          <Route path="/termos" element={<Termos />} />
+          <Route path="/termos" element={<TermosPage />} />
           <Route path="/categorias" element={<ProtectedRoute><CategoriasPage /></ProtectedRoute>} />
 
           {/* Rotas protegidas */}
