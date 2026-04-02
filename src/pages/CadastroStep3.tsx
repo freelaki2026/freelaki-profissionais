@@ -59,6 +59,7 @@ const CadastroStep3 = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cpfError, setCpfError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
 
   // Read data from previous steps
   const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
@@ -93,6 +94,7 @@ const CadastroStep3 = () => {
   const handleCreate = async () => {
     setLoading(true);
     setCpfError(false);
+    setEmailError(false);
     try {
       // 0. Check duplicate CPF/CNPJ via RPC
       const cpfCnpjLimpo = step2.cpf_cnpj.replace(/\D/g, "");
@@ -112,6 +114,23 @@ const CadastroStep3 = () => {
         return;
       }
 
+      // 0b. Check duplicate email via RPC
+      const { data: emailExists, error: emailRpcError } = await supabase.rpc("check_email_exists", {
+        p_email: step1.email.toLowerCase().trim(),
+      });
+
+      if (emailRpcError) {
+        toast.error("Erro ao verificar email. Tente novamente.");
+        setLoading(false);
+        return;
+      }
+
+      if (emailExists === true) {
+        setEmailError(true);
+        setLoading(false);
+        return;
+      }
+
       // 1. Sign up
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: step1.email,
@@ -127,7 +146,7 @@ const CadastroStep3 = () => {
           setCpfError(true);
           return;
         } else if (signUpError.message.includes("User already registered")) {
-          toast.error("Este email já está cadastrado. Faça login.");
+          setEmailError(true);
         } else {
           toast.error("Erro ao criar conta. Tente novamente.");
         }
@@ -253,6 +272,39 @@ const CadastroStep3 = () => {
             >
               ← Voltar e corrigir
             </button>
+          </div>
+        )}
+
+        {/* Email duplicate error */}
+        {emailError && (
+          <div style={{ marginTop: 16, background: "#FFEBEE", borderRadius: 12, padding: "12px 16px" }}>
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} color="#C62828" className="shrink-0" style={{ marginTop: 2 }} />
+              <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
+                Este email já está cadastrado em outra conta.
+                {"\n"}Faça login ou recupere sua senha.
+              </p>
+            </div>
+            <div className="flex gap-2" style={{ marginTop: 10 }}>
+              <button
+                onClick={() => navigate("/login")}
+                style={{
+                  fontSize: 13, fontWeight: 600, color: "#fff", background: "#276EF1",
+                  border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
+                }}
+              >
+                Fazer login →
+              </button>
+              <button
+                onClick={() => navigate("/cadastro")}
+                style={{
+                  fontSize: 13, fontWeight: 600, color: "#276EF1", background: "#F7F7F7",
+                  border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
+                }}
+              >
+                ← Voltar e corrigir
+              </button>
+            </div>
           </div>
         )}
 
