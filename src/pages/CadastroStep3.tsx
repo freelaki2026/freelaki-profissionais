@@ -195,8 +195,8 @@ const CadastroStep3 = () => {
       sessionStorage.removeItem("cadastro_step1");
       sessionStorage.removeItem("cadastro_step2");
 
-      // 6. Redirect
-      navigate("/categorias", { replace: true });
+      // 6. Redirect to email confirmation
+      navigate("/confirmar-email", { replace: true, state: { email: step1.email } });
     } catch {
       toast.error("Erro ao criar conta. Tente novamente.");
     } finally {
