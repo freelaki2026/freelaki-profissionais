@@ -25,7 +25,7 @@ const CategoriasPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const isFromProfile = existingIds.size > 0;
+  const [isFromProfile, setIsFromProfile] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -47,6 +47,7 @@ const CategoriasPage = () => {
           const ids = new Set(profCats.map((pc) => pc.category_id!));
           setExistingIds(ids);
           setSelected(ids);
+          setIsFromProfile(true);
         }
       }
       setLoading(false);

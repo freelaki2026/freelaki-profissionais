@@ -21,12 +21,24 @@ const ConfirmarEmailPage = () => {
     if (!email) navigate("/cadastro", { replace: true });
   }, [email, navigate]);
 
+  const navigateAfterConfirmation = async (userId: string) => {
+    const { count } = await supabase
+      .from("professional_categories")
+      .select("*", { count: "exact", head: true })
+      .eq("profile_id", userId);
+    if ((count ?? 0) === 0) {
+      navigate("/categorias", { replace: true });
+    } else {
+      navigate("/dashboard", { replace: true });
+    }
+  };
+
   // Auto-check session every 5s
   useEffect(() => {
     const interval = setInterval(async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user?.email_confirmed_at) {
-        navigate("/categorias", { replace: true });
+        await navigateAfterConfirmation(data.session.user.id);
       }
     }, 5000);
     return () => clearInterval(interval);
@@ -65,9 +77,9 @@ const ConfirmarEmailPage = () => {
     try {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user?.email_confirmed_at) {
-        navigate("/categorias", { replace: true });
+        await navigateAfterConfirmation(data.session.user.id);
       } else {
-        setError({ code: "AUTH-003", message: "Email ainda não confirmado.", hint: "Verifique sua caixa de entrada e clique no link." });
+        setError({ code: "AUTH-003", message: "Email ainda não confirmado.", hint: "Verifique sua caixa de entrada, spam e promoções." });
       }
     } catch (err) {
       setError(parseError(err));
