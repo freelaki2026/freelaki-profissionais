@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { ArrowLeft, Info, Loader2 } from "lucide-react";
+import { ArrowLeft, Info, Loader2, CheckCircle, AlertCircle, Lock } from "lucide-react";
 
 const BANKS = [
   { code: "001", name: "Banco do Brasil" },
