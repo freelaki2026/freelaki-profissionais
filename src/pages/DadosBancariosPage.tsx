@@ -235,6 +235,8 @@ export default function DadosBancariosPage() {
         if (error) throw error;
       }
       setHasSavedData(true);
+      setSavedData(base);
+      setShowSavedCard(true);
       toast.success("Dados bancários salvos! ✓", { style: { background: "#000", color: "#fff" } });
     } catch {
       toast.error("Erro ao salvar. Tente novamente.");
