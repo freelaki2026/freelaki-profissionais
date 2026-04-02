@@ -39,6 +39,24 @@ const DashboardDrawer = ({ open, onClose, profile }: DashboardDrawerProps) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const [showVersion, setShowVersion] = useState(false);
+  const [unreadMsgs, setUnreadMsgs] = useState(0);
+
+  // Load unread message count
+  useEffect(() => {
+    if (!open) return;
+    const loadUnread = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const { data } = await supabase
+        .from("conversations")
+        .select("unread_pro")
+        .eq("professional_id", session.user.id);
+      if (data) {
+        setUnreadMsgs(data.reduce((s: number, c: any) => s + (c.unread_pro || 0), 0));
+      }
+    };
+    loadUnread();
+  }, [open]);
 
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
