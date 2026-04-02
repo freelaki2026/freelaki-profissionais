@@ -814,9 +814,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_professional: {
+        Args: { p_profile_id: string }
+        Returns: undefined
+      }
       check_cpf_cnpj_exists: { Args: { p_cpf_cnpj: string }; Returns: boolean }
       check_email_exists: { Args: { p_email: string }; Returns: boolean }
       check_phone_exists: { Args: { p_phone: string }; Returns: boolean }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      reject_document: {
+        Args: { p_document_id: string; p_reason: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
