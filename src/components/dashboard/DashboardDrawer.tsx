@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   X, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap,
+  Info, LogOut, Zap, MessageSquare,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 
@@ -27,8 +28,9 @@ const menuItems = [
   { icon: MapPin, label: "Endereço", path: "/endereco" },
   { icon: CreditCard, label: "Dados Pessoais", path: "/dados-pessoais" },
   { icon: Landmark, label: "Dados Bancários", path: "/dados-bancarios" },
-  { icon: HelpCircle, label: "Ajuda e FAQ", path: "/ajuda" },
   { icon: ScrollText, label: "Contratos", path: "/contratos" },
+  { icon: MessageSquare, label: "Mensagens", path: "/mensagens" },
+  { icon: HelpCircle, label: "Ajuda e FAQ", path: "/ajuda" },
   { icon: MessageCircle, label: "Suporte", path: "/suporte" },
   { icon: Shield, label: "Termos de Uso", path: "/termos" },
 ];
@@ -37,6 +39,24 @@ const DashboardDrawer = ({ open, onClose, profile }: DashboardDrawerProps) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const [showVersion, setShowVersion] = useState(false);
+  const [unreadMsgs, setUnreadMsgs] = useState(0);
+
+  // Load unread message count
+  useEffect(() => {
+    if (!open) return;
+    const loadUnread = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const { data } = await supabase
+        .from("conversations")
+        .select("unread_pro")
+        .eq("professional_id", session.user.id);
+      if (data) {
+        setUnreadMsgs(data.reduce((s: number, c: any) => s + (c.unread_pro || 0), 0));
+      }
+    };
+    loadUnread();
+  }, [open]);
 
   useEffect(() => {
     if (open) document.body.style.overflow = "hidden";
@@ -124,7 +144,13 @@ const DashboardDrawer = ({ open, onClose, profile }: DashboardDrawerProps) => {
                       className="flex w-full items-center gap-3.5 border-b border-[#F0F0F0] py-3.5 text-left"
                     >
                       <Icon size={20} color="#276EF1" />
-                      <span className="text-[15px] font-medium text-foreground">{item.label}</span>
+                      <span className="flex-1 text-[15px] font-medium text-foreground">{item.label}</span>
+                      {item.path === "/mensagens" && unreadMsgs > 0 && (
+                        <span className="rounded-full px-2 py-0.5 text-[11px] font-bold"
+                          style={{ background: "#F59E0B", color: "#000" }}>
+                          {unreadMsgs}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
