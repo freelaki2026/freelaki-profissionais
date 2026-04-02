@@ -21,9 +21,9 @@ import DadosPessoaisPage from "@/pages/DadosPessoaisPage";
 import DadosBancariosPage from "@/pages/DadosBancariosPage";
 import AjudaPage from "@/pages/AjudaPage";
 import TermosPage from "@/pages/TermosPage";
+import ContratosPage from "@/pages/ContratosPage";
 import {
   Cadastro,
-  Contratos,
   Suporte,
 } from "@/pages/PlaceholderPages";
 
