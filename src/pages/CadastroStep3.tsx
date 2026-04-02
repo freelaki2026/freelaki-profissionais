@@ -275,6 +275,39 @@ const CadastroStep3 = () => {
           </div>
         )}
 
+        {/* Email duplicate error */}
+        {emailError && (
+          <div style={{ marginTop: 16, background: "#FFEBEE", borderRadius: 12, padding: "12px 16px" }}>
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} color="#C62828" className="shrink-0" style={{ marginTop: 2 }} />
+              <p style={{ fontSize: 13, color: "#C62828", lineHeight: 1.5 }}>
+                Este email já está cadastrado em outra conta.
+                {"\n"}Faça login ou recupere sua senha.
+              </p>
+            </div>
+            <div className="flex gap-2" style={{ marginTop: 10 }}>
+              <button
+                onClick={() => navigate("/login")}
+                style={{
+                  fontSize: 13, fontWeight: 600, color: "#fff", background: "#276EF1",
+                  border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
+                }}
+              >
+                Fazer login →
+              </button>
+              <button
+                onClick={() => navigate("/cadastro")}
+                style={{
+                  fontSize: 13, fontWeight: 600, color: "#276EF1", background: "#F7F7F7",
+                  border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer",
+                }}
+              >
+                ← Voltar e corrigir
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Confirmation checkbox */}
         <label className="flex cursor-pointer items-start gap-3" style={{ marginTop: 20 }}>
           <div
