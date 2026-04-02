@@ -32,9 +32,25 @@ const Login = () => {
 
   useEffect(() => {
     if (!authLoading && user) {
+      cascadeNavigate(user);
+    }
+  }, [user, authLoading]);
+
+  const cascadeNavigate = async (u: any) => {
+    if (!u.email_confirmed_at) {
+      navigate("/confirmar-email", { replace: true, state: { email: u.email } });
+      return;
+    }
+    const { count } = await supabase
+      .from("professional_categories")
+      .select("*", { count: "exact", head: true })
+      .eq("profile_id", u.id);
+    if ((count ?? 0) === 0) {
+      navigate("/categorias", { replace: true });
+    } else {
       navigate("/dashboard", { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  };
 
   const handleLogin = async () => {
     setLoading(true);
