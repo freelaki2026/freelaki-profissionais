@@ -422,13 +422,20 @@ const DashboardPage = () => {
         </div>
         <button onClick={() => setNotifOpen(true)} className="relative"
           style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}>
-          <Bell className="h-[22px] w-[22px]" style={{ color: unreadCount > 0 ? "#F59E0B" : "#FFFFFF" }} />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
-              style={{ background: "#F59E0B", color: "#000" }}>
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
+          <Bell className="h-[22px] w-[22px]" style={{ color: unreadCount > 0 ? "#F59E0B" : "#FFFFFF", transition: "color 300ms ease" }} />
+          <AnimatePresence>
+            {unreadCount > 0 && (
+              <motion.span
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
+                style={{ background: "#F59E0B", color: "#000" }}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </button>
       </div>
 
