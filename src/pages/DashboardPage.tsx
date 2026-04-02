@@ -92,27 +92,21 @@ const PulsingCircles = ({
 );
 
 /* ───── Carousel Card ───── */
-const CarouselOppCard = ({ opp, isMock = false }: { opp: Opp; isMock?: boolean }) => {
+const CarouselOppCard = ({ opp }: { opp: Opp }) => {
   const navigate = useNavigate();
   const shortAddr = extractShortAddress(opp.location_address);
 
   return (
     <motion.button
-      whileTap={isMock ? undefined : { scale: 0.97 }}
+      whileTap={{ scale: 0.97 }}
       transition={{ duration: 0.15 }}
-      onClick={isMock ? undefined : () => navigate(`/oportunidade/${opp.id}`)}
+      onClick={() => navigate(`/oportunidade/${opp.id}`)}
       className="relative flex h-[160px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
       style={{
         scrollSnapAlign: "start",
         boxShadow: "0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
-        pointerEvents: isMock ? "none" : undefined,
       }}
     >
-      {isMock && (
-        <span className="absolute top-3 right-3 rounded-full bg-[#F7F7F7] px-2 py-[3px] text-[10px] font-medium text-[#767676]">
-          Preview
-        </span>
-      )}
       <span
         className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
         style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
@@ -516,26 +510,10 @@ const DashboardPage = () => {
                         ))}
                       </div>
                     ) : (
-                      <div
-                        className="flex gap-3.5 overflow-x-auto px-6 pb-4 pt-2 pointer-events-none"
-                        style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
-                      >
-                        <CarouselOppCard
-                          isMock
-                          opp={{
-                            id: "mock-1", title: "Cobertura de evento", description: null, budget: null, status: null,
-                            category_name: "Fotógrafo", category_icon: "📷", location_address: "Alphaville, SP",
-                            scheduled_at: (() => { const d = new Date(); d.setHours(15, 0, 0, 0); return d.toISOString(); })(),
-                          }}
-                        />
-                        <CarouselOppCard
-                          isMock
-                          opp={{
-                            id: "mock-2", title: "Vídeo institucional", description: null, budget: null, status: null,
-                            category_name: "Filmmaker", category_icon: "🎬", location_address: "Pinheiros, SP",
-                            scheduled_at: (() => { const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(10, 0, 0, 0); return d.toISOString(); })(),
-                          }}
-                        />
+                      <div className="flex flex-col items-center py-10">
+                        <Zap size={28} fill="#276EF1" color="#276EF1" />
+                        <p className="mt-3 text-[14px] font-semibold text-foreground">Nenhuma oportunidade no momento</p>
+                        <p className="mt-1.5 text-[13px] text-[#767676]">Fique online. Avisaremos assim que surgir algo.</p>
                       </div>
                     )}
                   </div>
