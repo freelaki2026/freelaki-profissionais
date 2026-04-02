@@ -352,7 +352,6 @@ const DashboardPage = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, async (payload) => {
         const newOp = payload.new as any;
         if (newOp && userCategories.includes(newOp.category_id)) {
-          // Fetch full data with category join for the new opportunity
           const { data } = await supabase
             .from("opportunities")
             .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
@@ -380,17 +379,47 @@ const DashboardPage = () => {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
         const updated = payload.new as any;
         if (updated.status !== "open") {
-          // Remove from available immediately
           setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
-          // If accepted by current user, add to accepted list
           if (updated.accepted_by === user.id) {
-            loadOpportunities(); // Reload to get full accepted data
+            loadOpportunities();
           }
         }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [isOnline, user, userCategories, insertNotification]);
+
+  // Polling: check opportunity statuses every 30s when online
+  useEffect(() => {
+    if (!isOnline || !user) return;
+    const interval = setInterval(async () => {
+      const ids = available.map((o) => o.id);
+      if (ids.length === 0) return;
+      const { data } = await supabase
+        .from("opportunities")
+        .select("id, status")
+        .in("id", ids);
+      if (data) {
+        const closedIds = data.filter((op) => op.status !== "open").map((op) => op.id);
+        if (closedIds.length > 0) {
+          setAvailable((prev) => prev.filter((o) => !closedIds.includes(o.id)));
+        }
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [isOnline, user, available]);
+
+  // Listen for opportunity_accepted custom event from detail page
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
+      }
+    };
+    window.addEventListener("opportunity_accepted", handler);
+    return () => window.removeEventListener("opportunity_accepted", handler);
+  }, []);
 
   const toggleOnline = async () => {
     if (!user) return;
