@@ -167,7 +167,10 @@ const CadastroStep3 = () => {
       });
 
       if (signUpError) {
-        if (signUpError.message.includes("profiles_cpf_cnpj_unique") || signUpError.message.includes("cpf_cnpj")) {
+        if (signUpError.message.includes("profiles_phone_unique")) {
+          setError({ code: "CAD-003", message: "Este telefone já está cadastrado em outra conta.", hint: "Volte à etapa 1 e corrija o número." });
+          setErrorType("phone");
+        } else if (signUpError.message.includes("profiles_cpf_cnpj_unique") || signUpError.message.includes("cpf_cnpj")) {
           setError({ code: "CAD-001", message: "CPF/CNPJ já cadastrado em outra conta.", hint: "Se acredita ser um erro, contate suporte@freelaqui.com.br" });
           setErrorType("cpf");
         } else if (signUpError.message.includes("User already registered")) {

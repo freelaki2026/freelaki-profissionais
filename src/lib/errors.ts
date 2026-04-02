@@ -39,6 +39,16 @@ export const AUTH_ERRORS: Record<string, { message: string; code: string; hint?:
     message: 'Usuário não encontrado.',
     hint: 'Verifique o email ou crie uma nova conta.'
   },
+  'profiles_phone_unique': {
+    code: 'CAD-003',
+    message: 'Este telefone já está cadastrado em outra conta.',
+    hint: 'Se acredita ser um erro, contate suporte@freelaqui.com.br'
+  },
+  'check_phone_exists': {
+    code: 'CAD-003',
+    message: 'Este telefone já está cadastrado em outra conta.',
+    hint: 'Volte à etapa 1 e corrija o número.'
+  },
   'profiles_cpf_cnpj_unique': {
     code: 'CAD-001',
     message: 'CPF/CNPJ já cadastrado em outra conta.',
