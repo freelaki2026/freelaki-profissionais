@@ -469,9 +469,9 @@ const DashboardPage = () => {
         ) : (
           <DocumentsPendingState />
         )
-      ) : (
+      ) : isOnline ? (
         <>
-          {/* Online/Offline Card */}
+          {/* Online Card */}
           <OnlineOfflineCard isOnline={isOnline} loading={togglingOnline} onToggle={toggleOnline} />
 
           {/* Body */}
@@ -481,107 +481,103 @@ const DashboardPage = () => {
             transition={{ duration: 0.35 }}
             className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5"
           >
-            {isOnline ? (
-              <>
-                {/* AVAILABLE — Carousel */}
-                <div ref={oppRef}>
-                  <div className="flex items-center gap-2 px-1">
-                    <span className="text-base font-semibold text-foreground">Disponíveis</span>
-                    {available.length > 0 && (
-                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#276EF1] px-2.5 text-xs font-medium text-white">
-                        {available.length}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="relative mt-3 -mx-4">
-                    {loadingOpps ? (
-                      <div className="flex justify-center py-8">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
-                      </div>
-                    ) : available.length > 0 ? (
-                      <div
-                        className="flex gap-3.5 overflow-x-auto px-6 pb-4 pt-2"
-                        style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch", cursor: "grab" }}
-                      >
-                        <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
-                        {available.map((opp) => (
-                          <CarouselOppCard key={opp.id} opp={opp} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center py-10">
-                        <Zap size={28} fill="#276EF1" color="#276EF1" />
-                        <p className="mt-3 text-[14px] font-semibold text-foreground">Nenhuma oportunidade no momento</p>
-                        <p className="mt-1.5 text-[13px] text-[#767676]">Fique online. Avisaremos assim que surgir algo.</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* ACCEPTED */}
-                <div className="mt-6">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base font-semibold text-foreground">Aceitas</span>
-                    {accepted.length > 0 && (
-                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-2.5 text-xs font-medium text-white" style={{ background: "#2E7D32" }}>
-                        {accepted.length}
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-3">
-                    <AnimatePresence>
-                      {accepted.length > 0 ? (
-                        accepted.map((opp) => (
-                          <motion.div
-                            key={opp.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <OpportunityCard opp={opp} variant="accepted" />
-                          </motion.div>
-                        ))
-                      ) : (
-                        <p className="py-5 text-center text-[13px] text-[#767676]">
-                          Nenhuma oportunidade aceita ainda.
-                        </p>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-1 flex-col items-center justify-center px-6" style={{ paddingTop: 40, paddingBottom: 40 }}>
-                {/* Pulsing rings + bolt */}
-                <div className="offline-anim-container relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
-                  <div className="offline-ring offline-ring-1 absolute rounded-full" style={{ width: 80, height: 80, border: "1.5px solid rgba(39,110,241,0.5)" }} />
-                  <div className="offline-ring offline-ring-2 absolute rounded-full" style={{ width: 120, height: 120, border: "1px solid rgba(39,110,241,0.3)" }} />
-                  <div className="offline-ring offline-ring-3 absolute rounded-full" style={{ width: 160, height: 160, border: "1px solid rgba(39,110,241,0.15)" }} />
-                  <svg className="offline-bolt relative" width="48" height="48" viewBox="0 0 24 24" fill="#276EF1" stroke="#276EF1" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }}>
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                  </svg>
-                </div>
-
-                <p className="mt-8 text-[18px] font-bold text-white">Você está offline</p>
-                <p className="mt-1.5 text-[13px] text-[#767676]">Fique online para receber oportunidades</p>
-
-                <button
-                  disabled={togglingOnline}
-                  onClick={toggleOnline}
-                  className="mt-7 flex h-[52px] w-[200px] items-center justify-center rounded-[16px] bg-[#276EF1] text-[16px] font-bold text-white disabled:opacity-50"
-                >
-                  {togglingOnline ? (
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  ) : (
-                    "Ficar Online →"
-                  )}
-                </button>
+            {/* AVAILABLE — Carousel */}
+            <div ref={oppRef}>
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-base font-semibold text-foreground">Disponíveis</span>
+                {available.length > 0 && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#276EF1] px-2.5 text-xs font-medium text-white">
+                    {available.length}
+                  </span>
+                )}
               </div>
-            )}
+
+              <div className="relative mt-3 -mx-4">
+                {loadingOpps ? (
+                  <div className="flex justify-center py-8">
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
+                  </div>
+                ) : available.length > 0 ? (
+                  <div
+                    className="flex gap-3.5 overflow-x-auto px-6 pb-4 pt-2"
+                    style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch", cursor: "grab" }}
+                  >
+                    <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
+                    {available.map((opp) => (
+                      <CarouselOppCard key={opp.id} opp={opp} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center py-10">
+                    <Zap size={28} fill="#276EF1" color="#276EF1" />
+                    <p className="mt-3 text-[14px] font-semibold text-foreground">Nenhuma oportunidade no momento</p>
+                    <p className="mt-1.5 text-[13px] text-[#767676]">Fique online. Avisaremos assim que surgir algo.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ACCEPTED */}
+            <div className="mt-6">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-semibold text-foreground">Aceitas</span>
+                {accepted.length > 0 && (
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-2.5 text-xs font-medium text-white" style={{ background: "#2E7D32" }}>
+                    {accepted.length}
+                  </span>
+                )}
+              </div>
+              <div className="mt-3">
+                <AnimatePresence>
+                  {accepted.length > 0 ? (
+                    accepted.map((opp) => (
+                      <motion.div
+                        key={opp.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <OpportunityCard opp={opp} variant="accepted" />
+                      </motion.div>
+                    ))
+                  ) : (
+                    <p className="py-5 text-center text-[13px] text-[#767676]">
+                      Nenhuma oportunidade aceita ainda.
+                    </p>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
           </motion.div>
         </>
+      ) : (
+        /* OFFLINE — full black bg with centered animation */
+        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24" style={{ background: "#000000" }}>
+          <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
+            <div className="offline-ring offline-ring-1 absolute rounded-full" style={{ width: 80, height: 80, border: "1.5px solid rgba(39,110,241,0.5)" }} />
+            <div className="offline-ring offline-ring-2 absolute rounded-full" style={{ width: 120, height: 120, border: "1px solid rgba(39,110,241,0.3)" }} />
+            <div className="offline-ring offline-ring-3 absolute rounded-full" style={{ width: 160, height: 160, border: "1px solid rgba(39,110,241,0.15)" }} />
+            <svg className="offline-bolt relative" width="48" height="48" viewBox="0 0 24 24" fill="#276EF1" stroke="#276EF1" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ zIndex: 1 }}>
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </div>
+
+          <p className="mt-8 text-[18px] font-bold text-white">Você está offline</p>
+          <p className="mt-1.5 text-[13px] text-[#767676]">Fique online para receber oportunidades</p>
+
+          <button
+            disabled={togglingOnline}
+            onClick={toggleOnline}
+            className="mt-7 flex h-[52px] w-[200px] items-center justify-center rounded-[16px] bg-[#276EF1] text-[16px] font-bold text-white disabled:opacity-50"
+          >
+            {togglingOnline ? (
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              "Ficar Online →"
+            )}
+          </button>
+        </div>
       )}
 
       {/* DRAWER */}
