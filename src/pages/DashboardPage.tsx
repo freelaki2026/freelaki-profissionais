@@ -263,6 +263,7 @@ const DashboardPage = () => {
         if (data) {
           setProfile(data);
           setIsOnline(data.is_online ?? false);
+          setShowOnlineLayout(data.is_online ?? false);
         }
       });
   }, [user]);
