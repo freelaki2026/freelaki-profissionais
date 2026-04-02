@@ -22,10 +22,8 @@ import DadosBancariosPage from "@/pages/DadosBancariosPage";
 import AjudaPage from "@/pages/AjudaPage";
 import TermosPage from "@/pages/TermosPage";
 import ContratosPage from "@/pages/ContratosPage";
-import {
-  Cadastro,
-  Suporte,
-} from "@/pages/PlaceholderPages";
+import SuportePage from "@/pages/SuportePage";
+import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
 
