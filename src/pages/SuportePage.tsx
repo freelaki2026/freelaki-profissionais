@@ -37,6 +37,7 @@ const getDateLabel = (iso: string | null) => {
 const SuportePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { insertNotification } = useNotifications();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
