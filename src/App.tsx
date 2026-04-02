@@ -23,6 +23,7 @@ import AjudaPage from "@/pages/AjudaPage";
 import TermosPage from "@/pages/TermosPage";
 import ContratosPage from "@/pages/ContratosPage";
 import SuportePage from "@/pages/SuportePage";
+import ConfirmarEmailPage from "@/pages/ConfirmarEmailPage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
