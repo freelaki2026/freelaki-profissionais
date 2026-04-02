@@ -61,7 +61,7 @@ const CadastroStep3 = () => {
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{ code: string; message: string; hint?: string } | null>(null);
-  const [errorType, setErrorType] = useState<"cpf" | "email" | "generic" | null>(null);
+  const [errorType, setErrorType] = useState<"cpf" | "email" | "phone" | "generic" | null>(null);
 
   const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
   const [step2, setStep2] = useState<{ cpf_cnpj: string; cpf_cnpj_type: string } | null>(null);
@@ -97,7 +97,27 @@ const CadastroStep3 = () => {
     setError(null);
     setErrorType(null);
     try {
-      // 0. Check duplicate CPF/CNPJ via RPC
+      // 0. Check duplicate phone via RPC
+      const phoneClean = phoneDigits;
+      const { data: phoneExists, error: phoneRpcError } = await supabase.rpc("check_phone_exists", {
+        p_phone: phoneClean,
+      });
+
+      if (phoneRpcError) {
+        setError(parseError(phoneRpcError));
+        setErrorType("generic");
+        setLoading(false);
+        return;
+      }
+
+      if (phoneExists === true) {
+        setError({ code: "CAD-003", message: "Este telefone já está cadastrado em outra conta.", hint: "Volte à etapa 1 e corrija o número." });
+        setErrorType("phone");
+        setLoading(false);
+        return;
+      }
+
+      // 0b. Check duplicate CPF/CNPJ via RPC
       const cpfCnpjLimpo = step2.cpf_cnpj.replace(/\D/g, "");
       const { data: cpfExists, error: rpcError } = await supabase.rpc("check_cpf_cnpj_exists", {
         p_cpf_cnpj: cpfCnpjLimpo,
@@ -147,7 +167,10 @@ const CadastroStep3 = () => {
       });
 
       if (signUpError) {
-        if (signUpError.message.includes("profiles_cpf_cnpj_unique") || signUpError.message.includes("cpf_cnpj")) {
+        if (signUpError.message.includes("profiles_phone_unique")) {
+          setError({ code: "CAD-003", message: "Este telefone já está cadastrado em outra conta.", hint: "Volte à etapa 1 e corrija o número." });
+          setErrorType("phone");
+        } else if (signUpError.message.includes("profiles_cpf_cnpj_unique") || signUpError.message.includes("cpf_cnpj")) {
           setError({ code: "CAD-001", message: "CPF/CNPJ já cadastrado em outra conta.", hint: "Se acredita ser um erro, contate suporte@freelaqui.com.br" });
           setErrorType("cpf");
         } else if (signUpError.message.includes("User already registered")) {
@@ -274,6 +297,14 @@ const CadastroStep3 = () => {
               hint={error.hint}
               onDismiss={() => { setError(null); setErrorType(null); }}
             >
+              {errorType === "phone" && (
+                <button
+                  onClick={() => navigate("/cadastro")}
+                  style={{ fontSize: 13, color: "#276EF1", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  ← Voltar e corrigir
+                </button>
+              )}
               {errorType === "cpf" && (
                 <button
                   onClick={() => navigate("/cadastro/etapa2")}
