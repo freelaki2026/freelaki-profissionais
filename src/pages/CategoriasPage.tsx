@@ -47,6 +47,7 @@ const CategoriasPage = () => {
           const ids = new Set(profCats.map((pc) => pc.category_id!));
           setExistingIds(ids);
           setSelected(ids);
+          setIsFromProfile(true);
         }
       }
       setLoading(false);
