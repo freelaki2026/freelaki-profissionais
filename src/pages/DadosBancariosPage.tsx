@@ -66,8 +66,11 @@ export default function DadosBancariosPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasSavedData, setHasSavedData] = useState(false);
+  const [showSavedCard, setShowSavedCard] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [pendingMethod, setPendingMethod] = useState<"pix" | "conta" | null>(null);
+  const [savedData, setSavedData] = useState<Record<string, unknown> | null>(null);
 
   // Method
   const [method, setMethod] = useState<"pix" | "conta">("pix");
