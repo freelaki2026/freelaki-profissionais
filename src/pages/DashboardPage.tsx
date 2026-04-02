@@ -348,7 +348,21 @@ const DashboardPage = () => {
     if (!isOnline || !user) return;
     const channel = supabase
       .channel("opportunities-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "opportunities" }, () => loadOpportunities())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, (payload) => {
+        loadOpportunities();
+        const opp = payload.new as any;
+        if (opp && isOnline) {
+          insertNotification({
+            type: "oportunidade",
+            title: "⚡ Nova oportunidade!",
+            body: `${opp.title}${opp.budget ? ` — R$ ${Number(opp.budget).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : ""}`,
+            action_url: `/oportunidade/${opp.id}`,
+          });
+          setBellShake(true);
+          setTimeout(() => setBellShake(false), 300);
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, () => loadOpportunities())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [isOnline, user, loadOpportunities]);
