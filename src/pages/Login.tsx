@@ -57,7 +57,10 @@ const Login = () => {
     setError(null);
     try {
       await signIn(email, password);
-      navigate("/dashboard", { replace: true });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await cascadeNavigate(session.user);
+      }
     } catch (err: any) {
       setError(parseError(err));
     } finally {

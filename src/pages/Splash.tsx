@@ -55,11 +55,30 @@ const Splash = () => {
   useEffect(() => {
     const t2 = setTimeout(() => setPhase(2), PHASE2_START);
     const t3 = setTimeout(() => setPhase(3), PHASE3_START);
-    const tEnd = setTimeout(() => {
+    const tEnd = setTimeout(async () => {
       setPhase(4);
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        navigate(session ? "/dashboard" : "/login", { replace: true });
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      if (!session.user.email_confirmed_at) {
+        navigate("/confirmar-email", { replace: true, state: { email: session.user.email } });
+        return;
+      }
+
+      const { count } = await supabase
+        .from("professional_categories")
+        .select("*", { count: "exact", head: true })
+        .eq("profile_id", session.user.id);
+
+      if ((count ?? 0) === 0) {
+        navigate("/categorias", { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     }, TOTAL_DURATION);
     return () => {
       clearTimeout(t2);
@@ -90,9 +109,8 @@ const Splash = () => {
                 : "none",
             }}
           >
-            {/* Emojis on this orbit */}
             {orbit.emojis.map((item, ei) => {
-              const staggerDelay = (2 - oi) * 100; // orbit3 first
+              const staggerDelay = (2 - oi) * 100;
               const isConverging = phase >= 2;
               return (
                 <div
@@ -118,7 +136,7 @@ const Splash = () => {
                       display: "block",
                       fontSize: 22,
                       transform: orbit.reverse
-                        ? `rotate(${-item.angle}deg) rotate(${orbit.duration}s)` // handled by counter
+                        ? `rotate(${-item.angle}deg) rotate(${orbit.duration}s)`
                         : `rotate(${-item.angle}deg)`,
                       animation: phase < 2
                         ? `counter-spin ${orbit.duration}s linear infinite ${orbit.reverse ? "reverse" : ""}`
