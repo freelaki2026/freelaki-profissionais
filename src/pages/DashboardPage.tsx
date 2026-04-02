@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Bell, ArrowRight, MapPin, FileText, Clock } from "lucide-react";
+import { Zap, Bell, MapPin, FileText, Clock } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
