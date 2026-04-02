@@ -79,6 +79,12 @@ const SuportePage = () => {
           scrollToBottom();
           if (newMsg.sender === "support") {
             navigator.vibrate?.(100);
+            insertNotification({
+              type: "suporte",
+              title: "Nova mensagem do suporte",
+              body: newMsg.message.substring(0, 80) + (newMsg.message.length > 80 ? "..." : ""),
+              action_url: "/suporte",
+            });
           }
         }
       )
