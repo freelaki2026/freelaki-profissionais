@@ -92,27 +92,21 @@ const PulsingCircles = ({
 );
 
 /* ───── Carousel Card ───── */
-const CarouselOppCard = ({ opp, isMock = false }: { opp: Opp; isMock?: boolean }) => {
+const CarouselOppCard = ({ opp }: { opp: Opp }) => {
   const navigate = useNavigate();
   const shortAddr = extractShortAddress(opp.location_address);
 
   return (
     <motion.button
-      whileTap={isMock ? undefined : { scale: 0.97 }}
+      whileTap={{ scale: 0.97 }}
       transition={{ duration: 0.15 }}
-      onClick={isMock ? undefined : () => navigate(`/oportunidade/${opp.id}`)}
+      onClick={() => navigate(`/oportunidade/${opp.id}`)}
       className="relative flex h-[160px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
       style={{
         scrollSnapAlign: "start",
         boxShadow: "0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
-        pointerEvents: isMock ? "none" : undefined,
       }}
     >
-      {isMock && (
-        <span className="absolute top-3 right-3 rounded-full bg-[#F7F7F7] px-2 py-[3px] text-[10px] font-medium text-[#767676]">
-          Preview
-        </span>
-      )}
       <span
         className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
         style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
