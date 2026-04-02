@@ -129,7 +129,16 @@ const OportunidadesPage = () => {
     if (!user) return;
     const channel = supabase
       .channel("opps-page-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "opportunities" }, () => loadOpps())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, () => loadOpps())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
+        const updated = payload.new as any;
+        if (updated.status !== "open") {
+          setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
+          if (updated.accepted_by === user.id) {
+            loadOpps(); // Reload to get accepted list
+          }
+        }
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, loadOpps]);
