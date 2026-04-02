@@ -123,7 +123,10 @@ const CadastroStep3 = () => {
       });
 
       if (signUpError) {
-        if (signUpError.message.includes("User already registered")) {
+        if (signUpError.message.includes("profiles_cpf_cnpj_unique") || signUpError.message.includes("cpf_cnpj")) {
+          setCpfError(true);
+          return;
+        } else if (signUpError.message.includes("User already registered")) {
           toast.error("Este email já está cadastrado. Faça login.");
         } else {
           toast.error("Erro ao criar conta. Tente novamente.");
