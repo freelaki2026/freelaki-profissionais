@@ -1,17 +1,19 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
-  FileText,
   AlertCircle,
   Clock,
   CheckCircle,
   XCircle,
+  Camera,
+  FileText,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import DocUploadArea from "@/components/documentos/DocUploadArea";
 
 interface DocRecord {
   id: string;
@@ -22,12 +24,9 @@ interface DocRecord {
   rejection_reason: string | null;
 }
 
-const DOC_TYPES = [
-  { type: "rg_frente", label: "RG — Frente" },
-  { type: "rg_verso", label: "RG — Verso" },
-  { type: "selfie", label: "Selfie com documento" },
-  { type: "comprovante_residencia", label: "Comprovante de residência" },
-];
+type DocIdType = "rg" | "cnh" | "passaporte";
+
+const ALL_REQUIRED_TYPES = ["rg_frente", "selfie", "comprovante_residencia"];
 
 const DocumentosPage = () => {
   const navigate = useNavigate();
@@ -38,7 +37,7 @@ const DocumentosPage = () => {
   const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
-  const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [selectedDocType, setSelectedDocType] = useState<DocIdType | null>(null);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -50,7 +49,19 @@ const DocumentosPage = () => {
         .eq("id", user.id)
         .single(),
     ]);
-    if (docData) setDocs(docData as DocRecord[]);
+    if (docData) {
+      setDocs(docData as DocRecord[]);
+      // Auto-detect selected doc type from existing docs
+      if (!selectedDocType) {
+        const hasRgVerso = docData.some((d: any) => d.doc_type === "rg_verso");
+        if (hasRgVerso) {
+          setSelectedDocType("rg");
+        } else if (docData.some((d: any) => d.doc_type === "rg_frente")) {
+          // Could be CNH or passport, default to cnh if only rg_frente
+          setSelectedDocType("cnh");
+        }
+      }
+    }
     if (profileData) setApprovalStatus(profileData.approval_status);
   }, [user]);
 
@@ -62,13 +73,19 @@ const DocumentosPage = () => {
 
   const handleUpload = async (docType: string, file: File) => {
     if (!user) return;
+
+    // Validate size
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "Arquivo muito grande. Máx 10MB.", variant: "destructive" });
+      return;
+    }
+
     setUploading(docType);
     setProgress(0);
 
     const ext = file.name.split(".").pop();
     const path = `${user.id}/${docType}_${Date.now()}.${ext}`;
 
-    // Simulate progress
     const interval = setInterval(() => {
       setProgress((p) => Math.min(p + 15, 90));
     }, 200);
@@ -89,7 +106,6 @@ const DocumentosPage = () => {
       data: { publicUrl },
     } = supabase.storage.from("documents").getPublicUrl(path);
 
-    // Check if doc already exists
     const existing = getDoc(docType);
     if (existing) {
       await supabase
@@ -117,15 +133,15 @@ const DocumentosPage = () => {
       setProgress(0);
       await loadData();
 
-      // Check if all 4 docs are now submitted
+      // Check if all required docs are now submitted
       const { data: freshDocs } = await supabase
         .from("documents")
         .select("doc_type, status")
         .eq("profile_id", user!.id);
 
       if (freshDocs) {
-        const submitted = DOC_TYPES.every((dt) =>
-          freshDocs.some((d) => d.doc_type === dt.type && d.status)
+        const submitted = ALL_REQUIRED_TYPES.every((dt) =>
+          freshDocs.some((d) => d.doc_type === dt && d.status)
         );
         if (submitted && approvalStatus !== "pending" && approvalStatus !== "approved") {
           await supabase
@@ -180,21 +196,13 @@ const DocumentosPage = () => {
   };
 
   const banner = statusBanner();
+  const IMG_ACCEPT = "image/jpeg,image/png,image/heif,image/heic";
+  const IMG_LABEL = "JPEG, PNG, HEIC — máx 10MB";
+  const ALL_ACCEPT = "image/jpeg,image/png,image/heif,image/heic,application/pdf";
+  const ALL_LABEL = "JPEG, PNG, HEIC ou PDF — máx 10MB";
 
-  const renderDocStatus = (doc: DocRecord | undefined) => {
-    if (!doc || !doc.status)
-      return { label: "Pendente", bg: "#F7F7F7", color: "#767676" };
-    switch (doc.status) {
-      case "pending":
-        return { label: "Em análise", bg: "#FFF3E0", color: "#B45309" };
-      case "approved":
-        return { label: "Aprovado ✓", bg: "#E8F5E9", color: "#2E7D32" };
-      case "rejected":
-        return { label: "Rejeitado", bg: "#FFEBEE", color: "#C62828" };
-      default:
-        return { label: "Pendente", bg: "#F7F7F7", color: "#767676" };
-    }
-  };
+  const docTypes: DocIdType[] = ["rg", "cnh", "passaporte"];
+  const docTypeLabels: Record<DocIdType, string> = { rg: "RG", cnh: "CNH", passaporte: "Passaporte" };
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
@@ -212,7 +220,7 @@ const DocumentosPage = () => {
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.35 }}
-        className="flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-10 pt-5 overflow-y-auto"
+        className="flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-10 pt-5 overflow-y-auto hide-scrollbar"
       >
         {/* Status Banner */}
         <div
@@ -225,107 +233,271 @@ const DocumentosPage = () => {
           </span>
         </div>
 
-        {/* Label */}
-        <p className="mb-3 text-[10px] font-semibold tracking-[2px] text-[hsl(var(--muted-foreground))]">
-          DOCUMENTOS OBRIGATÓRIOS
+        {/* ── DOCUMENTO DE IDENTIDADE ── */}
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: 2,
+            color: "#767676",
+          }}
+        >
+          DOCUMENTO DE IDENTIDADE
         </p>
 
-        {/* Document Cards */}
-        {DOC_TYPES.map(({ type, label }) => {
-          const doc = getDoc(type);
-          const status = renderDocStatus(doc);
-          const isUploading = uploading === type;
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 16,
+            padding: 16,
+            marginTop: 10,
+          }}
+        >
+          <p style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+            Selecione seu tipo de documento:
+          </p>
 
-          return (
-            <div
-              key={type}
-              className="relative mb-2.5 flex items-center rounded-2xl border border-[#E5E5E5] bg-white p-4"
-            >
-              {/* Thumbnail / Icon */}
-              {doc?.file_url && doc.status ? (
-                <img
-                  src={doc.file_url}
-                  alt={label}
-                  className="h-[52px] w-[52px] shrink-0 rounded-[10px] object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              ) : (
-                <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[10px] bg-[#F7F7F7]">
-                  <FileText className="h-6 w-6 text-[hsl(var(--muted-foreground))]" />
-                </div>
-              )}
-
-              {/* Center */}
-              <div className="flex-1 px-3">
-                <p className="text-sm font-semibold text-foreground">{label}</p>
-                <span
-                  className="mt-1 inline-block rounded-full px-2.5 py-[3px] text-[11px] font-semibold"
-                  style={{ background: status.bg, color: status.color }}
-                >
-                  {status.label}
-                </span>
-                {doc?.status === "rejected" && doc.rejection_reason && (
-                  <p className="mt-1 text-[11px]" style={{ color: "#C62828" }}>
-                    {doc.rejection_reason}
-                  </p>
-                )}
-              </div>
-
-              {/* Right action */}
-              <div className="shrink-0">
-                {!doc || !doc.status ? (
-                  <button
-                    onClick={() => fileRefs.current[type]?.click()}
-                    className="rounded-[10px] px-3.5 py-2 text-[13px] font-semibold text-white"
-                    style={{ background: "#276EF1" }}
-                  >
-                    Enviar
-                  </button>
-                ) : doc.status === "pending" ? (
-                  <Clock className="h-5 w-5" style={{ color: "#B45309" }} />
-                ) : doc.status === "approved" ? (
-                  <CheckCircle className="h-5 w-5" style={{ color: "#2E7D32" }} />
-                ) : doc.status === "rejected" ? (
-                  <button
-                    onClick={() => fileRefs.current[type]?.click()}
-                    className="rounded-[10px] px-3.5 py-2 text-[13px] font-semibold"
-                    style={{ background: "#FFEBEE", color: "#C62828" }}
-                  >
-                    Reenviar
-                  </button>
-                ) : null}
-              </div>
-
-              {/* Hidden file input */}
-              <input
-                ref={(el) => (fileRefs.current[type] = el)}
-                type="file"
-                accept="image/*,application/pdf"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleUpload(type, file);
-                  e.target.value = "";
+          {/* Type selector buttons */}
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            {docTypes.map((dt) => (
+              <button
+                key={dt}
+                onClick={() => setSelectedDocType(dt)}
+                style={{
+                  flex: 1,
+                  height: 44,
+                  borderRadius: 12,
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: selectedDocType === dt ? 600 : 400,
+                  background: selectedDocType === dt ? "#276EF1" : "#F7F7F7",
+                  color: selectedDocType === dt ? "#FFFFFF" : "#767676",
+                  transition: "all 200ms",
                 }}
-              />
+              >
+                {docTypeLabels[dt]}
+              </button>
+            ))}
+          </div>
 
-              {/* Upload progress bar */}
-              {isUploading && (
-                <div className="absolute bottom-0 left-4 right-4 h-[3px] overflow-hidden rounded-full bg-[#E3F2FD]">
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%`, background: "#276EF1" }}
+          {/* Expandable upload items */}
+          <AnimatePresence mode="wait">
+            {selectedDocType && (
+              <motion.div
+                key={selectedDocType}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                style={{ overflow: "hidden" }}
+              >
+                {selectedDocType === "rg" && (
+                  <>
+                    <UploadItem
+                      label="RG — Frente"
+                      hint="📸 Documento aberto, frente visível, sem reflexo ou sombra"
+                      doc={getDoc("rg_frente")}
+                      docType="rg_frente"
+                      accept={IMG_ACCEPT}
+                      acceptLabel={IMG_LABEL}
+                      uploading={uploading === "rg_frente"}
+                      progress={progress}
+                      onUpload={handleUpload}
+                    />
+                    <UploadItem
+                      label="RG — Verso"
+                      hint="📸 Verso do documento plano e legível"
+                      doc={getDoc("rg_verso")}
+                      docType="rg_verso"
+                      accept={IMG_ACCEPT}
+                      acceptLabel={IMG_LABEL}
+                      uploading={uploading === "rg_verso"}
+                      progress={progress}
+                      onUpload={handleUpload}
+                    />
+                  </>
+                )}
+                {selectedDocType === "cnh" && (
+                  <UploadItem
+                    label="CNH — Frente"
+                    hint="📸 CNH aberta mostrando foto e dados, boa iluminação"
+                    doc={getDoc("rg_frente")}
+                    docType="rg_frente"
+                    accept={IMG_ACCEPT}
+                    acceptLabel={IMG_LABEL}
+                    uploading={uploading === "rg_frente"}
+                    progress={progress}
+                    onUpload={handleUpload}
                   />
-                </div>
-              )}
-            </div>
-          );
-        })}
+                )}
+                {selectedDocType === "passaporte" && (
+                  <UploadItem
+                    label="Passaporte"
+                    hint="📸 Página com foto e dados pessoais visíveis"
+                    doc={getDoc("rg_frente")}
+                    docType="rg_frente"
+                    accept={IMG_ACCEPT}
+                    acceptLabel={IMG_LABEL}
+                    uploading={uploading === "rg_frente"}
+                    progress={progress}
+                    onUpload={handleUpload}
+                  />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* ── SELFIE COM DOCUMENTO ── */}
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: 2,
+            color: "#767676",
+            marginTop: 20,
+          }}
+        >
+          SELFIE COM DOCUMENTO
+        </p>
+
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 16,
+            padding: 16,
+            marginTop: 10,
+          }}
+        >
+          {/* Instruction banner */}
+          <div
+            style={{
+              background: "rgba(39,110,241,0.06)",
+              borderRadius: 10,
+              padding: 12,
+              marginBottom: 12,
+              display: "flex",
+              gap: 8,
+              alignItems: "flex-start",
+            }}
+          >
+            <Camera style={{ color: "#276EF1", width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#276EF1", lineHeight: 1.5 }}>
+              Segure seu documento ao lado do rosto. Boa iluminação, sem óculos escuros.
+            </span>
+          </div>
+
+          <DocUploadArea
+            doc={getDoc("selfie")}
+            docType="selfie"
+            accept={IMG_ACCEPT}
+            acceptLabel={IMG_LABEL}
+            uploading={uploading === "selfie"}
+            progress={progress}
+            onUpload={handleUpload}
+          />
+        </div>
+
+        {/* ── COMPROVANTE DE RESIDÊNCIA ── */}
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: 2,
+            color: "#767676",
+            marginTop: 20,
+          }}
+        >
+          COMPROVANTE DE RESIDÊNCIA
+        </p>
+
+        <div
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 16,
+            padding: 16,
+            marginTop: 10,
+          }}
+        >
+          <div
+            style={{
+              background: "rgba(39,110,241,0.06)",
+              borderRadius: 10,
+              padding: 12,
+              marginBottom: 12,
+              display: "flex",
+              gap: 8,
+              alignItems: "flex-start",
+            }}
+          >
+            <FileText style={{ color: "#276EF1", width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: "#276EF1", lineHeight: 1.5 }}>
+              Conta de luz, água, gás ou telefone. Emitido nos últimos 3 meses. Nome e endereço visíveis.
+            </span>
+          </div>
+
+          <DocUploadArea
+            doc={getDoc("comprovante_residencia")}
+            docType="comprovante_residencia"
+            accept={ALL_ACCEPT}
+            acceptLabel={ALL_LABEL}
+            uploading={uploading === "comprovante_residencia"}
+            progress={progress}
+            onUpload={handleUpload}
+          />
+        </div>
       </motion.div>
     </div>
   );
 };
+
+/* ── Inline sub-component for identity doc upload items ── */
+interface UploadItemProps {
+  label: string;
+  hint: string;
+  doc: DocRecord | undefined;
+  docType: string;
+  accept: string;
+  acceptLabel: string;
+  uploading: boolean;
+  progress: number;
+  onUpload: (docType: string, file: File) => void;
+}
+
+const UploadItem = ({
+  label,
+  hint,
+  doc,
+  docType,
+  accept,
+  acceptLabel,
+  uploading,
+  progress,
+  onUpload,
+}: UploadItemProps) => (
+  <div
+    style={{
+      background: "#F7F7F7",
+      borderRadius: 12,
+      padding: 14,
+      marginTop: 10,
+    }}
+  >
+    <p style={{ fontSize: 14, fontWeight: 600, color: "#000000" }}>{label}</p>
+    <p style={{ fontSize: 12, color: "#767676", fontStyle: "italic", marginTop: 4 }}>
+      {hint}
+    </p>
+    <DocUploadArea
+      doc={doc}
+      docType={docType}
+      accept={accept}
+      acceptLabel={acceptLabel}
+      uploading={uploading}
+      progress={progress}
+      onUpload={onUpload}
+    />
+  </div>
+);
 
 export default DocumentosPage;
