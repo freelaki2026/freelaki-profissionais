@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+
+const soundOnline = new Audio('https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.MP3');
+const soundOffline = new Audio('https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.MP3');
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Bell, MapPin, FileText, Clock } from "lucide-react";
