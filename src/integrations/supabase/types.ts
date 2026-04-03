@@ -814,6 +814,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_document: { Args: { p_document_id: string }; Returns: undefined }
       approve_professional: {
         Args: { p_profile_id: string }
         Returns: undefined
