@@ -434,11 +434,7 @@ const DashboardPage = () => {
     setIsOnline(newVal);
 
     // Sound feedback
-    const sound = new Audio(
-      newVal
-        ? 'https://smydwavvwzzifumittyj.supabase.co/storage/v1/object/public/sounds/Online button freelaki'
-        : 'https://smydwavvwzzifumittyj.supabase.co/storage/v1/object/public/sounds/Offline button freelaki'
-    );
+    const sound = newVal ? soundOnline : soundOffline;
     sound.currentTime = 0;
     sound.volume = 0.6;
     sound.play().catch(() => {});
