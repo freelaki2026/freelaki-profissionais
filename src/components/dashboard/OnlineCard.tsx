@@ -36,8 +36,8 @@ const OnlineCard = ({ isOnline, loading, onToggle }: OnlineCardProps) => {
         disabled={loading}
         className="mt-3 flex h-11 w-full items-center justify-center rounded-xl text-sm font-bold transition-colors disabled:opacity-50"
         style={{
-          background: isOnline ? "#1A1A1A" : "#276EF1",
-          color: isOnline ? "#767676" : "#FFFFFF",
+          background: isOnline ? "#E53935" : "#276EF1",
+          color: "#FFFFFF",
         }}
       >
         {loading ? "..." : isOnline ? "Ficar Offline" : "Ficar Online →"}
