@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+
+const soundOnline = new Audio('https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.MP3');
+const soundOffline = new Audio('https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.MP3');
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Bell, MapPin, FileText, Clock } from "lucide-react";
@@ -431,11 +434,7 @@ const DashboardPage = () => {
     setIsOnline(newVal);
 
     // Sound feedback
-    const sound = new Audio(
-      newVal
-        ? 'https://smydwavvwzzifumittyj.supabase.co/storage/v1/object/public/sounds/Online button freelaki'
-        : 'https://smydwavvwzzifumittyj.supabase.co/storage/v1/object/public/sounds/Offline button freelaki'
-    );
+    const sound = newVal ? soundOnline : soundOffline;
     sound.currentTime = 0;
     sound.volume = 0.6;
     sound.play().catch(() => {});
