@@ -3,13 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-const TOTAL_DURATION = 6500;
-const PHASE2_START = 4000;
-const PHASE3_START = 5500;
+const TOTAL_DURATION = 4000;
+const CONVERGE_START = 1800;
+const FLASH_START = 3200;
+
+const SOUND_URL = "https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.MP3";
 
 const ORBIT1 = {
   radius: 90,
-  duration: 6,
+  duration: 4,
   reverse: false,
   border: "rgba(39,110,241,0.15)",
   emojis: [
@@ -20,7 +22,7 @@ const ORBIT1 = {
 
 const ORBIT2 = {
   radius: 150,
-  duration: 10,
+  duration: 6,
   reverse: true,
   border: "rgba(39,110,241,0.10)",
   emojis: [
@@ -33,7 +35,7 @@ const ORBIT2 = {
 
 const ORBIT3 = {
   radius: 210,
-  duration: 15,
+  duration: 9,
   reverse: false,
   border: "rgba(39,110,241,0.07)",
   emojis: [
@@ -50,11 +52,23 @@ const ORBITS = [ORBIT1, ORBIT2, ORBIT3];
 const Splash = () => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<1 | 2 | 3 | 4>(1);
-  const startRef = useRef(Date.now());
+  const soundPlayedRef = useRef(false);
 
   useEffect(() => {
-    const t2 = setTimeout(() => setPhase(2), PHASE2_START);
-    const t3 = setTimeout(() => setPhase(3), PHASE3_START);
+    // Phase 2: emojis start spiraling inward
+    const t2 = setTimeout(() => setPhase(2), CONVERGE_START);
+    // Phase 3: flash when emojis arrive
+    const t3 = setTimeout(() => {
+      setPhase(3);
+      // Play online sound when emojis converge
+      if (!soundPlayedRef.current) {
+        soundPlayedRef.current = true;
+        const audio = new Audio(SOUND_URL + "?t=" + Date.now());
+        audio.volume = 0.6;
+        audio.play().catch(() => {});
+      }
+    }, FLASH_START);
+    // Navigate
     const tEnd = setTimeout(async () => {
       setPhase(4);
       const { data: { session } } = await supabase.auth.getSession();
@@ -87,6 +101,9 @@ const Splash = () => {
     };
   }, [navigate]);
 
+  // Calculate converge progress for smooth spiral
+  const convergeDuration = FLASH_START - CONVERGE_START; // 1400ms
+
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-black overflow-hidden">
       {/* Orbital system */}
@@ -107,11 +124,13 @@ const Splash = () => {
               animation: phase < 2
                 ? `spin-orbit ${orbit.duration}s linear infinite ${orbit.reverse ? "reverse" : ""}`
                 : "none",
+              transition: phase >= 2 ? "opacity 600ms ease-out" : undefined,
+              opacity: phase >= 3 ? 0 : 1,
             }}
           >
             {orbit.emojis.map((item, ei) => {
-              const staggerDelay = (2 - oi) * 100;
               const isConverging = phase >= 2;
+              const staggerDelay = oi * 60 + ei * 30;
               return (
                 <div
                   key={ei}
@@ -121,27 +140,23 @@ const Splash = () => {
                     left: "50%",
                     width: 0,
                     height: 0,
-                    transform: `rotate(${item.angle}deg) translateX(${orbit.radius}px)`,
+                    transform: isConverging
+                      ? `rotate(${item.angle}deg) translateX(0px) scale(0)`
+                      : `rotate(${item.angle}deg) translateX(${orbit.radius}px)`,
                     transition: isConverging
-                      ? `all 800ms ease-in ${staggerDelay}ms`
+                      ? `transform ${convergeDuration}ms cubic-bezier(0.4, 0, 0.2, 1) ${staggerDelay}ms, opacity ${convergeDuration}ms ease-in ${staggerDelay}ms`
                       : undefined,
-                    ...(isConverging && {
-                      transform: `rotate(${item.angle}deg) translateX(0px) scale(0)`,
-                      opacity: 0,
-                    }),
+                    opacity: isConverging ? 0 : 1,
                   }}
                 >
                   <span
                     style={{
                       display: "block",
                       fontSize: 22,
-                      transform: orbit.reverse
-                        ? `rotate(${-item.angle}deg) rotate(${orbit.duration}s)`
-                        : `rotate(${-item.angle}deg)`,
+                      transform: `rotate(${-item.angle}deg)`,
                       animation: phase < 2
                         ? `counter-spin ${orbit.duration}s linear infinite ${orbit.reverse ? "reverse" : ""}`
                         : "none",
-                      transition: isConverging ? `opacity 800ms ease-in ${staggerDelay}ms` : undefined,
                     }}
                   >
                     {item.emoji}
@@ -167,7 +182,6 @@ const Splash = () => {
             animation: phase === 3
               ? "flash-circle 400ms ease-out"
               : "pulse-center 2s ease-in-out infinite",
-            borderColor: phase === 3 ? "#276EF1" : undefined,
           }}
         >
           <Zap
@@ -175,9 +189,7 @@ const Splash = () => {
             fill="#276EF1"
             color="#276EF1"
             style={{
-              animation: phase === 3
-                ? "flash-icon 400ms ease-out"
-                : undefined,
+              animation: phase === 3 ? "flash-icon 400ms ease-out" : undefined,
             }}
           />
         </div>
@@ -236,12 +248,12 @@ const Splash = () => {
         }
         @keyframes flash-circle {
           0% { transform: scale(1.08); border-color: #276EF1; }
-          50% { transform: scale(1.4); border-color: #276EF1; box-shadow: 0 0 40px rgba(39,110,241,0.4); }
+          50% { transform: scale(1.5); border-color: #276EF1; box-shadow: 0 0 60px rgba(39,110,241,0.5); }
           100% { transform: scale(1); border-color: rgba(39,110,241,0.15); }
         }
         @keyframes flash-icon {
           0% { transform: scale(1); }
-          50% { transform: scale(1.3); }
+          50% { transform: scale(1.4); }
           100% { transform: scale(1); }
         }
         @keyframes progress-fill {

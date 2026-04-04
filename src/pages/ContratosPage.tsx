@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import FreelakiButton from "@/components/ui/FreelakiButton";
+import BottomNav from "@/components/dashboard/BottomNav";
 
 type TabKey = "assinar" | "assinados" | "todos";
 
@@ -506,6 +507,8 @@ const ContratosPage = () => {
           </>
         )}
       </AnimatePresence>
+
+      <BottomNav />
     </div>
   );
 };
