@@ -431,9 +431,12 @@ const DashboardPage = () => {
     }
     setIsOnline(newVal);
 
-    // Sound feedback
-    const sound = newVal ? soundOnline : soundOffline;
-    sound.currentTime = 0;
+    // Sound feedback — create fresh Audio each time to avoid cache
+    const sound = new Audio(
+      newVal
+        ? 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.MP3?t=' + Date.now()
+        : 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.MP3?t=' + Date.now()
+    );
     sound.volume = 0.6;
     sound.play().catch(() => {});
 

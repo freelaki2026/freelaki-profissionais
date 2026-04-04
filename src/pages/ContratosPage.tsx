@@ -507,6 +507,8 @@ const ContratosPage = () => {
           </>
         )}
       </AnimatePresence>
+
+      <BottomNav />
     </div>
   );
 };
