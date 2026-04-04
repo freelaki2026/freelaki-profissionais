@@ -353,6 +353,76 @@ export type Database = {
           },
         ]
       }
+      earnings: {
+        Row: {
+          available_at: string | null
+          contract_id: string | null
+          created_at: string | null
+          description: string | null
+          gross_amount: number
+          id: string
+          net_amount: number
+          opportunity_id: string | null
+          platform_fee: number
+          profile_id: string | null
+          status: string | null
+          updated_at: string | null
+          withdrawn_at: string | null
+        }
+        Insert: {
+          available_at?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          gross_amount: number
+          id?: string
+          net_amount: number
+          opportunity_id?: string | null
+          platform_fee?: number
+          profile_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          withdrawn_at?: string | null
+        }
+        Update: {
+          available_at?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          opportunity_id?: string | null
+          platform_fee?: number
+          profile_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "earnings_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "earnings_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "earnings_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faqs: {
         Row: {
           answer: string
@@ -809,6 +879,57 @@ export type Database = {
           },
         ]
       }
+      withdrawals: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          created_at: string | null
+          gateway_id: string | null
+          id: string
+          processed_at: string | null
+          profile_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          created_at?: string | null
+          gateway_id?: string | null
+          id?: string
+          processed_at?: string | null
+          profile_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          created_at?: string | null
+          gateway_id?: string | null
+          id?: string
+          processed_at?: string | null
+          profile_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawals_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawals_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -822,6 +943,7 @@ export type Database = {
       check_cpf_cnpj_exists: { Args: { p_cpf_cnpj: string }; Returns: boolean }
       check_email_exists: { Args: { p_email: string }; Returns: boolean }
       check_phone_exists: { Args: { p_phone: string }; Returns: boolean }
+      get_financial_summary: { Args: { p_profile_id: string }; Returns: Json }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       reject_document: {
         Args: { p_document_id: string; p_reason: string }
