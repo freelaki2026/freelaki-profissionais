@@ -29,6 +29,7 @@ const menuItems = [
   { icon: CreditCard, label: "Dados Pessoais", path: "/dados-pessoais" },
   { icon: Landmark, label: "Dados Bancários", path: "/dados-bancarios" },
   { icon: ScrollText, label: "Contratos", path: "/contratos" },
+  { icon: DollarSign, label: "Ganhos", path: "/ganhos" },
   { icon: MessageSquare, label: "Mensagens", path: "/mensagens" },
   { icon: HelpCircle, label: "Ajuda e FAQ", path: "/ajuda" },
   { icon: MessageCircle, label: "Suporte", path: "/suporte" },
