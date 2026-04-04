@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   X, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap, MessageSquare,
+  Info, LogOut, Zap, MessageSquare, DollarSign,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 
