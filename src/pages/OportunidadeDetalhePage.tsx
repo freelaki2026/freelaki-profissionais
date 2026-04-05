@@ -22,6 +22,8 @@ interface OppDetail {
   client_name: string | null;
   client_avatar: string | null;
   client_verified: boolean;
+  is_private: boolean;
+  target_professional_id: string | null;
 }
 
 const formatScheduleDetail = (scheduledAt: string | null): string => {
