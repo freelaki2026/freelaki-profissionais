@@ -166,6 +166,23 @@ const OportunidadeDetalhePage = () => {
     setAccepting(false);
   };
 
+  const handleDecline = async () => {
+    if (!opp) return;
+    setDeclining(true);
+    const { error } = await supabase.rpc("decline_private_opportunity", {
+      p_opportunity_id: opp.id,
+    });
+    if (!error) {
+      toast.success("Proposta recusada.");
+      navigate("/dashboard");
+    } else {
+      toast.error("Erro ao recusar proposta.");
+    }
+    setDeclining(false);
+    setShowDeclineModal(false);
+  };
+
+  const isPrivateForMe = opp?.is_private && opp?.target_professional_id === user?.id;
   const statusBadge = opp ? getStatusBadge(opp.status) : null;
 
   if (loading) {
