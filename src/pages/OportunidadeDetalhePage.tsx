@@ -174,6 +174,7 @@ const OportunidadeDetalhePage = () => {
     });
     if (!error) {
       toast.success("Proposta recusada.");
+      window.dispatchEvent(new CustomEvent("opportunity_declined", { detail: { id: opp.id } }));
       navigate("/dashboard");
     } else {
       toast.error("Erro ao recusar proposta.");

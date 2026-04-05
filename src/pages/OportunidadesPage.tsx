@@ -132,10 +132,13 @@ const OportunidadesPage = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, () => loadOpps())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
         const updated = payload.new as any;
-        if (updated.status !== "open") {
+        if (
+          updated.status !== "open" ||
+          (updated.is_private === false && updated.target_professional_id !== user.id)
+        ) {
           setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
           if (updated.accepted_by === user.id) {
-            loadOpps(); // Reload to get accepted list
+            loadOpps();
           }
         }
       })
