@@ -28,6 +28,7 @@ import ConfirmarEmailPage from "@/pages/ConfirmarEmailPage";
 import MensagensPage from "@/pages/MensagensPage";
 import ChatClientePage from "@/pages/ChatClientePage";
 import GanhosPage from "@/pages/GanhosPage";
+import MeusServicosPage from "@/pages/MeusServicosPage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
