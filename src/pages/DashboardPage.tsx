@@ -701,7 +701,6 @@ const DashboardPage = () => {
             </div>
           </div>
         </div>
-        </div>
       ) : (
         /* OFFLINE — full black bg with centered animation */
         <div
