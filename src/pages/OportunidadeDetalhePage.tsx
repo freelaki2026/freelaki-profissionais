@@ -102,6 +102,8 @@ const OportunidadeDetalhePage = () => {
         client_name: prof?.full_name || null,
         client_avatar: prof?.avatar_url || null,
         client_verified: prof?.is_approved || false,
+        is_private: data.is_private || false,
+        target_professional_id: data.target_professional_id || null,
       });
     } else if (error) {
       // PGRST116 = not found (single row expected but 0 returned)
