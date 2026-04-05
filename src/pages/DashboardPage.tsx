@@ -649,7 +649,58 @@ const DashboardPage = () => {
                 </AnimatePresence>
               </div>
             </div>
+
+            {/* EARNINGS PREVIEW CARD */}
+            <div
+              className="mt-4 cursor-pointer"
+              onClick={() => navigate('/ganhos')}
+              style={{
+                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
+                opacity: transitionPhase === "idle" ? 1 : 0,
+                transition: "transform 400ms ease 300ms, opacity 400ms ease 300ms",
+              }}
+            >
+              <div className="relative rounded-[20px] p-4" style={{ background: "#000000" }}>
+                {financialSummary.available > 0 && (
+                  <span
+                    className="absolute -top-2 right-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+                    style={{ background: "#2E7D32", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }}
+                  >
+                    💰 Disponível para saque
+                  </span>
+                )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <TrendingUp size={16} color="#2E7D32" />
+                    <span className="text-[13px] font-medium text-[#767676]">Ganhos desta semana</span>
+                  </div>
+                  <span className="text-[12px] font-medium text-[#276EF1]">Ver tudo →</span>
+                </div>
+                <p className="mt-2 text-[28px] font-extrabold text-white">
+                  R$ {weekTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="mt-0.5 text-[12px] text-[#767676]">
+                  {weekCount} serviço{weekCount !== 1 ? 's' : ''} realizado{weekCount !== 1 ? 's' : ''}
+                </p>
+                <div className="my-3" style={{ height: 1, background: "rgba(255,255,255,0.08)" }} />
+                <div className="flex gap-3">
+                  <div className="flex-1 rounded-[12px] p-2.5" style={{ background: "rgba(255,255,255,0.05)" }}>
+                    <span className="text-[11px] text-[#767676]">Disponível</span>
+                    <p className="text-[15px] font-bold text-[#2E7D32]">
+                      R$ {financialSummary.available.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div className="flex-1 rounded-[12px] p-2.5" style={{ background: "rgba(255,255,255,0.05)" }}>
+                    <span className="text-[11px] text-[#767676]">Reservado</span>
+                    <p className="text-[15px] font-bold text-[#F59E0B]">
+                      R$ {financialSummary.reserved.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
         </div>
       ) : (
         /* OFFLINE — full black bg with centered animation */
