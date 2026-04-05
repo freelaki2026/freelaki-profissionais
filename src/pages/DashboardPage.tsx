@@ -440,7 +440,40 @@ const DashboardPage = () => {
     return () => window.removeEventListener("opportunity_accepted", handler);
   }, []);
 
-  const toggleOnline = async () => {
+  // Load earnings summary
+  const loadEarnings = useCallback(async () => {
+    if (!user) return;
+    const { data: summary } = await supabase.rpc('get_financial_summary', { p_profile_id: user.id });
+    if (summary) {
+      const s = typeof summary === 'string' ? JSON.parse(summary) : summary;
+      setFinancialSummary({ available: Number(s.available) || 0, reserved: Number(s.reserved) || 0 });
+    }
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const { data: weekEarnings } = await supabase
+      .from('earnings')
+      .select('net_amount, status, created_at')
+      .eq('profile_id', user.id)
+      .gte('created_at', startOfWeek.toISOString());
+    setWeekTotal(weekEarnings?.reduce((sum, e) => sum + Number(e.net_amount), 0) || 0);
+    setWeekCount(weekEarnings?.length || 0);
+  }, [user]);
+
+  useEffect(() => { loadEarnings(); }, [loadEarnings]);
+
+  // Realtime for earnings
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('earnings-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'earnings', filter: `profile_id=eq.${user.id}` }, () => {
+        loadEarnings();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadEarnings]);
+
     if (!user || transitionPhase !== "idle") return;
     setTogglingOnline(true);
     const newVal = !isOnline;
