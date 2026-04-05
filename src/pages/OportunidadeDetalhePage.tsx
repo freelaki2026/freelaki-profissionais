@@ -306,6 +306,24 @@ const OportunidadeDetalhePage = () => {
         transition={{ duration: 0.3 }}
         className="flex-1 px-6 pb-32 pt-5"
       >
+        {/* Private opportunity banner */}
+        {isPrivateForMe && opp.status === "open" && (
+          <div
+            className="mb-4 rounded-xl p-3.5"
+            style={{ background: "rgba(39,110,241,0.08)" }}
+          >
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4" style={{ color: "#276EF1" }} />
+              <span className="text-sm font-semibold" style={{ color: "#276EF1" }}>
+                Proposta exclusiva para você
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs" style={{ color: "#767676" }}>
+              Este cliente escolheu você especificamente.
+            </p>
+          </div>
+        )}
+
         {/* Category badge */}
         <div className="flex items-center gap-2">
           <span className="text-[28px] leading-none">{opp.category_icon}</span>
