@@ -474,6 +474,7 @@ const DashboardPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, loadEarnings]);
 
+  const toggleOnline = async () => {
     if (!user || transitionPhase !== "idle") return;
     setTogglingOnline(true);
     const newVal = !isOnline;
