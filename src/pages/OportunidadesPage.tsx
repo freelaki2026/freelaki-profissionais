@@ -132,16 +132,31 @@ const OportunidadesPage = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, () => loadOpps())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
         const updated = payload.new as any;
-        if (updated.status !== "open") {
+        if (
+          updated.status !== "open" ||
+          (updated.is_private === false && updated.target_professional_id !== user.id)
+        ) {
           setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
           if (updated.accepted_by === user.id) {
-            loadOpps(); // Reload to get accepted list
+            loadOpps();
           }
         }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user, loadOpps]);
+
+  // Listen for opportunity_declined custom event
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
+      }
+    };
+    window.addEventListener("opportunity_declined", handler);
+    return () => window.removeEventListener("opportunity_declined", handler);
+  }, []);
 
   const toggleOnline = async () => {
     if (!user || !profile) return;

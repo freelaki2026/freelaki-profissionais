@@ -397,7 +397,10 @@ const DashboardPage = () => {
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
         const updated = payload.new as any;
-        if (updated.status !== "open") {
+        if (
+          updated.status !== "open" ||
+          (updated.is_private === false && updated.target_professional_id !== user.id)
+        ) {
           setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
           if (updated.accepted_by === user.id) {
             loadOpportunities();
@@ -437,7 +440,11 @@ const DashboardPage = () => {
       }
     };
     window.addEventListener("opportunity_accepted", handler);
-    return () => window.removeEventListener("opportunity_accepted", handler);
+    window.addEventListener("opportunity_declined", handler);
+    return () => {
+      window.removeEventListener("opportunity_accepted", handler);
+      window.removeEventListener("opportunity_declined", handler);
+    };
   }, []);
 
   // Load earnings summary
