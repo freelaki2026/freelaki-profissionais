@@ -548,13 +548,23 @@ export type Database = {
           client_id: string | null
           created_at: string | null
           description: string | null
+          duration_days: number | null
+          duration_hours: number | null
+          end_date: string | null
+          end_time: string | null
           id: string
           location_address: string | null
           location_lat: number | null
           location_lng: number | null
+          platform_fee: number | null
           scheduled_at: string | null
+          selected_extras: Json | null
+          start_date: string | null
+          start_time: string | null
           status: string | null
+          subtotal: number | null
           title: string
+          total_amount: number | null
           updated_at: string | null
         }
         Insert: {
@@ -565,13 +575,23 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           description?: string | null
+          duration_days?: number | null
+          duration_hours?: number | null
+          end_date?: string | null
+          end_time?: string | null
           id?: string
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null
+          platform_fee?: number | null
           scheduled_at?: string | null
+          selected_extras?: Json | null
+          start_date?: string | null
+          start_time?: string | null
           status?: string | null
+          subtotal?: number | null
           title: string
+          total_amount?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -582,13 +602,23 @@ export type Database = {
           client_id?: string | null
           created_at?: string | null
           description?: string | null
+          duration_days?: number | null
+          duration_hours?: number | null
+          end_date?: string | null
+          end_time?: string | null
           id?: string
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null
+          platform_fee?: number | null
           scheduled_at?: string | null
+          selected_extras?: Json | null
+          start_date?: string | null
+          start_time?: string | null
           status?: string | null
+          subtotal?: number | null
           title?: string
+          total_amount?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -715,6 +745,88 @@ export type Database = {
           },
         ]
       }
+      professional_extras: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          order_index: number | null
+          price: number
+          profile_id: string | null
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          order_index?: number | null
+          price: number
+          profile_id?: string | null
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          order_index?: number | null
+          price?: number
+          profile_id?: string | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_extras_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      professional_pricing: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          daily_rate: number | null
+          hourly_rate: number | null
+          id: string
+          profile_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          daily_rate?: number | null
+          hourly_rate?: number | null
+          id?: string
+          profile_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          daily_rate?: number | null
+          hourly_rate?: number | null
+          id?: string
+          profile_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_pricing_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           approval_status: string | null
@@ -777,6 +889,58 @@ export type Database = {
           user_type?: string | null
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          client_id: string | null
+          comment: string | null
+          created_at: string | null
+          id: string
+          opportunity_id: string | null
+          professional_id: string | null
+          rating: number | null
+        }
+        Insert: {
+          client_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          opportunity_id?: string | null
+          professional_id?: string | null
+          rating?: number | null
+        }
+        Update: {
+          client_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          opportunity_id?: string | null
+          professional_id?: string | null
+          rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_messages: {
         Row: {
