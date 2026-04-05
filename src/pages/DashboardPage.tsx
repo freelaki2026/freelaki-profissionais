@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Bell, MapPin, FileText, Clock } from "lucide-react";
+import { Zap, Bell, MapPin, FileText, Clock, TrendingUp } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,24 @@ import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
 import BottomNav from "@/components/dashboard/BottomNav";
 import OpportunityCard from "@/components/dashboard/OpportunityCard";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
+
+const SOUND_ONLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.mp3';
+const SOUND_OFFLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.mp3';
+
+const playSound = (url: string) => {
+  try {
+    const audio = new Audio(url);
+    audio.volume = 0.6;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('Som bloqueado pelo browser:', err);
+      });
+    }
+  } catch (err) {
+    console.warn('Erro ao criar Audio:', err);
+  }
+};
 
 interface Profile {
   full_name: string | null;
