@@ -269,6 +269,9 @@ const DashboardPage = () => {
   const [userCategories, setUserCategories] = useState<string[]>([]);
   const [transitionPhase, setTransitionPhase] = useState<"idle" | "going-online" | "going-offline">("idle");
   const [showOnlineLayout, setShowOnlineLayout] = useState(false);
+  const [weekTotal, setWeekTotal] = useState(0);
+  const [weekCount, setWeekCount] = useState(0);
+  const [financialSummary, setFinancialSummary] = useState<{ available: number; reserved: number }>({ available: 0, reserved: 0 });
 
   // Load profile
   useEffect(() => {
