@@ -145,24 +145,35 @@ const OportunidadeDetalhePage = () => {
     if (!user || !opp) return;
     setAccepting(true);
 
-    const { error } = await supabase
-      .from("opportunities")
-      .update({
-        status: "accepted",
-        accepted_by: user.id,
-        accepted_at: new Date().toISOString(),
-      })
-      .eq("id", opp.id)
-      .eq("status", "open");
+    const { data, error } = await supabase.rpc("accept_opportunity", {
+      p_opportunity_id: opp.id,
+    });
 
-    if (!error) {
+    if (error) {
+      toast.error("Erro ao aceitar. Tente novamente.");
       setShowModal(false);
-      setTimeout(() => setShowNextSteps(true), 150);
-      window.dispatchEvent(new CustomEvent("opportunity_accepted", { detail: { id: opp.id } }));
-    } else {
-      toast.error("Esta oportunidade já foi aceita por outro profissional.");
-      setShowModal(false);
+      setAccepting(false);
+      return;
     }
+
+    const result = typeof data === "string" ? JSON.parse(data) : data;
+
+    if (!result?.success) {
+      if (result?.error === "already_taken") {
+        toast.error("Esta oportunidade não está mais disponível.");
+      } else {
+        toast.error("Erro ao aceitar. Tente novamente.");
+      }
+      setShowModal(false);
+      setAccepting(false);
+      return;
+    }
+
+    // Success
+    setShowModal(false);
+    window.dispatchEvent(new CustomEvent("opportunity_accepted", { detail: { id: opp.id } }));
+    toast.success("Oportunidade aceita! Mensagem enviada ao cliente. 🎉");
+    setTimeout(() => setShowNextSteps(true), 150);
     setAccepting(false);
   };
 
