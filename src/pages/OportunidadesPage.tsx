@@ -146,6 +146,18 @@ const OportunidadesPage = () => {
     return () => { supabase.removeChannel(channel); };
   }, [user, loadOpps]);
 
+  // Listen for opportunity_declined custom event
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
+      }
+    };
+    window.addEventListener("opportunity_declined", handler);
+    return () => window.removeEventListener("opportunity_declined", handler);
+  }, []);
+
   const toggleOnline = async () => {
     if (!user || !profile) return;
     setTogglingOnline(true);
