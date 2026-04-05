@@ -1112,6 +1112,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_opportunity: { Args: { p_opportunity_id: string }; Returns: Json }
       approve_document: { Args: { p_document_id: string }; Returns: undefined }
       approve_professional: {
         Args: { p_profile_id: string }
