@@ -410,13 +410,33 @@ const OportunidadeDetalhePage = () => {
       {/* FOOTER */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-[hsl(var(--border))] bg-white px-6 py-4">
         {opp.status === "open" ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setShowModal(true)}
-            className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white"
-          >
-            Aceitar Oportunidade ⚡
-          </motion.button>
+          isPrivateForMe ? (
+            <div className="flex gap-2.5">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowModal(true)}
+                className="flex h-[52px] flex-1 items-center justify-center rounded-[14px] bg-[hsl(var(--primary))] text-[15px] font-bold text-white"
+              >
+                Aceitar ⚡
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowDeclineModal(true)}
+                className="flex h-[52px] flex-1 items-center justify-center rounded-[14px] text-[15px] font-semibold"
+                style={{ background: "#FFEBEE", color: "#C62828" }}
+              >
+                Recusar
+              </motion.button>
+            </div>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowModal(true)}
+              className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white"
+            >
+              Aceitar Oportunidade ⚡
+            </motion.button>
+          )
         ) : (
           <div className="rounded-2xl bg-[#F7F7F7] py-4 text-center text-sm text-[hsl(var(--muted-foreground))]">
             Esta oportunidade não está mais disponível
