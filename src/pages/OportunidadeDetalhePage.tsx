@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, MapPin, DollarSign, Calendar, Tag } from "lucide-react";
+import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,8 @@ interface OppDetail {
   client_name: string | null;
   client_avatar: string | null;
   client_verified: boolean;
+  is_private: boolean;
+  target_professional_id: string | null;
 }
 
 const formatScheduleDetail = (scheduledAt: string | null): string => {
@@ -67,7 +69,9 @@ const OportunidadeDetalhePage = () => {
   const [networkError, setNetworkError] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showNextSteps, setShowNextSteps] = useState(false);
-  const [accepting, setAccepting] = useState(false);
+   const [accepting, setAccepting] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [declining, setDeclining] = useState(false);
 
   const loadOpp = async () => {
     if (!id) return;
@@ -76,7 +80,7 @@ const OportunidadeDetalhePage = () => {
     const { data, error } = await supabase
       .from("opportunities")
       .select(
-        "id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
+        "id, title, description, budget, status, scheduled_at, location_address, is_private, target_professional_id, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
       )
       .eq("id", id)
       .single();
@@ -98,6 +102,8 @@ const OportunidadeDetalhePage = () => {
         client_name: prof?.full_name || null,
         client_avatar: prof?.avatar_url || null,
         client_verified: prof?.is_approved || false,
+        is_private: data.is_private || false,
+        target_professional_id: data.target_professional_id || null,
       });
     } else if (error) {
       // PGRST116 = not found (single row expected but 0 returned)
@@ -160,6 +166,23 @@ const OportunidadeDetalhePage = () => {
     setAccepting(false);
   };
 
+  const handleDecline = async () => {
+    if (!opp) return;
+    setDeclining(true);
+    const { error } = await supabase.rpc("decline_private_opportunity", {
+      p_opportunity_id: opp.id,
+    });
+    if (!error) {
+      toast.success("Proposta recusada.");
+      navigate("/dashboard");
+    } else {
+      toast.error("Erro ao recusar proposta.");
+    }
+    setDeclining(false);
+    setShowDeclineModal(false);
+  };
+
+  const isPrivateForMe = opp?.is_private && opp?.target_professional_id === user?.id;
   const statusBadge = opp ? getStatusBadge(opp.status) : null;
 
   if (loading) {
@@ -283,6 +306,24 @@ const OportunidadeDetalhePage = () => {
         transition={{ duration: 0.3 }}
         className="flex-1 px-6 pb-32 pt-5"
       >
+        {/* Private opportunity banner */}
+        {isPrivateForMe && opp.status === "open" && (
+          <div
+            className="mb-4 rounded-xl p-3.5"
+            style={{ background: "rgba(39,110,241,0.08)" }}
+          >
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4" style={{ color: "#276EF1" }} />
+              <span className="text-sm font-semibold" style={{ color: "#276EF1" }}>
+                Proposta exclusiva para você
+              </span>
+            </div>
+            <p className="mt-0.5 text-xs" style={{ color: "#767676" }}>
+              Este cliente escolheu você especificamente.
+            </p>
+          </div>
+        )}
+
         {/* Category badge */}
         <div className="flex items-center gap-2">
           <span className="text-[28px] leading-none">{opp.category_icon}</span>
@@ -369,13 +410,33 @@ const OportunidadeDetalhePage = () => {
       {/* FOOTER */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-[hsl(var(--border))] bg-white px-6 py-4">
         {opp.status === "open" ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setShowModal(true)}
-            className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white"
-          >
-            Aceitar Oportunidade ⚡
-          </motion.button>
+          isPrivateForMe ? (
+            <div className="flex gap-2.5">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowModal(true)}
+                className="flex h-[52px] flex-1 items-center justify-center rounded-[14px] bg-[hsl(var(--primary))] text-[15px] font-bold text-white"
+              >
+                Aceitar ⚡
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowDeclineModal(true)}
+                className="flex h-[52px] flex-1 items-center justify-center rounded-[14px] text-[15px] font-semibold"
+                style={{ background: "#FFEBEE", color: "#C62828" }}
+              >
+                Recusar
+              </motion.button>
+            </div>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowModal(true)}
+              className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white"
+            >
+              Aceitar Oportunidade ⚡
+            </motion.button>
+          )
         ) : (
           <div className="rounded-2xl bg-[#F7F7F7] py-4 text-center text-sm text-[hsl(var(--muted-foreground))]">
             Esta oportunidade não está mais disponível
@@ -508,6 +569,58 @@ const OportunidadeDetalhePage = () => {
                 className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-base font-bold text-white"
               >
                 Ir para o início
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* DECLINE MODAL */}
+      <AnimatePresence>
+        {showDeclineModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !declining && setShowDeclineModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center">
+                <AlertCircle className="h-8 w-8" style={{ color: "#C62828" }} />
+              </div>
+              <h2 className="mt-3 text-center text-xl font-bold text-foreground">
+                Recusar esta proposta?
+              </h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed" style={{ color: "#767676" }}>
+                Ao recusar, a oportunidade ficará visível para outros profissionais. O cliente será notificado.
+              </p>
+              <button
+                onClick={handleDecline}
+                disabled={declining}
+                className="mt-6 flex h-[48px] w-full items-center justify-center rounded-xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#E53935" }}
+              >
+                {declining ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  "Confirmar recusa"
+                )}
+              </button>
+              <button
+                onClick={() => setShowDeclineModal(false)}
+                disabled={declining}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-xl bg-[#F7F7F7] text-base font-semibold text-foreground"
+              >
+                Cancelar
               </button>
             </motion.div>
           </motion.div>

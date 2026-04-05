@@ -553,6 +553,7 @@ export type Database = {
           end_date: string | null
           end_time: string | null
           id: string
+          is_private: boolean | null
           location_address: string | null
           location_lat: number | null
           location_lng: number | null
@@ -563,6 +564,7 @@ export type Database = {
           start_time: string | null
           status: string | null
           subtotal: number | null
+          target_professional_id: string | null
           title: string
           total_amount: number | null
           updated_at: string | null
@@ -580,6 +582,7 @@ export type Database = {
           end_date?: string | null
           end_time?: string | null
           id?: string
+          is_private?: boolean | null
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null
@@ -590,6 +593,7 @@ export type Database = {
           start_time?: string | null
           status?: string | null
           subtotal?: number | null
+          target_professional_id?: string | null
           title: string
           total_amount?: number | null
           updated_at?: string | null
@@ -607,6 +611,7 @@ export type Database = {
           end_date?: string | null
           end_time?: string | null
           id?: string
+          is_private?: boolean | null
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null
@@ -617,6 +622,7 @@ export type Database = {
           start_time?: string | null
           status?: string | null
           subtotal?: number | null
+          target_professional_id?: string | null
           title?: string
           total_amount?: number | null
           updated_at?: string | null
@@ -639,6 +645,13 @@ export type Database = {
           {
             foreignKeyName: "opportunities_client_id_fkey"
             columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_target_professional_id_fkey"
+            columns: ["target_professional_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1107,6 +1120,10 @@ export type Database = {
       check_cpf_cnpj_exists: { Args: { p_cpf_cnpj: string }; Returns: boolean }
       check_email_exists: { Args: { p_email: string }; Returns: boolean }
       check_phone_exists: { Args: { p_phone: string }; Returns: boolean }
+      decline_private_opportunity: {
+        Args: { p_opportunity_id: string }
+        Returns: undefined
+      }
       get_financial_summary: { Args: { p_profile_id: string }; Returns: Json }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       reject_document: {
