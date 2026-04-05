@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Bell, MapPin, FileText, Clock } from "lucide-react";
+import { Zap, Bell, MapPin, FileText, Clock, TrendingUp } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,24 @@ import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
 import BottomNav from "@/components/dashboard/BottomNav";
 import OpportunityCard from "@/components/dashboard/OpportunityCard";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
+
+const SOUND_ONLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.mp3';
+const SOUND_OFFLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.mp3';
+
+const playSound = (url: string) => {
+  try {
+    const audio = new Audio(url);
+    audio.volume = 0.6;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('Som bloqueado pelo browser:', err);
+      });
+    }
+  } catch (err) {
+    console.warn('Erro ao criar Audio:', err);
+  }
+};
 
 interface Profile {
   full_name: string | null;
@@ -251,6 +269,9 @@ const DashboardPage = () => {
   const [userCategories, setUserCategories] = useState<string[]>([]);
   const [transitionPhase, setTransitionPhase] = useState<"idle" | "going-online" | "going-offline">("idle");
   const [showOnlineLayout, setShowOnlineLayout] = useState(false);
+  const [weekTotal, setWeekTotal] = useState(0);
+  const [weekCount, setWeekCount] = useState(0);
+  const [financialSummary, setFinancialSummary] = useState<{ available: number; reserved: number }>({ available: 0, reserved: 0 });
 
   // Load profile
   useEffect(() => {
@@ -419,6 +440,40 @@ const DashboardPage = () => {
     return () => window.removeEventListener("opportunity_accepted", handler);
   }, []);
 
+  // Load earnings summary
+  const loadEarnings = useCallback(async () => {
+    if (!user) return;
+    const { data: summary } = await supabase.rpc('get_financial_summary', { p_profile_id: user.id });
+    if (summary) {
+      const s = typeof summary === 'string' ? JSON.parse(summary) : summary;
+      setFinancialSummary({ available: Number(s.available) || 0, reserved: Number(s.reserved) || 0 });
+    }
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const { data: weekEarnings } = await supabase
+      .from('earnings')
+      .select('net_amount, status, created_at')
+      .eq('profile_id', user.id)
+      .gte('created_at', startOfWeek.toISOString());
+    setWeekTotal(weekEarnings?.reduce((sum, e) => sum + Number(e.net_amount), 0) || 0);
+    setWeekCount(weekEarnings?.length || 0);
+  }, [user]);
+
+  useEffect(() => { loadEarnings(); }, [loadEarnings]);
+
+  // Realtime for earnings
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('earnings-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'earnings', filter: `profile_id=eq.${user.id}` }, () => {
+        loadEarnings();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadEarnings]);
+
   const toggleOnline = async () => {
     if (!user || transitionPhase !== "idle") return;
     setTogglingOnline(true);
@@ -431,14 +486,8 @@ const DashboardPage = () => {
     }
     setIsOnline(newVal);
 
-    // Sound feedback — create fresh Audio each time to avoid cache
-    const sound = new Audio(
-      newVal
-        ? 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.MP3?t=' + Date.now()
-        : 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.MP3?t=' + Date.now()
-    );
-    sound.volume = 0.6;
-    sound.play().catch(() => {});
+    // Sound feedback — called in click handler for browser autoplay policy
+    playSound(newVal ? SOUND_ONLINE : SOUND_OFFLINE);
 
     if (newVal) {
       // OFFLINE → ONLINE transition
@@ -598,6 +647,56 @@ const DashboardPage = () => {
                     </p>
                   )}
                 </AnimatePresence>
+              </div>
+            </div>
+
+            {/* EARNINGS PREVIEW CARD */}
+            <div
+              className="mt-4 cursor-pointer"
+              onClick={() => navigate('/ganhos')}
+              style={{
+                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
+                opacity: transitionPhase === "idle" ? 1 : 0,
+                transition: "transform 400ms ease 300ms, opacity 400ms ease 300ms",
+              }}
+            >
+              <div className="relative rounded-[20px] p-4" style={{ background: "#000000" }}>
+                {financialSummary.available > 0 && (
+                  <span
+                    className="absolute -top-2 right-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+                    style={{ background: "#2E7D32", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }}
+                  >
+                    💰 Disponível para saque
+                  </span>
+                )}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <TrendingUp size={16} color="#2E7D32" />
+                    <span className="text-[13px] font-medium text-[#767676]">Ganhos desta semana</span>
+                  </div>
+                  <span className="text-[12px] font-medium text-[#276EF1]">Ver tudo →</span>
+                </div>
+                <p className="mt-2 text-[28px] font-extrabold text-white">
+                  R$ {weekTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="mt-0.5 text-[12px] text-[#767676]">
+                  {weekCount} serviço{weekCount !== 1 ? 's' : ''} realizado{weekCount !== 1 ? 's' : ''}
+                </p>
+                <div className="my-3" style={{ height: 1, background: "rgba(255,255,255,0.08)" }} />
+                <div className="flex gap-3">
+                  <div className="flex-1 rounded-[12px] p-2.5" style={{ background: "rgba(255,255,255,0.05)" }}>
+                    <span className="text-[11px] text-[#767676]">Disponível</span>
+                    <p className="text-[15px] font-bold text-[#2E7D32]">
+                      R$ {financialSummary.available.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div className="flex-1 rounded-[12px] p-2.5" style={{ background: "rgba(255,255,255,0.05)" }}>
+                    <span className="text-[11px] text-[#767676]">Reservado</span>
+                    <p className="text-[15px] font-bold text-[#F59E0B]">
+                      R$ {financialSummary.reserved.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
