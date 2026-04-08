@@ -264,9 +264,12 @@ const DashboardPage = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [togglingOnline, setTogglingOnline] = useState(false);
   const [available, setAvailable] = useState<Opp[]>([]);
+  const [applications, setApplications] = useState<{ id: string; opportunity: Opp }[]>([]);
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(true);
   const [userCategories, setUserCategories] = useState<string[]>([]);
+  const [applyModal, setApplyModal] = useState<Opp | null>(null);
+  const [applyingId, setApplyingId] = useState(false);
   const [transitionPhase, setTransitionPhase] = useState<"idle" | "going-online" | "going-offline">("idle");
   const [showOnlineLayout, setShowOnlineLayout] = useState(false);
   const [weekTotal, setWeekTotal] = useState(0);
