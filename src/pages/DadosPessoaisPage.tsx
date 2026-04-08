@@ -114,7 +114,7 @@ export default function DadosPessoaisPage() {
     if (!user) return;
     if (!cpfCnpjLocked && cpfCnpj && !validateDoc()) return;
     setSaving(true);
-    const updates: Record<string, unknown> = {
+    const updates: { full_name: string; phone: string; cpf_cnpj?: string; cpf_cnpj_type?: string; cpf_cnpj_locked?: boolean } = {
       full_name: fullName.trim(),
       phone: phone.replace(/\D/g, ""),
     };
