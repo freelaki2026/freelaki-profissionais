@@ -216,11 +216,19 @@ const OportunidadesPage = () => {
   // Listen for custom events
   useEffect(() => {
     const handler = () => loadData();
+    const unavailableHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
+      }
+    };
     window.addEventListener("opportunity_declined", handler);
     window.addEventListener("opportunity_accepted", handler);
+    window.addEventListener("opportunity_unavailable", unavailableHandler);
     return () => {
       window.removeEventListener("opportunity_declined", handler);
       window.removeEventListener("opportunity_accepted", handler);
+      window.removeEventListener("opportunity_unavailable", unavailableHandler);
     };
   }, [loadData]);
 

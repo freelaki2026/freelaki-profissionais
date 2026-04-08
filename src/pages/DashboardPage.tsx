@@ -526,7 +526,7 @@ const DashboardPage = () => {
     setApplyModal(null);
   };
 
-  // Listen for opportunity_accepted custom event from detail page
+  // Listen for custom events from detail page
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
@@ -534,11 +534,19 @@ const DashboardPage = () => {
         setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
       }
     };
+    const unavailableHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
+      }
+    };
     window.addEventListener("opportunity_accepted", handler);
     window.addEventListener("opportunity_declined", handler);
+    window.addEventListener("opportunity_unavailable", unavailableHandler);
     return () => {
       window.removeEventListener("opportunity_accepted", handler);
       window.removeEventListener("opportunity_declined", handler);
+      window.removeEventListener("opportunity_unavailable", unavailableHandler);
     };
   }, []);
 
