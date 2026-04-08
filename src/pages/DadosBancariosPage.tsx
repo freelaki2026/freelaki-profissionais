@@ -199,7 +199,7 @@ export default function DadosBancariosPage() {
       ? {
           profile_id: user.id,
           payment_type: "pix",
-          pix_key_type: pixKeyType,
+          pix_key_type: pixKeyType.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
           pix_key: pixKey,
           bank_name: null,
           bank_code: null,
