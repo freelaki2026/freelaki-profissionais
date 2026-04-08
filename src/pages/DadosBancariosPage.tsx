@@ -192,7 +192,7 @@ export default function DadosBancariosPage() {
     if (!user || !canSave) return;
     setSaving(true);
     try {
-      const base: Record<string, unknown> = {
+      const base: any = {
         profile_id: user.id,
         payment_type: method,
         updated_at: new Date().toISOString(),
