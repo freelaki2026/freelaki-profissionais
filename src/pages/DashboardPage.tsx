@@ -363,7 +363,7 @@ const DashboardPage = () => {
     // Available (exclude already applied)
     const { data: avail } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon), opportunity_applications(id)")
       .in("status", ["open", "pending_selection"])
       .eq("is_private", false)
       .in("category_id", catIds.length > 0 ? catIds : ["__none__"])
@@ -378,6 +378,7 @@ const DashboardPage = () => {
             budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
             location_address: o.location_address,
             category_name: o.categories?.name, category_icon: o.categories?.icon,
+            application_count: o.opportunity_applications?.length || 0,
           }))
       );
     }
