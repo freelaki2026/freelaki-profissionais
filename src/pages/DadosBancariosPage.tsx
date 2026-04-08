@@ -191,53 +191,58 @@ export default function DadosBancariosPage() {
   const handleSave = async () => {
     if (!user || !canSave) return;
     setSaving(true);
-    try {
-      const base: any = {
-        profile_id: user.id,
-        payment_type: method,
-        updated_at: new Date().toISOString(),
-      };
 
-      if (method === "pix") {
-        Object.assign(base, {
+    const bk = bankCode === "outro" ? customBankCode : bankCode;
+    const bankObj = BANKS.find(b => b.code === bankCode);
+
+    const saveData: any = method === "pix"
+      ? {
+          profile_id: user.id,
+          payment_type: "pix",
           pix_key_type: pixKeyType,
           pix_key: pixKey,
-          bank_code: null, bank_name: null, agency: null, agency_digit: null,
-          account_number: null, account_digit: null, account_type: null,
-          account_holder_name: null, account_holder_cpf_cnpj: null,
-        });
-      } else {
-        const bk = bankCode === "outro" ? customBankCode : bankCode;
-        const bankObj = BANKS.find(b => b.code === bankCode);
-        Object.assign(base, {
-          bank_code: bk,
+          bank_name: null,
+          bank_code: null,
+          agency: null,
+          agency_digit: null,
+          account_number: null,
+          account_digit: null,
+          account_type: null,
+          account_holder_name: null,
+          account_holder_cpf_cnpj: null,
+        }
+      : {
+          profile_id: user.id,
+          payment_type: "conta",
+          pix_key_type: null,
+          pix_key: null,
           bank_name: bankObj && bankCode !== "outro" ? bankObj.name : `Banco ${bk}`,
-          agency, agency_digit: agencyDigit || null,
-          account_number: accountNumber, account_digit: accountDigit,
+          bank_code: bk,
+          agency: agency,
+          agency_digit: agencyDigit || null,
+          account_number: accountNumber,
+          account_digit: accountDigit,
           account_type: accountType,
           account_holder_name: holderName,
           account_holder_cpf_cnpj: holderDoc,
-          pix_key: null, pix_key_type: null,
-        });
-      }
+        };
 
-      const { data: existing } = await supabase.from("bank_accounts").select("id").eq("profile_id", user.id).maybeSingle();
-      if (existing) {
-        const { error } = await supabase.from("bank_accounts").update(base).eq("profile_id", user.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("bank_accounts").insert(base as any);
-        if (error) throw error;
-      }
-      setHasSavedData(true);
-      setSavedData(base);
-      setShowSavedCard(true);
-      toast.success("Dados bancários salvos! ✓", { style: { background: "#000", color: "#fff" } });
-    } catch {
+    const { error } = await supabase
+      .from("bank_accounts")
+      .upsert(saveData, { onConflict: "profile_id" });
+
+    if (error) {
+      console.error("Erro banco:", error);
       toast.error("Erro ao salvar. Tente novamente.");
-    } finally {
       setSaving(false);
+      return;
     }
+
+    setHasSavedData(true);
+    setSavedData(saveData);
+    setShowSavedCard(true);
+    toast.success("Dados bancários salvos! ✓", { style: { background: "#000", color: "#fff" } });
+    setSaving(false);
   };
 
   if (loading) {

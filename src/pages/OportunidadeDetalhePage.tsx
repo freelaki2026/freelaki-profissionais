@@ -68,6 +68,8 @@ const OportunidadeDetalhePage = () => {
   const [applying, setApplying] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [finishing, setFinishing] = useState(false);
 
   const loadOpp = async () => {
     if (!id) return;
