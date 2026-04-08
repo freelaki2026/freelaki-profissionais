@@ -50,6 +50,7 @@ interface Opp {
   location_address?: string | null;
   category_name?: string;
   category_icon?: string;
+  application_count?: number;
 }
 
 const formatSchedule = (scheduledAt: string | null | undefined): string => {
