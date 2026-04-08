@@ -111,46 +111,47 @@ const PulsingCircles = ({
 );
 
 /* ───── Carousel Card ───── */
-const CarouselOppCard = ({ opp }: { opp: Opp }) => {
+const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) => {
   const navigate = useNavigate();
   const shortAddr = extractShortAddress(opp.location_address);
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.97 }}
-      transition={{ duration: 0.15 }}
-      onClick={() => navigate(`/oportunidade/${opp.id}`)}
-      className="relative flex h-[160px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
+    <div
+      className="relative flex h-[170px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
       style={{
         scrollSnapAlign: "start",
         boxShadow: "0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
       }}
     >
-      <span
-        className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
-        style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
-      >
-        <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
-        <span className="truncate">{opp.category_name || "Geral"}</span>
-      </span>
-      <p
-        className="mt-2.5 text-[15px] font-bold text-foreground leading-[1.3]"
-        style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-      >
-        {opp.title}
-      </p>
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+      <button onClick={() => navigate(`/oportunidade/${opp.id}`)} className="flex flex-1 flex-col text-left">
+        <span
+          className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
+          style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
+        >
+          <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
+          <span className="truncate">{opp.category_name || "Geral"}</span>
+        </span>
+        <p
+          className="mt-2 text-[14px] font-bold text-foreground leading-[1.3]"
+          style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+        >
+          {opp.title}
+        </p>
         {shortAddr && (
-          <span className="flex items-center gap-0.5 text-[11px] text-[#767676] max-w-[100px] truncate">
+          <span className="mt-1.5 flex items-center gap-0.5 text-[11px] text-[#767676] max-w-[140px] truncate">
             <MapPin className="h-3 w-3 shrink-0" />
             <span className="truncate">{shortAddr}</span>
           </span>
         )}
-        <span className="rounded-full bg-black px-2.5 py-1 text-[11px] font-semibold text-white whitespace-nowrap">
-          {formatSchedule(opp.scheduled_at)}
-        </span>
-      </div>
-    </motion.button>
+      </button>
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={(e) => { e.stopPropagation(); onApply(); }}
+        className="mt-auto flex h-[32px] w-full items-center justify-center rounded-[10px] bg-[#276EF1] text-[12px] font-semibold text-white"
+      >
+        Me candidatar →
+      </motion.button>
+    </div>
   );
 };
 
