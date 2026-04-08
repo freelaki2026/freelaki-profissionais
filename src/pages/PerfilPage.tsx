@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   Camera,
@@ -9,6 +9,8 @@ import {
   Clock,
   AlertCircle,
   XCircle,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,12 +23,78 @@ interface ProfileData {
   email: string;
   avatar_url: string | null;
   approval_status: string | null;
+  instagram: string | null;
+  tiktok: string | null;
+  youtube: string | null;
+  linkedin: string | null;
 }
 
 interface CategoryChip {
   name: string;
   icon: string | null;
 }
+
+type SocialKey = "instagram" | "tiktok" | "youtube" | "linkedin";
+
+const SOCIAL_NETWORKS: {
+  key: SocialKey;
+  label: string;
+  gradient?: string;
+  bg: string;
+  placeholder: string;
+  hint: string;
+}[] = [
+  {
+    key: "instagram",
+    label: "Instagram",
+    gradient: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
+    bg: "",
+    placeholder: "@freelaki",
+    hint: 'Ex: @freelaki ou freelaki',
+  },
+  {
+    key: "tiktok",
+    label: "TikTok",
+    bg: "#000000",
+    placeholder: "@freelaki",
+    hint: "Ex: @freelaki",
+  },
+  {
+    key: "youtube",
+    label: "YouTube",
+    bg: "#FF0000",
+    placeholder: "FreelakiOficial",
+    hint: "Ex: FreelakiOficial ou URL do canal",
+  },
+  {
+    key: "linkedin",
+    label: "LinkedIn",
+    bg: "#0077B5",
+    placeholder: "thiago-kenned",
+    hint: "Ex: thiago-kenned ou URL do perfil",
+  },
+];
+
+const SocialCircle = ({ network, size = 32 }: { network: typeof SOCIAL_NETWORKS[number]; size?: number }) => (
+  <div
+    style={{
+      width: size,
+      height: size,
+      borderRadius: "50%",
+      background: network.gradient || network.bg,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff",
+      fontFamily: "Inter",
+      fontWeight: 700,
+      fontSize: size * 0.4,
+      flexShrink: 0,
+    }}
+  >
+    {network.label[0]}
+  </div>
+);
 
 const phoneMask = (value: string) => {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -63,6 +131,21 @@ const PerfilPage = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isDirty, setIsDirty] = useState(false);
 
+  // Social media
+  const [socials, setSocials] = useState<Record<SocialKey, string>>({
+    instagram: "",
+    tiktok: "",
+    youtube: "",
+    linkedin: "",
+  });
+  const [showSelectSheet, setShowSelectSheet] = useState(false);
+  const [showInputSheet, setShowInputSheet] = useState(false);
+  const [editingNetwork, setEditingNetwork] = useState<SocialKey | null>(null);
+  const [inputValue, setInputValue] = useState("");
+
+  const addedSocials = SOCIAL_NETWORKS.filter((n) => socials[n.key].trim() !== "");
+  const availableSocials = SOCIAL_NETWORKS.filter((n) => socials[n.key].trim() === "");
+
   const loadProfile = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -70,7 +153,7 @@ const PerfilPage = () => {
     const [{ data: prof }, { data: cats }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, phone, bio, email, avatar_url, approval_status")
+        .select("full_name, phone, bio, email, avatar_url, approval_status, instagram, tiktok, youtube, linkedin")
         .eq("id", user.id)
         .single(),
       supabase
@@ -80,16 +163,23 @@ const PerfilPage = () => {
     ]);
 
     if (prof) {
-      setProfile(prof);
-      setFullName(prof.full_name || "");
-      setPhone(prof.phone ? phoneMask(prof.phone) : "");
-      setBio(prof.bio || "");
-      setAvatarPreview(prof.avatar_url);
+      const p = prof as any;
+      setProfile(p);
+      setFullName(p.full_name || "");
+      setPhone(p.phone ? phoneMask(p.phone) : "");
+      setBio(p.bio || "");
+      setAvatarPreview(p.avatar_url);
+      setSocials({
+        instagram: p.instagram || "",
+        tiktok: p.tiktok || "",
+        youtube: p.youtube || "",
+        linkedin: p.linkedin || "",
+      });
     }
 
     if (cats) {
       setCategories(
-        cats.map((c: any) => ({
+        (cats as any[]).map((c) => ({
           name: c.categories?.name || "Geral",
           icon: c.categories?.icon || "📦",
         }))
@@ -123,7 +213,6 @@ const PerfilPage = () => {
 
     let newAvatarUrl = profile?.avatar_url || null;
 
-    // Upload avatar if changed
     if (avatarFile) {
       const path = `${user.id}/avatar.jpg`;
       const { error: upErr } = await supabase.storage
@@ -145,7 +234,11 @@ const PerfilPage = () => {
         phone: phone.replace(/\D/g, "") || null,
         bio: bio.trim() || null,
         avatar_url: newAvatarUrl,
-      })
+        instagram: socials.instagram.trim() || null,
+        tiktok: socials.tiktok.trim() || null,
+        youtube: socials.youtube.trim() || null,
+        linkedin: socials.linkedin.trim() || null,
+      } as any)
       .eq("id", user.id);
 
     if (!error) {
@@ -158,6 +251,27 @@ const PerfilPage = () => {
       toast.error("Erro ao salvar perfil.");
     }
     setSaving(false);
+  };
+
+  const removeSocial = (key: SocialKey) => {
+    setSocials((prev) => ({ ...prev, [key]: "" }));
+    setIsDirty(true);
+  };
+
+  const openInputForNetwork = (key: SocialKey) => {
+    setEditingNetwork(key);
+    setInputValue(socials[key] || "");
+    setShowSelectSheet(false);
+    setTimeout(() => setShowInputSheet(true), 200);
+  };
+
+  const saveSocialInput = () => {
+    if (!editingNetwork) return;
+    setSocials((prev) => ({ ...prev, [editingNetwork]: inputValue.trim() }));
+    setIsDirty(true);
+    setShowInputSheet(false);
+    setEditingNetwork(null);
+    setInputValue("");
   };
 
   const statusConfig: Record<
@@ -217,6 +331,7 @@ const PerfilPage = () => {
   }
 
   const status = statusConfig[profile?.approval_status || "incomplete"] || statusConfig.incomplete;
+  const currentNetwork = editingNetwork ? SOCIAL_NETWORKS.find((n) => n.key === editingNetwork) : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
@@ -284,22 +399,16 @@ const PerfilPage = () => {
           SOBRE VOCÊ
         </span>
         <div className="mt-2.5 rounded-2xl bg-white p-4">
-          {/* Name */}
           <div>
             <label className="text-xs text-[hsl(var(--muted-foreground))]">Nome completo</label>
             <input
               value={fullName}
-              onChange={(e) => {
-                setFullName(e.target.value);
-                setIsDirty(true);
-              }}
+              onChange={(e) => { setFullName(e.target.value); setIsDirty(true); }}
               className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
               placeholder="Seu nome"
             />
           </div>
           <div className="my-3 h-px bg-[#F7F7F7]" />
-
-          {/* Phone */}
           <div>
             <label className="text-xs text-[hsl(var(--muted-foreground))]">Telefone</label>
             <input
@@ -311,30 +420,75 @@ const PerfilPage = () => {
             />
           </div>
           <div className="my-3 h-px bg-[#F7F7F7]" />
-
-          {/* Bio */}
           <div className="relative">
             <label className="text-xs text-[hsl(var(--muted-foreground))]">Bio / Apresentação</label>
             <textarea
               value={bio}
-              onChange={(e) => {
-                if (e.target.value.length <= 200) {
-                  setBio(e.target.value);
-                  setIsDirty(true);
-                }
-              }}
+              onChange={(e) => { if (e.target.value.length <= 200) { setBio(e.target.value); setIsDirty(true); } }}
               className="mt-1 w-full resize-none text-sm text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
               style={{ minHeight: 80 }}
               placeholder="Conte um pouco sobre você e sua experiência..."
             />
-            <span
-              className={`absolute bottom-1 right-0 text-[11px] ${
-                bio.length > 180 ? "text-[#E53935]" : "text-[hsl(var(--muted-foreground))]"
-              }`}
-            >
+            <span className={`absolute bottom-1 right-0 text-[11px] ${bio.length > 180 ? "text-[#E53935]" : "text-[hsl(var(--muted-foreground))]"}`}>
               {bio.length}/200
             </span>
           </div>
+        </div>
+
+        {/* REDES SOCIAIS */}
+        <span className="mt-5 block text-[10px] font-semibold tracking-[2px] text-[#767676]">
+          REDES SOCIAIS
+        </span>
+        <p style={{ fontFamily: "Inter", fontWeight: 400, fontSize: 12, color: "#767676", marginTop: 4 }}>
+          Opcional — até 4 redes. Aparecem no seu perfil público.
+        </p>
+        <div className="mt-2.5 rounded-2xl bg-white p-4">
+          {addedSocials.length > 0 ? (
+            addedSocials.map((network, i) => (
+              <div
+                key={network.key}
+                className="flex items-center gap-3"
+                style={{
+                  padding: "10px 0",
+                  borderBottom: i < addedSocials.length - 1 ? "1px solid #F7F7F7" : "none",
+                }}
+              >
+                <SocialCircle network={network} size={32} />
+                <span style={{ fontFamily: "Inter", fontWeight: 600, fontSize: 13, color: "#000", width: 90 }}>
+                  {network.label}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "Inter", fontWeight: 400, fontSize: 13, color: "#767676",
+                    flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}
+                >
+                  {socials[network.key]}
+                </span>
+                <button onClick={() => removeSocial(network.key)} className="shrink-0">
+                  <Trash2 size={16} color="#E53935" />
+                </button>
+              </div>
+            ))
+          ) : (
+            <p style={{ fontFamily: "Inter", fontWeight: 400, fontSize: 13, color: "#767676", textAlign: "center", padding: "8px 0" }}>
+              Nenhuma rede adicionada
+            </p>
+          )}
+
+          {addedSocials.length < 4 && (
+            <button
+              onClick={() => setShowSelectSheet(true)}
+              className="mt-3 flex w-full items-center justify-center gap-2"
+              style={{
+                height: 44, borderRadius: 12, background: "#F7F7F7",
+                border: "1px dashed #276EF1", fontFamily: "Inter", fontWeight: 600,
+                fontSize: 14, color: "#276EF1",
+              }}
+            >
+              <Plus size={16} /> Adicionar rede social
+            </button>
+          )}
         </div>
 
         {/* ACESSO */}
@@ -366,10 +520,7 @@ const PerfilPage = () => {
         <div className="mt-2.5 rounded-2xl bg-white p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-foreground">Especialidades</span>
-            <button
-              onClick={() => navigate("/categorias")}
-              className="text-[13px] font-medium text-[hsl(var(--primary))]"
-            >
+            <button onClick={() => navigate("/categorias")} className="text-[13px] font-medium text-[hsl(var(--primary))]">
               Editar →
             </button>
           </div>
@@ -388,10 +539,7 @@ const PerfilPage = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-[hsl(var(--muted-foreground))]">Nenhuma categoria</span>
-                <button
-                  onClick={() => navigate("/categorias")}
-                  className="text-[13px] font-medium text-[hsl(var(--primary))]"
-                >
+                <button onClick={() => navigate("/categorias")} className="text-[13px] font-medium text-[hsl(var(--primary))]">
                   + Adicionar
                 </button>
               </div>
@@ -423,6 +571,87 @@ const PerfilPage = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* SELECT NETWORK BOTTOM SHEET */}
+      <AnimatePresence>
+        {showSelectSheet && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => setShowSelectSheet(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white px-5 pb-10 pt-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#E5E5E5]" />
+              <h3 style={{ fontFamily: "Inter", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>
+                Qual rede social?
+              </h3>
+              {availableSocials.map((network) => (
+                <button
+                  key={network.key}
+                  onClick={() => openInputForNetwork(network.key)}
+                  className="flex w-full items-center gap-3"
+                  style={{ padding: "14px 16px", borderBottom: "1px solid #F7F7F7" }}
+                >
+                  <SocialCircle network={network} size={36} />
+                  <span style={{ fontFamily: "Inter", fontWeight: 600, fontSize: 15, color: "#000" }}>
+                    {network.label}
+                  </span>
+                </button>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* INPUT BOTTOM SHEET */}
+      <AnimatePresence>
+        {showInputSheet && currentNetwork && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => { setShowInputSheet(false); setEditingNetwork(null); }}
+          >
+            <motion.div
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white px-5 pb-10 pt-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#E5E5E5]" />
+              <h3 style={{ fontFamily: "Inter", fontWeight: 700, fontSize: 18 }}>
+                {currentNetwork.label}
+              </h3>
+              <p style={{ fontFamily: "Inter", fontWeight: 400, fontSize: 13, color: "#767676", marginTop: 4 }}>
+                {currentNetwork.hint}
+              </p>
+              <input
+                autoFocus
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder={currentNetwork.placeholder}
+                style={{
+                  width: "100%", height: 52, borderRadius: 12, border: "1px solid #E5E5E5",
+                  padding: "0 16px", fontFamily: "Inter", fontSize: 16, outline: "none",
+                  marginTop: 16,
+                }}
+              />
+              <button
+                onClick={saveSocialInput}
+                disabled={!inputValue.trim()}
+                className="mt-4 flex w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ height: 52, background: "#276EF1" }}
+              >
+                Salvar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

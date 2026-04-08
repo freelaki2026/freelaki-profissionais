@@ -913,13 +913,17 @@ export type Database = {
           email_locked: boolean | null
           full_name: string | null
           id: string
+          instagram: string | null
           is_approved: boolean | null
           is_online: boolean | null
+          linkedin: string | null
           phone: string | null
           terms_accepted: boolean | null
           terms_accepted_at: string | null
+          tiktok: string | null
           updated_at: string | null
           user_type: string | null
+          youtube: string | null
         }
         Insert: {
           approval_status?: string | null
@@ -933,13 +937,17 @@ export type Database = {
           email_locked?: boolean | null
           full_name?: string | null
           id: string
+          instagram?: string | null
           is_approved?: boolean | null
           is_online?: boolean | null
+          linkedin?: string | null
           phone?: string | null
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
+          tiktok?: string | null
           updated_at?: string | null
           user_type?: string | null
+          youtube?: string | null
         }
         Update: {
           approval_status?: string | null
@@ -953,13 +961,17 @@ export type Database = {
           email_locked?: boolean | null
           full_name?: string | null
           id?: string
+          instagram?: string | null
           is_approved?: boolean | null
           is_online?: boolean | null
+          linkedin?: string | null
           phone?: string | null
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
+          tiktok?: string | null
           updated_at?: string | null
           user_type?: string | null
+          youtube?: string | null
         }
         Relationships: []
       }
