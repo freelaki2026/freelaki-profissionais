@@ -153,10 +153,12 @@ const PerfilPage = () => {
       setBio(p.bio || "");
       setAvatarPreview(p.avatar_url);
       setSocials({
-        instagram: p.instagram || "",
-        tiktok: p.tiktok || "",
-        youtube: p.youtube || "",
-        linkedin: p.linkedin || "",
+        instagram: p.instagram || "", tiktok: p.tiktok || "",
+        youtube: p.youtube || "", linkedin: p.linkedin || "",
+        behance: p.behance || "", dribbble: p.dribbble || "",
+        figma: p.figma || "", github: p.github || "",
+        vimeo: p.vimeo || "", twitter: p.twitter || "",
+        pinterest: p.pinterest || "", website: p.website || "",
       });
     }
 
