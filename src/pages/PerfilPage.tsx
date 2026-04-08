@@ -34,7 +34,7 @@ interface CategoryChip {
   icon: string | null;
 }
 
-type SocialKey = "instagram" | "tiktok" | "youtube" | "linkedin";
+type SocialKey = "instagram" | "tiktok" | "youtube" | "linkedin" | "behance" | "dribbble" | "figma" | "github" | "vimeo" | "twitter" | "pinterest" | "website";
 
 const SOCIAL_NETWORKS: {
   key: SocialKey;
@@ -43,36 +43,20 @@ const SOCIAL_NETWORKS: {
   bg: string;
   placeholder: string;
   hint: string;
+  icon: string;
 }[] = [
-  {
-    key: "instagram",
-    label: "Instagram",
-    gradient: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
-    bg: "",
-    placeholder: "@freelaki",
-    hint: 'Ex: @freelaki ou freelaki',
-  },
-  {
-    key: "tiktok",
-    label: "TikTok",
-    bg: "#000000",
-    placeholder: "@freelaki",
-    hint: "Ex: @freelaki",
-  },
-  {
-    key: "youtube",
-    label: "YouTube",
-    bg: "#FF0000",
-    placeholder: "FreelakiOficial",
-    hint: "Ex: FreelakiOficial ou URL do canal",
-  },
-  {
-    key: "linkedin",
-    label: "LinkedIn",
-    bg: "#0077B5",
-    placeholder: "thiago-kenned",
-    hint: "Ex: thiago-kenned ou URL do perfil",
-  },
+  { key: "instagram", label: "Instagram", gradient: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)", bg: "", placeholder: "@freelaki", hint: "Ex: @freelaki ou freelaki", icon: "📸" },
+  { key: "tiktok", label: "TikTok", bg: "#000000", placeholder: "@freelaki", hint: "Ex: @freelaki", icon: "🎵" },
+  { key: "youtube", label: "YouTube", bg: "#FF0000", placeholder: "FreelakiOficial", hint: "Ex: FreelakiOficial ou URL do canal", icon: "▶" },
+  { key: "linkedin", label: "LinkedIn", bg: "#0077B5", placeholder: "thiago-kenned", hint: "Ex: thiago-kenned ou URL do perfil", icon: "in" },
+  { key: "behance", label: "Behance", bg: "#1769FF", placeholder: "seuportfolio", hint: "Ex: seuportfolio ou URL do Behance", icon: "Bē" },
+  { key: "dribbble", label: "Dribbble", bg: "#EA4C89", placeholder: "seuuser", hint: "Ex: seuuser ou URL do Dribbble", icon: "🏀" },
+  { key: "figma", label: "Figma", bg: "#A259FF", placeholder: "@seuuser", hint: "Ex: @seuuser ou URL do portfólio Figma", icon: "◆" },
+  { key: "github", label: "GitHub", bg: "#24292E", placeholder: "seuuser", hint: "Ex: seuuser ou URL do GitHub", icon: "🐙" },
+  { key: "vimeo", label: "Vimeo", bg: "#1AB7EA", placeholder: "seucanal", hint: "Ex: seucanal ou URL do Vimeo", icon: "▷" },
+  { key: "twitter", label: "X (Twitter)", bg: "#000000", placeholder: "@seuuser", hint: "Ex: @seuuser", icon: "𝕏" },
+  { key: "pinterest", label: "Pinterest", bg: "#E60023", placeholder: "seuuser", hint: "Ex: seuuser ou URL do Pinterest", icon: "📌" },
+  { key: "website", label: "Website", bg: "#333333", placeholder: "www.seusite.com", hint: "Ex: www.seusite.com.br ou URL completa", icon: "🌐" },
 ];
 
 const SocialCircle = ({ network, size = 32 }: { network: typeof SOCIAL_NETWORKS[number]; size?: number }) => (
