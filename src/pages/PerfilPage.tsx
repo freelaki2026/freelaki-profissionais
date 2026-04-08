@@ -223,6 +223,14 @@ const PerfilPage = () => {
         tiktok: socials.tiktok.trim() || null,
         youtube: socials.youtube.trim() || null,
         linkedin: socials.linkedin.trim() || null,
+        behance: socials.behance.trim() || null,
+        dribbble: socials.dribbble.trim() || null,
+        figma: socials.figma.trim() || null,
+        github: socials.github.trim() || null,
+        vimeo: socials.vimeo.trim() || null,
+        twitter: socials.twitter.trim() || null,
+        pinterest: socials.pinterest.trim() || null,
+        website: socials.website.trim() || null,
       } as any)
       .eq("id", user.id);
 
