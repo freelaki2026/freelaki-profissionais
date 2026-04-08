@@ -70,21 +70,14 @@ const SOCIAL_NETWORKS: {
 const SocialCircle = ({ network, size = 32 }: { network: typeof SOCIAL_NETWORKS[number]; size?: number }) => (
   <div
     style={{
-      width: size,
-      height: size,
-      borderRadius: "50%",
+      width: size, height: size, borderRadius: "50%",
       background: network.gradient || network.bg,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#fff",
-      fontFamily: "Inter",
-      fontWeight: 700,
-      fontSize: size * 0.4,
-      flexShrink: 0,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      color: "#fff", fontFamily: "Inter", fontWeight: 700,
+      fontSize: size * 0.35, flexShrink: 0, lineHeight: 1,
     }}
   >
-    {network.label[0]}
+    {network.icon}
   </div>
 );
 
