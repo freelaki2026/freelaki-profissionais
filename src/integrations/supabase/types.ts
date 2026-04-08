@@ -676,6 +676,45 @@ export type Database = {
           },
         ]
       }
+      opportunity_applications: {
+        Row: {
+          created_at: string | null
+          id: string
+          opportunity_id: string | null
+          professional_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          opportunity_id?: string | null
+          professional_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          opportunity_id?: string | null
+          professional_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_applications_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunity_applications_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           client_id: string | null
@@ -1131,6 +1170,10 @@ export type Database = {
     }
     Functions: {
       accept_opportunity: { Args: { p_opportunity_id: string }; Returns: Json }
+      apply_to_opportunity: {
+        Args: { p_opportunity_id: string }
+        Returns: Json
+      }
       approve_document: { Args: { p_document_id: string }; Returns: undefined }
       approve_professional: {
         Args: { p_profile_id: string }
@@ -1149,6 +1192,10 @@ export type Database = {
       reject_document: {
         Args: { p_document_id: string; p_reason: string }
         Returns: undefined
+      }
+      select_professional: {
+        Args: { p_opportunity_id: string; p_professional_id: string }
+        Returns: Json
       }
       sign_contract: {
         Args: {
