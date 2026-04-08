@@ -326,21 +326,47 @@ const DashboardPage = () => {
     const catIds = cats?.map((r) => r.category_id!).filter(Boolean) || [];
     setUserCategories(catIds);
 
+    // Load my pending applications
+    const { data: myApps } = await supabase
+      .from("opportunity_applications")
+      .select("id, opportunity_id, status, opportunities(id, title, description, budget, status, scheduled_at, location_address, categories(name, icon))")
+      .eq("professional_id", user.id)
+      .eq("status", "pending");
+    
+    const appliedIds = new Set(myApps?.map((a: any) => a.opportunity_id) || []);
+    
+    const appsList = (myApps || [])
+      .filter((a: any) => a.opportunities && ["open", "pending_selection"].includes(a.opportunities.status))
+      .map((a: any) => ({
+        id: a.id,
+        opportunity: {
+          id: a.opportunities.id, title: a.opportunities.title, description: a.opportunities.description,
+          budget: a.opportunities.budget, status: a.opportunities.status, scheduled_at: a.opportunities.scheduled_at,
+          location_address: a.opportunities.location_address,
+          category_name: a.opportunities.categories?.name, category_icon: a.opportunities.categories?.icon,
+        } as Opp,
+      }));
+    setApplications(appsList);
+
+    // Available (exclude already applied)
     const { data: avail } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
-      .eq("status", "open")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+      .in("status", ["open", "pending_selection"])
+      .eq("is_private", false)
       .in("category_id", catIds.length > 0 ? catIds : ["__none__"])
       .order("created_at", { ascending: false });
 
     if (avail) {
       setAvailable(
-        avail.map((o: any) => ({
-          id: o.id, title: o.title, description: o.description,
-          budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
-          location_address: o.location_address,
-          category_name: o.categories?.name, category_icon: o.categories?.icon,
-        }))
+        avail
+          .filter((o: any) => !appliedIds.has(o.id))
+          .map((o: any) => ({
+            id: o.id, title: o.title, description: o.description,
+            budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
+            location_address: o.location_address,
+            category_name: o.categories?.name, category_icon: o.categories?.icon,
+          }))
       );
     }
 
