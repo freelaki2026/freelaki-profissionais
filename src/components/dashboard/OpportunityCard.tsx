@@ -15,9 +15,10 @@ interface OpportunityCardProps {
   variant?: "available" | "accepted";
 }
 
-const statusBadges: Record<string, { text: string; bg: string; color: string }> = {
-  accepted: { text: "Confirmado ✓", bg: "#E8F5E9", color: "#2E7D32" },
-  in_progress: { text: "Em andamento", bg: "#E3F2FD", color: "#1565C0" },
+const statusBadges: Record<string, { text: string; bg: string; color: string; clickable?: string }> = {
+  awaiting_signatures: { text: "✍️ Assinar contrato", bg: "#E3F2FD", color: "#1565C0", clickable: "/contratos" },
+  accepted: { text: "✓ Confirmar início", bg: "#FFF3E0", color: "#B45309" },
+  in_progress: { text: "Em andamento", bg: "#E8F5E9", color: "#2E7D32" },
 };
 
 const OpportunityCard = ({ opp, variant = "available" }: OpportunityCardProps) => {
@@ -32,8 +33,12 @@ const OpportunityCard = ({ opp, variant = "available" }: OpportunityCardProps) =
         </span>
         {variant === "accepted" && opp.status && statusBadges[opp.status] && (
           <span
-            className="ml-auto rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+            className={`ml-auto rounded-full px-2.5 py-0.5 text-[11px] font-medium ${statusBadges[opp.status].clickable ? 'cursor-pointer' : ''}`}
             style={{ background: statusBadges[opp.status].bg, color: statusBadges[opp.status].color }}
+            onClick={(e) => {
+              const dest = statusBadges[opp.status!].clickable;
+              if (dest) { e.stopPropagation(); navigate(dest); }
+            }}
           >
             {statusBadges[opp.status].text}
           </span>

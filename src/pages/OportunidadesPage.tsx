@@ -39,8 +39,9 @@ const formatSchedule = (s: string | null | undefined): string => {
 };
 
 const statusBadges: Record<string, { text: string; bg: string; color: string }> = {
-  accepted: { text: "Confirmado ✓", bg: "#E8F5E9", color: "#2E7D32" },
-  in_progress: { text: "Em andamento", bg: "#E3F2FD", color: "#1565C0" },
+  awaiting_signatures: { text: "✍️ Assinar contrato", bg: "#E3F2FD", color: "#1565C0" },
+  accepted: { text: "✓ Confirmar início", bg: "#FFF3E0", color: "#B45309" },
+  in_progress: { text: "Em andamento", bg: "#E8F5E9", color: "#2E7D32" },
 };
 
 const OportunidadesPage = () => {
@@ -105,7 +106,7 @@ const OportunidadesPage = () => {
       .from("opportunities")
       .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
       .eq("accepted_by", user.id)
-      .in("status", ["accepted", "in_progress"])
+      .in("status", ["awaiting_signatures", "accepted", "in_progress"])
       .order("created_at", { ascending: false });
 
     if (acc) {

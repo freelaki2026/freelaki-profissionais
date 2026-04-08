@@ -261,7 +261,7 @@ const ContratosPage = () => {
 
       toast.success("✅ Contrato assinado com sucesso!");
       if (result.status === "both_signed") {
-        setTimeout(() => toast.success("🎉 Ambas as partes assinaram! Serviço confirmado."), 800);
+        setTimeout(() => toast.success("🎉 Contrato assinado! Aguarde o cliente confirmar o início."), 800);
       }
 
       setShowSignModal(false);

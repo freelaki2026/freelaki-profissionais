@@ -38,10 +38,14 @@ const getStatusBadge = (status: string | null) => {
   switch (status) {
     case "open":
       return { label: "● Disponível", bg: "#E8F5E9", color: "#2E7D32" };
+    case "awaiting_signatures":
+      return { label: "✍️ Assinatura pendente", bg: "#E3F2FD", color: "#1565C0" };
     case "accepted":
-      return { label: "● Aceita", bg: "#E3F2FD", color: "#1565C0" };
+      return { label: "✓ Aguardando início", bg: "#FFF3E0", color: "#B45309" };
+    case "in_progress":
+      return { label: "● Em andamento", bg: "#E8F5E9", color: "#2E7D32" };
     case "completed":
-      return { label: "● Encerrada", bg: "#F7F7F7", color: "#767676" };
+      return { label: "● Finalizado", bg: "#F7F7F7", color: "#767676" };
     case "cancelled":
       return { label: "● Cancelada", bg: "#FFEBEE", color: "#C62828" };
     default:
