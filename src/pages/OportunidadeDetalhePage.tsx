@@ -68,6 +68,8 @@ const OportunidadeDetalhePage = () => {
   const [applying, setApplying] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [finishing, setFinishing] = useState(false);
 
   const loadOpp = async () => {
     if (!id) return;
@@ -228,6 +230,35 @@ const OportunidadeDetalhePage = () => {
     }
     setDeclining(false);
     setShowDeclineModal(false);
+  };
+
+  const handleFinish = async () => {
+    if (!user || !opp) return;
+    setFinishing(true);
+    const { error } = await supabase
+      .from("opportunities")
+      .update({ status: "completed" } as any)
+      .eq("id", opp.id);
+
+    if (error) {
+      toast.error("Erro ao finalizar. Tente novamente.");
+      setFinishing(false);
+      return;
+    }
+
+    // Notify client
+    await supabase.from("notifications").insert({
+      profile_id: (await supabase.from("opportunities").select("client_id").eq("id", opp.id).single()).data?.client_id,
+      type: "oportunidade",
+      title: "✅ Serviço concluído!",
+      body: "O profissional marcou o serviço como concluído. Confirme para liberar o pagamento.",
+      action_url: "/chamado/" + opp.id,
+    } as any);
+
+    toast.success("Freela finalizado! 🎉 Aguarde a confirmação do cliente.");
+    setShowFinishModal(false);
+    setFinishing(false);
+    navigate("/dashboard");
   };
 
   const isPrivateForMe = opp?.is_private && opp?.target_professional_id === user?.id;
@@ -402,10 +433,12 @@ const OportunidadeDetalhePage = () => {
           <div className="rounded-2xl py-4 text-center text-sm font-semibold" style={{ background: "#FFF3E0", color: "#B45309" }}>
             ✓ Aguardando cliente confirmar o início
           </div>
-        ) : opp.status === "in_progress" ? (
-          <div className="rounded-2xl py-4 text-center text-sm font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
-            Em andamento
-          </div>
+        ) : opp.status === "in_progress" && opp.target_professional_id === user?.id ? (
+          <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowFinishModal(true)}
+            className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white"
+            style={{ background: "#2E7D32", borderRadius: 16, fontFamily: "Inter", fontWeight: 700, fontSize: 16 }}>
+            ✓ Finalizar Freela
+          </motion.button>
         ) : (
           <div className="rounded-2xl bg-[#F7F7F7] py-4 text-center text-sm text-[#767676]">
             Esta oportunidade não está mais disponível
@@ -530,6 +563,33 @@ const OportunidadeDetalhePage = () => {
               </button>
               <button onClick={() => setShowDeclineModal(false)} disabled={declining}
                 className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Cancelar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FINISH MODAL */}
+      <AnimatePresence>
+        {showFinishModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !finishing && setShowFinishModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center"><span className="text-[40px]">✅</span></div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black" style={{ fontFamily: "Inter", fontWeight: 700, fontSize: 20 }}>Finalizar este freela?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]" style={{ fontFamily: "Inter" }}>
+                Confirme que o serviço foi concluído.{"\n"}O cliente será notificado para confirmar.
+              </p>
+              <button onClick={handleFinish} disabled={finishing}
+                className="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#2E7D32" }}>
+                {finishing ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar conclusão"}
+              </button>
+              <button onClick={() => setShowFinishModal(false)} disabled={finishing}
+                className="mt-2.5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
                 Cancelar
               </button>
             </motion.div>
