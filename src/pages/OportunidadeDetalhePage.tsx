@@ -232,6 +232,35 @@ const OportunidadeDetalhePage = () => {
     setShowDeclineModal(false);
   };
 
+  const handleFinish = async () => {
+    if (!user || !opp) return;
+    setFinishing(true);
+    const { error } = await supabase
+      .from("opportunities")
+      .update({ status: "completed" } as any)
+      .eq("id", opp.id);
+
+    if (error) {
+      toast.error("Erro ao finalizar. Tente novamente.");
+      setFinishing(false);
+      return;
+    }
+
+    // Notify client
+    await supabase.from("notifications").insert({
+      profile_id: (await supabase.from("opportunities").select("client_id").eq("id", opp.id).single()).data?.client_id,
+      type: "oportunidade",
+      title: "✅ Serviço concluído!",
+      body: "O profissional marcou o serviço como concluído. Confirme para liberar o pagamento.",
+      action_url: "/chamado/" + opp.id,
+    } as any);
+
+    toast.success("Freela finalizado! 🎉 Aguarde a confirmação do cliente.");
+    setShowFinishModal(false);
+    setFinishing(false);
+    navigate("/dashboard");
+  };
+
   const isPrivateForMe = opp?.is_private && opp?.target_professional_id === user?.id;
   const isPublicOpen = opp && !opp.is_private && (opp.status === "open" || opp.status === "pending_selection");
   const statusBadge = opp ? getStatusBadge(opp.status) : null;
@@ -404,10 +433,12 @@ const OportunidadeDetalhePage = () => {
           <div className="rounded-2xl py-4 text-center text-sm font-semibold" style={{ background: "#FFF3E0", color: "#B45309" }}>
             ✓ Aguardando cliente confirmar o início
           </div>
-        ) : opp.status === "in_progress" ? (
-          <div className="rounded-2xl py-4 text-center text-sm font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
-            Em andamento
-          </div>
+        ) : opp.status === "in_progress" && opp.target_professional_id === user?.id ? (
+          <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowFinishModal(true)}
+            className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white"
+            style={{ background: "#2E7D32", borderRadius: 16, fontFamily: "Inter", fontWeight: 700, fontSize: 16 }}>
+            ✓ Finalizar Freela
+          </motion.button>
         ) : (
           <div className="rounded-2xl bg-[#F7F7F7] py-4 text-center text-sm text-[#767676]">
             Esta oportunidade não está mais disponível
