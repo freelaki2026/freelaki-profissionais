@@ -111,46 +111,47 @@ const PulsingCircles = ({
 );
 
 /* ───── Carousel Card ───── */
-const CarouselOppCard = ({ opp }: { opp: Opp }) => {
+const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) => {
   const navigate = useNavigate();
   const shortAddr = extractShortAddress(opp.location_address);
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.97 }}
-      transition={{ duration: 0.15 }}
-      onClick={() => navigate(`/oportunidade/${opp.id}`)}
-      className="relative flex h-[160px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
+    <div
+      className="relative flex h-[170px] w-[220px] shrink-0 flex-col rounded-[24px] bg-white p-4 text-left mb-2"
       style={{
         scrollSnapAlign: "start",
         boxShadow: "0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
       }}
     >
-      <span
-        className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
-        style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
-      >
-        <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
-        <span className="truncate">{opp.category_name || "Geral"}</span>
-      </span>
-      <p
-        className="mt-2.5 text-[15px] font-bold text-foreground leading-[1.3]"
-        style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-      >
-        {opp.title}
-      </p>
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+      <button onClick={() => navigate(`/oportunidade/${opp.id}`)} className="flex flex-1 flex-col text-left">
+        <span
+          className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
+          style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
+        >
+          <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
+          <span className="truncate">{opp.category_name || "Geral"}</span>
+        </span>
+        <p
+          className="mt-2 text-[14px] font-bold text-foreground leading-[1.3]"
+          style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+        >
+          {opp.title}
+        </p>
         {shortAddr && (
-          <span className="flex items-center gap-0.5 text-[11px] text-[#767676] max-w-[100px] truncate">
+          <span className="mt-1.5 flex items-center gap-0.5 text-[11px] text-[#767676] max-w-[140px] truncate">
             <MapPin className="h-3 w-3 shrink-0" />
             <span className="truncate">{shortAddr}</span>
           </span>
         )}
-        <span className="rounded-full bg-black px-2.5 py-1 text-[11px] font-semibold text-white whitespace-nowrap">
-          {formatSchedule(opp.scheduled_at)}
-        </span>
-      </div>
-    </motion.button>
+      </button>
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={(e) => { e.stopPropagation(); onApply(); }}
+        className="mt-auto flex h-[32px] w-full items-center justify-center rounded-[10px] bg-[#276EF1] text-[12px] font-semibold text-white"
+      >
+        Me candidatar →
+      </motion.button>
+    </div>
   );
 };
 
@@ -264,9 +265,12 @@ const DashboardPage = () => {
   const [isOnline, setIsOnline] = useState(false);
   const [togglingOnline, setTogglingOnline] = useState(false);
   const [available, setAvailable] = useState<Opp[]>([]);
+  const [applications, setApplications] = useState<{ id: string; opportunity: Opp }[]>([]);
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loadingOpps, setLoadingOpps] = useState(true);
   const [userCategories, setUserCategories] = useState<string[]>([]);
+  const [applyModal, setApplyModal] = useState<Opp | null>(null);
+  const [applyingId, setApplyingId] = useState(false);
   const [transitionPhase, setTransitionPhase] = useState<"idle" | "going-online" | "going-offline">("idle");
   const [showOnlineLayout, setShowOnlineLayout] = useState(false);
   const [weekTotal, setWeekTotal] = useState(0);
@@ -323,21 +327,47 @@ const DashboardPage = () => {
     const catIds = cats?.map((r) => r.category_id!).filter(Boolean) || [];
     setUserCategories(catIds);
 
+    // Load my pending applications
+    const { data: myApps } = await supabase
+      .from("opportunity_applications")
+      .select("id, opportunity_id, status, opportunities(id, title, description, budget, status, scheduled_at, location_address, categories(name, icon))")
+      .eq("professional_id", user.id)
+      .eq("status", "pending");
+    
+    const appliedIds = new Set(myApps?.map((a: any) => a.opportunity_id) || []);
+    
+    const appsList = (myApps || [])
+      .filter((a: any) => a.opportunities && ["open", "pending_selection"].includes(a.opportunities.status))
+      .map((a: any) => ({
+        id: a.id,
+        opportunity: {
+          id: a.opportunities.id, title: a.opportunities.title, description: a.opportunities.description,
+          budget: a.opportunities.budget, status: a.opportunities.status, scheduled_at: a.opportunities.scheduled_at,
+          location_address: a.opportunities.location_address,
+          category_name: a.opportunities.categories?.name, category_icon: a.opportunities.categories?.icon,
+        } as Opp,
+      }));
+    setApplications(appsList);
+
+    // Available (exclude already applied)
     const { data: avail } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
-      .eq("status", "open")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+      .in("status", ["open", "pending_selection"])
+      .eq("is_private", false)
       .in("category_id", catIds.length > 0 ? catIds : ["__none__"])
       .order("created_at", { ascending: false });
 
     if (avail) {
       setAvailable(
-        avail.map((o: any) => ({
-          id: o.id, title: o.title, description: o.description,
-          budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
-          location_address: o.location_address,
-          category_name: o.categories?.name, category_icon: o.categories?.icon,
-        }))
+        avail
+          .filter((o: any) => !appliedIds.has(o.id))
+          .map((o: any) => ({
+            id: o.id, title: o.title, description: o.description,
+            budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
+            location_address: o.location_address,
+            category_name: o.categories?.name, category_icon: o.categories?.icon,
+          }))
       );
     }
 
@@ -430,6 +460,44 @@ const DashboardPage = () => {
     }, 30000);
     return () => clearInterval(interval);
   }, [isOnline, user, available]);
+
+  // Realtime for applications
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("dashboard-apps-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "opportunity_applications" }, (payload) => {
+        const updated = payload.new as any;
+        if (updated?.professional_id !== user.id) return;
+        if (updated.status === "selected") {
+          toast({ title: "🎉 Você foi selecionado! Assine o contrato." });
+          navigator.vibrate?.([200, 100, 200]);
+          loadOpportunities();
+        } else if (updated.status === "rejected") {
+          toast({ title: "Outra pessoa foi escolhida. Continue online! 💪" });
+          setApplications(prev => prev.filter(a => a.id !== updated.id));
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadOpportunities]);
+
+  // Apply to opportunity handler
+  const handleApplyFromDashboard = async () => {
+    if (!user || !applyModal) return;
+    setApplyingId(true);
+    const { data, error } = await supabase.rpc("apply_to_opportunity", { p_opportunity_id: applyModal.id });
+    const result = typeof data === "string" ? JSON.parse(data) : data;
+    if (error || !result?.success) {
+      toast({ title: result?.error === "not_available" ? "Oportunidade não disponível." : "Erro ao se candidatar.", variant: "destructive" });
+    } else {
+      toast({ title: "Candidatura enviada! ⚡" });
+      setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+      loadOpportunities();
+    }
+    setApplyingId(false);
+    setApplyModal(null);
+  };
 
   // Listen for opportunity_accepted custom event from detail page
   useEffect(() => {
@@ -604,7 +672,7 @@ const DashboardPage = () => {
                   >
                     <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
                     {available.map((opp) => (
-                      <CarouselOppCard key={opp.id} opp={opp} />
+                      <CarouselOppCard key={opp.id} opp={opp} onApply={() => setApplyModal(opp)} />
                     ))}
                   </div>
                 ) : (
@@ -616,6 +684,42 @@ const DashboardPage = () => {
                 )}
               </div>
             </div>
+
+            {/* EM ANÁLISE */}
+            {applications.length > 0 && (
+              <div
+                className="mt-5"
+                style={{
+                  transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
+                  opacity: transitionPhase === "idle" ? 1 : 0,
+                  transition: "transform 400ms ease 150ms, opacity 400ms ease 150ms",
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-semibold text-foreground">Em Análise</span>
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-2.5 text-xs font-medium text-white" style={{ background: "#F59E0B" }}>
+                    {applications.length}
+                  </span>
+                </div>
+                <div className="mt-3">
+                  {applications.map((app) => (
+                    <div key={app.id} className="mb-2.5 rounded-2xl border border-[hsl(var(--border))] bg-white p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{app.opportunity.category_icon || "📦"}</span>
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}>
+                          {app.opportunity.category_name || "Geral"}
+                        </span>
+                        <span className="ml-auto rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ background: "#FFF3E0", color: "#B45309" }}>
+                          Aguardando seleção ⏳
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[15px] font-semibold text-foreground">{app.opportunity.title}</p>
+                      <p className="mt-1 text-[12px] text-[#767676]">O cliente está analisando os candidatos.</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* ACCEPTED */}
             <div
@@ -812,6 +916,63 @@ const DashboardPage = () => {
         onMarkAsRead={markAsRead}
         onMarkAllAsRead={markAllAsRead}
       />
+
+      {/* APPLY MODAL */}
+      <AnimatePresence>
+        {applyModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !applyingId && setApplyModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center">
+                <Zap size={32} fill="#276EF1" color="#276EF1" />
+              </div>
+              <h2 className="mt-3 text-center text-xl font-bold text-foreground">Me candidatar?</h2>
+              <div className="mt-4 rounded-xl bg-[#F7F7F7] p-3.5">
+                <p className="text-[15px] font-semibold text-foreground">{applyModal.title}</p>
+                {applyModal.budget != null && (
+                  <p className="mt-1 text-[14px] font-bold" style={{ color: "#2E7D32" }}>
+                    R$ {applyModal.budget.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </p>
+                )}
+              </div>
+              <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
+                Ao se candidatar, o cliente poderá te selecionar para este freela.
+              </p>
+              <button
+                onClick={handleApplyFromDashboard}
+                disabled={applyingId}
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#276EF1] text-base font-bold text-white disabled:opacity-50"
+              >
+                {applyingId ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  "Confirmar candidatura"
+                )}
+              </button>
+              <button
+                onClick={() => setApplyModal(null)}
+                disabled={applyingId}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-foreground"
+              >
+                Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         @keyframes dashPulseOuter {
