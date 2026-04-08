@@ -685,6 +685,42 @@ const DashboardPage = () => {
               </div>
             </div>
 
+            {/* EM ANÁLISE */}
+            {applications.length > 0 && (
+              <div
+                className="mt-5"
+                style={{
+                  transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
+                  opacity: transitionPhase === "idle" ? 1 : 0,
+                  transition: "transform 400ms ease 150ms, opacity 400ms ease 150ms",
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-base font-semibold text-foreground">Em Análise</span>
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-2.5 text-xs font-medium text-white" style={{ background: "#F59E0B" }}>
+                    {applications.length}
+                  </span>
+                </div>
+                <div className="mt-3">
+                  {applications.map((app) => (
+                    <div key={app.id} className="mb-2.5 rounded-2xl border border-[hsl(var(--border))] bg-white p-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{app.opportunity.category_icon || "📦"}</span>
+                        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}>
+                          {app.opportunity.category_name || "Geral"}
+                        </span>
+                        <span className="ml-auto rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ background: "#FFF3E0", color: "#B45309" }}>
+                          Aguardando seleção ⏳
+                        </span>
+                      </div>
+                      <p className="mt-2 text-[15px] font-semibold text-foreground">{app.opportunity.title}</p>
+                      <p className="mt-1 text-[12px] text-[#767676]">O cliente está analisando os candidatos.</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ACCEPTED */}
             <div
               className="mt-6"
