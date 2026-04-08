@@ -917,6 +917,63 @@ const DashboardPage = () => {
         onMarkAllAsRead={markAllAsRead}
       />
 
+      {/* APPLY MODAL */}
+      <AnimatePresence>
+        {applyModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !applyingId && setApplyModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center">
+                <Zap size={32} fill="#276EF1" color="#276EF1" />
+              </div>
+              <h2 className="mt-3 text-center text-xl font-bold text-foreground">Me candidatar?</h2>
+              <div className="mt-4 rounded-xl bg-[#F7F7F7] p-3.5">
+                <p className="text-[15px] font-semibold text-foreground">{applyModal.title}</p>
+                {applyModal.budget != null && (
+                  <p className="mt-1 text-[14px] font-bold" style={{ color: "#2E7D32" }}>
+                    R$ {applyModal.budget.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </p>
+                )}
+              </div>
+              <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
+                Ao se candidatar, o cliente poderá te selecionar para este freela.
+              </p>
+              <button
+                onClick={handleApplyFromDashboard}
+                disabled={applyingId}
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#276EF1] text-base font-bold text-white disabled:opacity-50"
+              >
+                {applyingId ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  "Confirmar candidatura"
+                )}
+              </button>
+              <button
+                onClick={() => setApplyModal(null)}
+                disabled={applyingId}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-foreground"
+              >
+                Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <style>{`
         @keyframes dashPulseOuter {
           0%, 100% { transform: scale(1); }
