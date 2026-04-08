@@ -433,7 +433,7 @@ const PerfilPage = () => {
           REDES SOCIAIS
         </span>
         <p style={{ fontFamily: "Inter", fontWeight: 400, fontSize: 12, color: "#767676", marginTop: 4 }}>
-          Opcional — até 4 redes. Aparecem no seu perfil público.
+          Opcional — até 6 redes/portfólios. Aparecem no seu perfil público.
         </p>
         <div className="mt-2.5 rounded-2xl bg-white p-4">
           {addedSocials.length > 0 ? (
