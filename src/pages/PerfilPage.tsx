@@ -469,7 +469,7 @@ const PerfilPage = () => {
             </p>
           )}
 
-          {addedSocials.length < 4 && (
+          {addedSocials.length < 6 && (
             <button
               onClick={() => setShowSelectSheet(true)}
               className="mt-3 flex w-full items-center justify-center gap-2"
