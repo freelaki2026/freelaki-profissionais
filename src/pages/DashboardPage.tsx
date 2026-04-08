@@ -50,6 +50,7 @@ interface Opp {
   location_address?: string | null;
   category_name?: string;
   category_icon?: string;
+  application_count?: number;
 }
 
 const formatSchedule = (scheduledAt: string | null | undefined): string => {
@@ -124,13 +125,23 @@ const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) =>
       }}
     >
       <button onClick={() => navigate(`/oportunidade/${opp.id}`)} className="flex flex-1 flex-col text-left">
-        <span
-          className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
-          style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
-        >
-          <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
-          <span className="truncate">{opp.category_name || "Geral"}</span>
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+            style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
+          >
+            <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
+            <span className="truncate">{opp.category_name || "Geral"}</span>
+          </span>
+          {opp.status === "pending_selection" && opp.application_count != null && (
+            <span
+              className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+              style={{ background: "#FFF3E0", color: "#B45309" }}
+            >
+              {opp.application_count}/3
+            </span>
+          )}
+        </div>
         <p
           className="mt-2 text-[14px] font-bold text-foreground leading-[1.3]"
           style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
@@ -352,7 +363,7 @@ const DashboardPage = () => {
     // Available (exclude already applied)
     const { data: avail } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon), opportunity_applications(id)")
       .in("status", ["open", "pending_selection"])
       .eq("is_private", false)
       .in("category_id", catIds.length > 0 ? catIds : ["__none__"])
@@ -367,6 +378,7 @@ const DashboardPage = () => {
             budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
             location_address: o.location_address,
             category_name: o.categories?.name, category_icon: o.categories?.icon,
+            application_count: o.opportunity_applications?.length || 0,
           }))
       );
     }
@@ -428,12 +440,30 @@ const DashboardPage = () => {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
         const updated = payload.new as any;
         if (
-          updated.status !== "open" ||
-          (updated.is_private === false && updated.target_professional_id !== user.id)
+          !["open", "pending_selection"].includes(updated.status) ||
+          (updated.is_private === true && updated.target_professional_id !== user.id)
         ) {
           setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
           if (updated.accepted_by === user.id) {
             loadOpportunities();
+          }
+        }
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunity_applications" }, async (payload) => {
+        const newApp = payload.new as any;
+        // Check if this opportunity now has max candidates and we're not one of them
+        const oppId = newApp.opportunity_id;
+        if (!oppId) return;
+        const { data: appCount } = await supabase
+          .from("opportunity_applications")
+          .select("id, professional_id")
+          .eq("opportunity_id", oppId)
+          .eq("status", "pending");
+        if (appCount && appCount.length >= 3) {
+          const isMe = appCount.some(a => a.professional_id === user.id);
+          if (!isMe) {
+            setAvailable((prev) => prev.filter((op) => op.id !== oppId));
+            toast({ title: "Esta oportunidade atingiu o máximo de candidatos." });
           }
         }
       })
@@ -452,7 +482,7 @@ const DashboardPage = () => {
         .select("id, status")
         .in("id", ids);
       if (data) {
-        const closedIds = data.filter((op) => op.status !== "open").map((op) => op.id);
+        const closedIds = data.filter((op) => !["open", "pending_selection"].includes(op.status!)).map((op) => op.id);
         if (closedIds.length > 0) {
           setAvailable((prev) => prev.filter((o) => !closedIds.includes(o.id)));
         }
@@ -488,10 +518,37 @@ const DashboardPage = () => {
     setApplyingId(true);
     const { data, error } = await supabase.rpc("apply_to_opportunity", { p_opportunity_id: applyModal.id });
     const result = typeof data === "string" ? JSON.parse(data) : data;
-    if (error || !result?.success) {
-      toast({ title: result?.error === "not_available" ? "Oportunidade não disponível." : "Erro ao se candidatar.", variant: "destructive" });
-    } else {
-      toast({ title: "Candidatura enviada! ⚡" });
+
+    if (error) {
+      toast({ title: "Erro ao enviar candidatura. Tente novamente.", variant: "destructive" });
+      setApplyingId(false);
+      setApplyModal(null);
+      return;
+    }
+
+    if (result?.error) {
+      switch (result.error) {
+        case "not_available":
+          toast({ title: "Esta oportunidade não está mais disponível.", variant: "destructive" });
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          window.dispatchEvent(new CustomEvent("opportunity_unavailable", { detail: { id: applyModal.id } }));
+          break;
+        case "already_applied":
+          toast({ title: "Você já se candidatou a esta oportunidade." });
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          break;
+        case "max_reached":
+          toast({ title: "Esta oportunidade atingiu o máximo de candidatos por enquanto. Fique atento a novas oportunidades!" });
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          break;
+        case "private":
+          toast({ title: "Esta oportunidade não está disponível.", variant: "destructive" });
+          break;
+        default:
+          toast({ title: "Erro ao se candidatar. Tente novamente.", variant: "destructive" });
+      }
+    } else if (result?.success) {
+      toast({ title: "Candidatura enviada! ⚡ Aguarde o cliente te selecionar." });
       setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
       loadOpportunities();
     }
@@ -499,7 +556,7 @@ const DashboardPage = () => {
     setApplyModal(null);
   };
 
-  // Listen for opportunity_accepted custom event from detail page
+  // Listen for custom events from detail page
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
@@ -507,11 +564,19 @@ const DashboardPage = () => {
         setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
       }
     };
+    const unavailableHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
+      }
+    };
     window.addEventListener("opportunity_accepted", handler);
     window.addEventListener("opportunity_declined", handler);
+    window.addEventListener("opportunity_unavailable", unavailableHandler);
     return () => {
       window.removeEventListener("opportunity_accepted", handler);
       window.removeEventListener("opportunity_declined", handler);
+      window.removeEventListener("opportunity_unavailable", unavailableHandler);
     };
   }, []);
 

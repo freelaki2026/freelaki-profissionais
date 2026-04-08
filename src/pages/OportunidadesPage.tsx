@@ -216,11 +216,19 @@ const OportunidadesPage = () => {
   // Listen for custom events
   useEffect(() => {
     const handler = () => loadData();
+    const unavailableHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.id) {
+        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
+      }
+    };
     window.addEventListener("opportunity_declined", handler);
     window.addEventListener("opportunity_accepted", handler);
+    window.addEventListener("opportunity_unavailable", unavailableHandler);
     return () => {
       window.removeEventListener("opportunity_declined", handler);
       window.removeEventListener("opportunity_accepted", handler);
+      window.removeEventListener("opportunity_unavailable", unavailableHandler);
     };
   }, [loadData]);
 
@@ -234,27 +242,48 @@ const OportunidadesPage = () => {
 
     const result = typeof data === "string" ? JSON.parse(data) : data;
 
-    if (error || !result?.success) {
-      if (result?.error === "not_available") {
-        toast.error("Esta oportunidade não está mais disponível.");
-      } else if (result?.error === "private") {
-        toast.error("Esta é uma oportunidade privada.");
-      } else {
-        toast.error("Erro ao se candidatar. Tente novamente.");
+    if (error) {
+      toast.error("Erro ao enviar candidatura. Tente novamente.");
+      setApplying(false);
+      setApplyModal(null);
+      return;
+    }
+
+    if (result?.error) {
+      switch (result.error) {
+        case "not_available":
+          toast.error("Esta oportunidade não está mais disponível.");
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          window.dispatchEvent(new CustomEvent("opportunity_unavailable", { detail: { id: applyModal.id } }));
+          break;
+        case "already_applied":
+          toast("Você já se candidatou a esta oportunidade.");
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          break;
+        case "max_reached":
+          toast("Esta oportunidade atingiu o máximo de candidatos por enquanto. Fique atento a novas oportunidades!");
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          break;
+        case "private":
+          toast.error("Esta oportunidade não está disponível.");
+          break;
+        default:
+          toast.error("Erro ao se candidatar. Tente novamente.");
       }
       setApplying(false);
       setApplyModal(null);
       return;
     }
 
-    toast.success("Candidatura enviada! ⚡ Aguarde o cliente te selecionar.");
-    // Move from available to applications
-    setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
-    setAppliedIds(prev => new Set([...prev, applyModal.id]));
-    loadData();
-    setApplying(false);
-    setApplyModal(null);
-    setActiveTab("Em Análise");
+    if (result?.success) {
+      toast.success("Candidatura enviada! ⚡ Aguarde o cliente te selecionar.");
+      setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+      setAppliedIds(prev => new Set([...prev, applyModal.id]));
+      loadData();
+      setApplying(false);
+      setApplyModal(null);
+      setActiveTab("Em Análise");
+    }
   };
 
   const shortAddr = (addr: string | null | undefined) => {

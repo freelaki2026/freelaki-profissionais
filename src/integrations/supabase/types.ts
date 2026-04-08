@@ -575,6 +575,7 @@ export type Database = {
           location_address: string | null
           location_lat: number | null
           location_lng: number | null
+          max_applications: number | null
           platform_fee: number | null
           scheduled_at: string | null
           selected_extras: Json | null
@@ -604,6 +605,7 @@ export type Database = {
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null
+          max_applications?: number | null
           platform_fee?: number | null
           scheduled_at?: string | null
           selected_extras?: Json | null
@@ -633,6 +635,7 @@ export type Database = {
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null
+          max_applications?: number | null
           platform_fee?: number | null
           scheduled_at?: string | null
           selected_extras?: Json | null

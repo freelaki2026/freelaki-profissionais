@@ -178,8 +178,32 @@ const OportunidadeDetalhePage = () => {
     const { data, error } = await supabase.rpc("apply_to_opportunity", { p_opportunity_id: opp.id });
     const result = typeof data === "string" ? JSON.parse(data) : data;
 
-    if (error || !result?.success) {
-      toast.error(result?.error === "not_available" ? "Esta oportunidade não está mais disponível." : "Erro ao se candidatar.");
+    if (error) {
+      toast.error("Erro ao enviar candidatura. Tente novamente.");
+      setApplying(false);
+      setShowApplyModal(false);
+      return;
+    }
+
+    if (result?.error) {
+      switch (result.error) {
+        case "not_available":
+          toast.error("Esta oportunidade não está mais disponível.");
+          window.dispatchEvent(new CustomEvent("opportunity_unavailable", { detail: { id: opp.id } }));
+          break;
+        case "already_applied":
+          toast("Você já se candidatou a esta oportunidade.");
+          setHasApplied(true);
+          break;
+        case "max_reached":
+          toast("Esta oportunidade atingiu o máximo de candidatos por enquanto. Fique atento a novas oportunidades!");
+          break;
+        case "private":
+          toast.error("Esta oportunidade não está disponível.");
+          break;
+        default:
+          toast.error("Erro ao se candidatar. Tente novamente.");
+      }
       setApplying(false);
       setShowApplyModal(false);
       return;
