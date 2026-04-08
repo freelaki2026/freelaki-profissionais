@@ -904,73 +904,97 @@ export type Database = {
         Row: {
           approval_status: string | null
           avatar_url: string | null
+          behance: string | null
           bio: string | null
           cpf_cnpj: string | null
           cpf_cnpj_locked: boolean | null
           cpf_cnpj_type: string | null
           created_at: string | null
+          dribbble: string | null
           email: string
           email_locked: boolean | null
+          figma: string | null
           full_name: string | null
+          github: string | null
           id: string
           instagram: string | null
           is_approved: boolean | null
           is_online: boolean | null
           linkedin: string | null
           phone: string | null
+          pinterest: string | null
           terms_accepted: boolean | null
           terms_accepted_at: string | null
           tiktok: string | null
+          twitter: string | null
           updated_at: string | null
           user_type: string | null
+          vimeo: string | null
+          website: string | null
           youtube: string | null
         }
         Insert: {
           approval_status?: string | null
           avatar_url?: string | null
+          behance?: string | null
           bio?: string | null
           cpf_cnpj?: string | null
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
           created_at?: string | null
+          dribbble?: string | null
           email: string
           email_locked?: boolean | null
+          figma?: string | null
           full_name?: string | null
+          github?: string | null
           id: string
           instagram?: string | null
           is_approved?: boolean | null
           is_online?: boolean | null
           linkedin?: string | null
           phone?: string | null
+          pinterest?: string | null
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
           tiktok?: string | null
+          twitter?: string | null
           updated_at?: string | null
           user_type?: string | null
+          vimeo?: string | null
+          website?: string | null
           youtube?: string | null
         }
         Update: {
           approval_status?: string | null
           avatar_url?: string | null
+          behance?: string | null
           bio?: string | null
           cpf_cnpj?: string | null
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
           created_at?: string | null
+          dribbble?: string | null
           email?: string
           email_locked?: boolean | null
+          figma?: string | null
           full_name?: string | null
+          github?: string | null
           id?: string
           instagram?: string | null
           is_approved?: boolean | null
           is_online?: boolean | null
           linkedin?: string | null
           phone?: string | null
+          pinterest?: string | null
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
           tiktok?: string | null
+          twitter?: string | null
           updated_at?: string | null
           user_type?: string | null
+          vimeo?: string | null
+          website?: string | null
           youtube?: string | null
         }
         Relationships: []

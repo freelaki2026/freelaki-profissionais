@@ -27,6 +27,14 @@ interface ProfileData {
   tiktok: string | null;
   youtube: string | null;
   linkedin: string | null;
+  behance: string | null;
+  dribbble: string | null;
+  figma: string | null;
+  github: string | null;
+  vimeo: string | null;
+  twitter: string | null;
+  pinterest: string | null;
+  website: string | null;
 }
 
 interface CategoryChip {
@@ -34,7 +42,7 @@ interface CategoryChip {
   icon: string | null;
 }
 
-type SocialKey = "instagram" | "tiktok" | "youtube" | "linkedin";
+type SocialKey = "instagram" | "tiktok" | "youtube" | "linkedin" | "behance" | "dribbble" | "figma" | "github" | "vimeo" | "twitter" | "pinterest" | "website";
 
 const SOCIAL_NETWORKS: {
   key: SocialKey;
@@ -43,56 +51,33 @@ const SOCIAL_NETWORKS: {
   bg: string;
   placeholder: string;
   hint: string;
+  icon: string;
 }[] = [
-  {
-    key: "instagram",
-    label: "Instagram",
-    gradient: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
-    bg: "",
-    placeholder: "@freelaki",
-    hint: 'Ex: @freelaki ou freelaki',
-  },
-  {
-    key: "tiktok",
-    label: "TikTok",
-    bg: "#000000",
-    placeholder: "@freelaki",
-    hint: "Ex: @freelaki",
-  },
-  {
-    key: "youtube",
-    label: "YouTube",
-    bg: "#FF0000",
-    placeholder: "FreelakiOficial",
-    hint: "Ex: FreelakiOficial ou URL do canal",
-  },
-  {
-    key: "linkedin",
-    label: "LinkedIn",
-    bg: "#0077B5",
-    placeholder: "thiago-kenned",
-    hint: "Ex: thiago-kenned ou URL do perfil",
-  },
+  { key: "instagram", label: "Instagram", gradient: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)", bg: "", placeholder: "@freelaki", hint: "Ex: @freelaki ou freelaki", icon: "📸" },
+  { key: "tiktok", label: "TikTok", bg: "#000000", placeholder: "@freelaki", hint: "Ex: @freelaki", icon: "🎵" },
+  { key: "youtube", label: "YouTube", bg: "#FF0000", placeholder: "FreelakiOficial", hint: "Ex: FreelakiOficial ou URL do canal", icon: "▶" },
+  { key: "linkedin", label: "LinkedIn", bg: "#0077B5", placeholder: "thiago-kenned", hint: "Ex: thiago-kenned ou URL do perfil", icon: "in" },
+  { key: "behance", label: "Behance", bg: "#1769FF", placeholder: "seuportfolio", hint: "Ex: seuportfolio ou URL do Behance", icon: "Bē" },
+  { key: "dribbble", label: "Dribbble", bg: "#EA4C89", placeholder: "seuuser", hint: "Ex: seuuser ou URL do Dribbble", icon: "🏀" },
+  { key: "figma", label: "Figma", bg: "#A259FF", placeholder: "@seuuser", hint: "Ex: @seuuser ou URL do portfólio Figma", icon: "◆" },
+  { key: "github", label: "GitHub", bg: "#24292E", placeholder: "seuuser", hint: "Ex: seuuser ou URL do GitHub", icon: "🐙" },
+  { key: "vimeo", label: "Vimeo", bg: "#1AB7EA", placeholder: "seucanal", hint: "Ex: seucanal ou URL do Vimeo", icon: "▷" },
+  { key: "twitter", label: "X (Twitter)", bg: "#000000", placeholder: "@seuuser", hint: "Ex: @seuuser", icon: "𝕏" },
+  { key: "pinterest", label: "Pinterest", bg: "#E60023", placeholder: "seuuser", hint: "Ex: seuuser ou URL do Pinterest", icon: "📌" },
+  { key: "website", label: "Website", bg: "#333333", placeholder: "www.seusite.com", hint: "Ex: www.seusite.com.br ou URL completa", icon: "🌐" },
 ];
 
 const SocialCircle = ({ network, size = 32 }: { network: typeof SOCIAL_NETWORKS[number]; size?: number }) => (
   <div
     style={{
-      width: size,
-      height: size,
-      borderRadius: "50%",
+      width: size, height: size, borderRadius: "50%",
       background: network.gradient || network.bg,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#fff",
-      fontFamily: "Inter",
-      fontWeight: 700,
-      fontSize: size * 0.4,
-      flexShrink: 0,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      color: "#fff", fontFamily: "Inter", fontWeight: 700,
+      fontSize: size * 0.35, flexShrink: 0, lineHeight: 1,
     }}
   >
-    {network.label[0]}
+    {network.icon}
   </div>
 );
 
@@ -133,10 +118,9 @@ const PerfilPage = () => {
 
   // Social media
   const [socials, setSocials] = useState<Record<SocialKey, string>>({
-    instagram: "",
-    tiktok: "",
-    youtube: "",
-    linkedin: "",
+    instagram: "", tiktok: "", youtube: "", linkedin: "",
+    behance: "", dribbble: "", figma: "", github: "",
+    vimeo: "", twitter: "", pinterest: "", website: "",
   });
   const [showSelectSheet, setShowSelectSheet] = useState(false);
   const [showInputSheet, setShowInputSheet] = useState(false);
@@ -153,7 +137,7 @@ const PerfilPage = () => {
     const [{ data: prof }, { data: cats }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, phone, bio, email, avatar_url, approval_status, instagram, tiktok, youtube, linkedin")
+        .select("full_name, phone, bio, email, avatar_url, approval_status, instagram, tiktok, youtube, linkedin, behance, dribbble, figma, github, vimeo, twitter, pinterest, website")
         .eq("id", user.id)
         .single(),
       supabase
@@ -170,10 +154,12 @@ const PerfilPage = () => {
       setBio(p.bio || "");
       setAvatarPreview(p.avatar_url);
       setSocials({
-        instagram: p.instagram || "",
-        tiktok: p.tiktok || "",
-        youtube: p.youtube || "",
-        linkedin: p.linkedin || "",
+        instagram: p.instagram || "", tiktok: p.tiktok || "",
+        youtube: p.youtube || "", linkedin: p.linkedin || "",
+        behance: p.behance || "", dribbble: p.dribbble || "",
+        figma: p.figma || "", github: p.github || "",
+        vimeo: p.vimeo || "", twitter: p.twitter || "",
+        pinterest: p.pinterest || "", website: p.website || "",
       });
     }
 
@@ -238,6 +224,14 @@ const PerfilPage = () => {
         tiktok: socials.tiktok.trim() || null,
         youtube: socials.youtube.trim() || null,
         linkedin: socials.linkedin.trim() || null,
+        behance: socials.behance.trim() || null,
+        dribbble: socials.dribbble.trim() || null,
+        figma: socials.figma.trim() || null,
+        github: socials.github.trim() || null,
+        vimeo: socials.vimeo.trim() || null,
+        twitter: socials.twitter.trim() || null,
+        pinterest: socials.pinterest.trim() || null,
+        website: socials.website.trim() || null,
       } as any)
       .eq("id", user.id);
 
@@ -440,7 +434,7 @@ const PerfilPage = () => {
           REDES SOCIAIS
         </span>
         <p style={{ fontFamily: "Inter", fontWeight: 400, fontSize: 12, color: "#767676", marginTop: 4 }}>
-          Opcional — até 4 redes. Aparecem no seu perfil público.
+          Opcional — até 6 redes/portfólios. Aparecem no seu perfil público.
         </p>
         <div className="mt-2.5 rounded-2xl bg-white p-4">
           {addedSocials.length > 0 ? (
@@ -476,7 +470,7 @@ const PerfilPage = () => {
             </p>
           )}
 
-          {addedSocials.length < 4 && (
+          {addedSocials.length < 6 && (
             <button
               onClick={() => setShowSelectSheet(true)}
               className="mt-3 flex w-full items-center justify-center gap-2"
