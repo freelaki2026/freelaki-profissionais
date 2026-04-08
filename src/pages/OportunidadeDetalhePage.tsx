@@ -569,6 +569,33 @@ const OportunidadeDetalhePage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FINISH MODAL */}
+      <AnimatePresence>
+        {showFinishModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !finishing && setShowFinishModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center"><span className="text-[40px]">✅</span></div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black" style={{ fontFamily: "Inter", fontWeight: 700, fontSize: 20 }}>Finalizar este freela?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]" style={{ fontFamily: "Inter" }}>
+                Confirme que o serviço foi concluído.{"\n"}O cliente será notificado para confirmar.
+              </p>
+              <button onClick={handleFinish} disabled={finishing}
+                className="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#2E7D32" }}>
+                {finishing ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar conclusão"}
+              </button>
+              <button onClick={() => setShowFinishModal(false)} disabled={finishing}
+                className="mt-2.5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Cancelar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
