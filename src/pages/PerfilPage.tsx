@@ -27,6 +27,14 @@ interface ProfileData {
   tiktok: string | null;
   youtube: string | null;
   linkedin: string | null;
+  behance: string | null;
+  dribbble: string | null;
+  figma: string | null;
+  github: string | null;
+  vimeo: string | null;
+  twitter: string | null;
+  pinterest: string | null;
+  website: string | null;
 }
 
 interface CategoryChip {
