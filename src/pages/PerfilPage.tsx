@@ -117,10 +117,9 @@ const PerfilPage = () => {
 
   // Social media
   const [socials, setSocials] = useState<Record<SocialKey, string>>({
-    instagram: "",
-    tiktok: "",
-    youtube: "",
-    linkedin: "",
+    instagram: "", tiktok: "", youtube: "", linkedin: "",
+    behance: "", dribbble: "", figma: "", github: "",
+    vimeo: "", twitter: "", pinterest: "", website: "",
   });
   const [showSelectSheet, setShowSelectSheet] = useState(false);
   const [showInputSheet, setShowInputSheet] = useState(false);
@@ -137,7 +136,7 @@ const PerfilPage = () => {
     const [{ data: prof }, { data: cats }] = await Promise.all([
       supabase
         .from("profiles")
-        .select("full_name, phone, bio, email, avatar_url, approval_status, instagram, tiktok, youtube, linkedin")
+        .select("full_name, phone, bio, email, avatar_url, approval_status, instagram, tiktok, youtube, linkedin, behance, dribbble, figma, github, vimeo, twitter, pinterest, website")
         .eq("id", user.id)
         .single(),
       supabase
