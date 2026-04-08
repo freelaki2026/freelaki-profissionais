@@ -440,12 +440,30 @@ const DashboardPage = () => {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
         const updated = payload.new as any;
         if (
-          updated.status !== "open" ||
-          (updated.is_private === false && updated.target_professional_id !== user.id)
+          !["open", "pending_selection"].includes(updated.status) ||
+          (updated.is_private === true && updated.target_professional_id !== user.id)
         ) {
           setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
           if (updated.accepted_by === user.id) {
             loadOpportunities();
+          }
+        }
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunity_applications" }, async (payload) => {
+        const newApp = payload.new as any;
+        // Check if this opportunity now has max candidates and we're not one of them
+        const oppId = newApp.opportunity_id;
+        if (!oppId) return;
+        const { data: appCount } = await supabase
+          .from("opportunity_applications")
+          .select("id, professional_id")
+          .eq("opportunity_id", oppId)
+          .eq("status", "pending");
+        if (appCount && appCount.length >= 3) {
+          const isMe = appCount.some(a => a.professional_id === user.id);
+          if (!isMe) {
+            setAvailable((prev) => prev.filter((op) => op.id !== oppId));
+            toast({ title: "Esta oportunidade atingiu o máximo de candidatos." });
           }
         }
       })
