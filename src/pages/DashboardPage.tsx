@@ -345,7 +345,7 @@ const DashboardPage = () => {
       .from("opportunities")
       .select("id, title, description, budget, status, category_id, categories(name, icon)")
       .eq("accepted_by", user.id)
-      .in("status", ["accepted", "in_progress"])
+      .in("status", ["awaiting_signatures", "accepted", "in_progress"])
       .order("created_at", { ascending: false });
 
     if (acc) {
