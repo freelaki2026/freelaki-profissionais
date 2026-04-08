@@ -453,6 +453,23 @@ const OportunidadeDetalhePage = () => {
               Aceitar Oportunidade ⚡
             </motion.button>
           )
+        ) : opp.status === "awaiting_signatures" ? (
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/contratos")}
+            className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white"
+            style={{ background: "#1565C0" }}
+          >
+            ✍️ Assinar contrato →
+          </motion.button>
+        ) : opp.status === "accepted" ? (
+          <div className="rounded-2xl py-4 text-center text-sm font-semibold" style={{ background: "#FFF3E0", color: "#B45309" }}>
+            ✓ Aguardando cliente confirmar o início
+          </div>
+        ) : opp.status === "in_progress" ? (
+          <div className="rounded-2xl py-4 text-center text-sm font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
+            Em andamento
+          </div>
         ) : (
           <div className="rounded-2xl bg-[#F7F7F7] py-4 text-center text-sm text-[hsl(var(--muted-foreground))]">
             Esta oportunidade não está mais disponível
