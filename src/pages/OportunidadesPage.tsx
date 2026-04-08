@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, MapPin, Calendar } from "lucide-react";
+import { Zap, MapPin, Calendar, AlertCircle } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import BottomNav from "@/components/dashboard/BottomNav";
 import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
 
@@ -20,6 +20,14 @@ interface Opp {
   location_address?: string | null;
   category_name?: string;
   category_icon?: string;
+  is_private?: boolean;
+}
+
+interface Application {
+  id: string;
+  opportunity_id: string;
+  status: string;
+  opportunity?: Opp;
 }
 
 interface Profile {
@@ -40,21 +48,27 @@ const formatSchedule = (s: string | null | undefined): string => {
 
 const statusBadges: Record<string, { text: string; bg: string; color: string }> = {
   awaiting_signatures: { text: "✍️ Assinar contrato", bg: "#E3F2FD", color: "#1565C0" },
-  accepted: { text: "✓ Confirmar início", bg: "#FFF3E0", color: "#B45309" },
-  in_progress: { text: "Em andamento", bg: "#E8F5E9", color: "#2E7D32" },
+  accepted: { text: "✓ Aguardando início", bg: "#FFF3E0", color: "#B45309" },
+  in_progress: { text: "Em andamento 🔥", bg: "#E8F5E9", color: "#2E7D32" },
 };
+
+const tabs = ["Disponíveis", "Em Análise", "Aceitas"] as const;
+type Tab = typeof tabs[number];
 
 const OportunidadesPage = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>("Disponíveis");
   const [available, setAvailable] = useState<Opp[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loading, setLoading] = useState(true);
-  const [togglingOnline, setTogglingOnline] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [applyModal, setApplyModal] = useState<Opp | null>(null);
+  const [applying, setApplying] = useState(false);
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
 
   // Load profile
   useEffect(() => {
@@ -64,12 +78,10 @@ const OportunidadesPage = () => {
       .select("full_name, avatar_url, approval_status, is_online, is_approved")
       .eq("id", user.id)
       .single()
-      .then(({ data }) => {
-        if (data) setProfile(data);
-      });
+      .then(({ data }) => { if (data) setProfile(data); });
   }, [user]);
 
-  const loadOpps = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
@@ -77,31 +89,74 @@ const OportunidadesPage = () => {
       .from("professional_categories")
       .select("category_id")
       .eq("profile_id", user.id);
-
     const catIds = cats?.map((r) => r.category_id!).filter(Boolean) || [];
 
+    // Available (public, open/pending_selection, in my categories)
     if (catIds.length > 0) {
       const { data: avail } = await supabase
         .from("opportunities")
-        .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
-        .eq("status", "open")
+        .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+        .in("status", ["open", "pending_selection"])
+        .eq("is_private", false)
         .in("category_id", catIds)
         .order("created_at", { ascending: false });
 
       if (avail) {
+        // Also load my existing applications to filter out
+        const { data: myApps } = await supabase
+          .from("opportunity_applications")
+          .select("opportunity_id")
+          .eq("professional_id", user.id);
+        const appliedSet = new Set(myApps?.map(a => a.opportunity_id) || []);
+        setAppliedIds(appliedSet);
+
         setAvailable(
-          avail.map((o: any) => ({
-            id: o.id, title: o.title, description: o.description,
-            budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
-            location_address: o.location_address,
-            category_name: o.categories?.name, category_icon: o.categories?.icon,
-          }))
+          avail
+            .filter((o: any) => !appliedSet.has(o.id))
+            .map((o: any) => ({
+              id: o.id, title: o.title, description: o.description,
+              budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
+              location_address: o.location_address, is_private: o.is_private,
+              category_name: o.categories?.name, category_icon: o.categories?.icon,
+            }))
         );
       }
     } else {
       setAvailable([]);
     }
 
+    // Applications (Em Análise)
+    const { data: apps } = await supabase
+      .from("opportunity_applications")
+      .select("id, opportunity_id, status, opportunities(id, title, description, budget, status, scheduled_at, location_address, categories(name, icon))")
+      .eq("professional_id", user.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+
+    if (apps) {
+      setApplications(
+        apps
+          .filter((a: any) => a.opportunities && ["open", "pending_selection"].includes(a.opportunities.status))
+          .map((a: any) => ({
+            id: a.id,
+            opportunity_id: a.opportunity_id,
+            status: a.status,
+            opportunity: {
+              id: a.opportunities.id,
+              title: a.opportunities.title,
+              description: a.opportunities.description,
+              budget: a.opportunities.budget,
+              status: a.opportunities.status,
+              scheduled_at: a.opportunities.scheduled_at,
+              location_address: a.opportunities.location_address,
+              category_name: a.opportunities.categories?.name,
+              category_icon: a.opportunities.categories?.icon,
+            },
+          }))
+      );
+    }
+
+    // Accepted
     const { data: acc } = await supabase
       .from("opportunities")
       .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
@@ -123,59 +178,84 @@ const OportunidadesPage = () => {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { loadOpps(); }, [loadOpps]);
+  useEffect(() => { loadData(); }, [loadData]);
 
-  // Realtime
+  // Realtime for opportunities
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel("opps-page-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, () => loadOpps())
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, () => loadData())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "opportunities" }, () => loadData())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadData]);
+
+  // Realtime for applications
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("apps-page-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "opportunity_applications" }, (payload) => {
         const updated = payload.new as any;
-        if (
-          updated.status !== "open" ||
-          (updated.is_private === false && updated.target_professional_id !== user.id)
-        ) {
-          setAvailable((prev) => prev.filter((op) => op.id !== updated.id));
-          if (updated.accepted_by === user.id) {
-            loadOpps();
-          }
+        if (updated?.professional_id !== user.id) return;
+
+        if (updated.status === "selected") {
+          toast.success("🎉 Você foi selecionado! Assine o contrato.");
+          navigator.vibrate?.([200, 100, 200]);
+          loadData();
+        } else if (updated.status === "rejected") {
+          toast("Outra pessoa foi escolhida. Continue online! 💪");
+          setApplications(prev => prev.filter(a => a.id !== updated.id));
         }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, loadOpps]);
+  }, [user, loadData]);
 
-  // Listen for opportunity_declined custom event
+  // Listen for custom events
   useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.id) {
-        setAvailable((prev) => prev.filter((o) => o.id !== detail.id));
-      }
-    };
+    const handler = () => loadData();
     window.addEventListener("opportunity_declined", handler);
-    return () => window.removeEventListener("opportunity_declined", handler);
-  }, []);
+    window.addEventListener("opportunity_accepted", handler);
+    return () => {
+      window.removeEventListener("opportunity_declined", handler);
+      window.removeEventListener("opportunity_accepted", handler);
+    };
+  }, [loadData]);
 
-  const toggleOnline = async () => {
-    if (!user || !profile) return;
-    setTogglingOnline(true);
-    const newVal = !profile.is_online;
-    const { error } = await supabase.from("profiles").update({ is_online: newVal }).eq("id", user.id);
-    if (!error) {
-      setProfile((p) => p ? { ...p, is_online: newVal } : p);
-      if (newVal) loadOpps();
-    } else {
-      toast({ title: "Erro ao alterar status.", variant: "destructive" });
+  const handleApply = async () => {
+    if (!user || !applyModal) return;
+    setApplying(true);
+
+    const { data, error } = await supabase.rpc("apply_to_opportunity", {
+      p_opportunity_id: applyModal.id,
+    });
+
+    const result = typeof data === "string" ? JSON.parse(data) : data;
+
+    if (error || !result?.success) {
+      if (result?.error === "not_available") {
+        toast.error("Esta oportunidade não está mais disponível.");
+      } else if (result?.error === "private") {
+        toast.error("Esta é uma oportunidade privada.");
+      } else {
+        toast.error("Erro ao se candidatar. Tente novamente.");
+      }
+      setApplying(false);
+      setApplyModal(null);
+      return;
     }
-    setTogglingOnline(false);
-  };
 
-  const approvalStatus = profile?.approval_status || "incomplete";
-  const isApproved = approvalStatus === "approved";
-  const isOnline = profile?.is_online ?? false;
+    toast.success("Candidatura enviada! ⚡ Aguarde o cliente te selecionar.");
+    // Move from available to applications
+    setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+    setAppliedIds(prev => new Set([...prev, applyModal.id]));
+    loadData();
+    setApplying(false);
+    setApplyModal(null);
+    setActiveTab("Em Análise");
+  };
 
   const shortAddr = (addr: string | null | undefined) => {
     if (!addr) return "";
@@ -183,7 +263,7 @@ const OportunidadesPage = () => {
     return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
   };
 
-  const OppCard = ({ opp, variant }: { opp: Opp; variant: "available" | "accepted" }) => (
+  const OppCard = ({ opp, variant, onApply }: { opp: Opp; variant: "available" | "analysis" | "accepted"; onApply?: () => void }) => (
     <div className="mb-3 rounded-[20px] bg-white p-4" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold"
@@ -196,9 +276,18 @@ const OportunidadesPage = () => {
             R$ {opp.budget.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </span>
         )}
-        {variant === "accepted" && opp.status && statusBadges[opp.status] && (
+        {variant === "analysis" && (
           <span className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
-            style={{ background: statusBadges[opp.status].bg, color: statusBadges[opp.status].color }}>
+            style={{ background: "#FFF3E0", color: "#B45309" }}>
+            Aguardando seleção ⏳
+          </span>
+        )}
+        {variant === "accepted" && opp.status && statusBadges[opp.status] && (
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${opp.status === "awaiting_signatures" ? "cursor-pointer" : ""}`}
+            style={{ background: statusBadges[opp.status].bg, color: statusBadges[opp.status].color }}
+            onClick={() => { if (opp.status === "awaiting_signatures") navigate("/contratos"); }}
+          >
             {statusBadges[opp.status].text}
           </span>
         )}
@@ -227,131 +316,194 @@ const OportunidadesPage = () => {
         </div>
       </div>
 
-      <button
-        onClick={() => navigate(`/oportunidade/${opp.id}`)}
-        className="mt-3 flex h-[40px] w-full items-center justify-center rounded-[12px] text-[13px] font-semibold"
-        style={variant === "available"
-          ? { background: "#276EF1", color: "#FFFFFF" }
-          : { background: "#F7F7F7", color: "#000000" }
-        }
-      >
-        Ver detalhes →
-      </button>
+      {variant === "available" && (
+        <button
+          onClick={onApply}
+          className="mt-3 flex h-[40px] w-full items-center justify-center rounded-[12px] text-[13px] font-semibold text-white"
+          style={{ background: "#276EF1" }}
+        >
+          Me candidatar →
+        </button>
+      )}
+      {variant === "analysis" && (
+        <div className="mt-3 rounded-[12px] bg-[#F7F7F7] py-2.5 text-center text-[12px] text-[#767676]">
+          O cliente está analisando os candidatos.
+        </div>
+      )}
+      {variant === "accepted" && (
+        <button
+          onClick={() => navigate(`/oportunidade/${opp.id}`)}
+          className="mt-3 flex h-[40px] w-full items-center justify-center rounded-[12px] text-[13px] font-semibold"
+          style={{ background: "#F7F7F7", color: "#000000" }}
+        >
+          Ver detalhes →
+        </button>
+      )}
     </div>
   );
+
+  const counts = {
+    "Disponíveis": available.length,
+    "Em Análise": applications.length,
+    "Aceitas": accepted.length,
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
       {/* HEADER */}
-      <div className="flex items-center justify-center px-6 pt-[52px] pb-6">
+      <div className="flex items-center justify-center px-6 pt-[52px] pb-4">
         <div className="flex items-center" style={{ gap: 10 }}>
           <Zap size={24} fill="#276EF1" color="#276EF1" />
           <span className="font-bold text-white" style={{ fontSize: 22, letterSpacing: "-0.5px" }}>freelaki</span>
         </div>
       </div>
 
-      {/* BODY */}
-      <div className="flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5 overflow-y-auto">
-        {/* Not approved banner */}
-        {!isApproved && (
-          <div className="mb-4 rounded-[14px] p-3.5" style={{ background: "#FFF3E0" }}>
-            <p className="text-[13px] text-[#B45309]">Complete seu cadastro para ver oportunidades.</p>
-            <button
-              onClick={() => navigate("/documentos")}
-              className="mt-2 flex h-[36px] items-center justify-center rounded-[10px] bg-[#276EF1] px-4 text-[13px] font-semibold text-white"
-            >
-              Enviar documentos →
-            </button>
-          </div>
-        )}
-
-        {/* Offline banner */}
-        {isApproved && !isOnline && (
-          <div className="mb-4 flex items-center gap-3 rounded-[14px] p-4" style={{ background: "#111111" }}>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-[#E53935]"
-                  style={{ animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }} />
-                <span className="text-[13px] text-[#767676]">
-                  Você está offline. Fique online para ver oportunidades em tempo real.
-                </span>
-              </div>
-            </div>
-            <button
-              disabled={togglingOnline}
-              onClick={toggleOnline}
-              className="shrink-0 rounded-[10px] bg-[#276EF1] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-50"
-            >
-              {togglingOnline ? "..." : "Ficar Online →"}
-            </button>
-          </div>
-        )}
-
-        {/* AVAILABLE */}
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold tracking-[2px] text-[#767676]">DISPONÍVEIS</span>
-          {available.length > 0 && (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#276EF1] px-2.5 text-[12px] font-medium text-white">
-              {available.length}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-3">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
-            </div>
-          ) : available.length > 0 ? (
-            <AnimatePresence>
-              {available.map((opp) => (
-                <motion.div key={opp.id}
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-                  <OppCard opp={opp} variant="available" />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          ) : (
-            <p className="py-6 text-center text-[13px] text-[#767676]">
-              Nenhuma oportunidade disponível no momento.
-            </p>
-          )}
-        </div>
-
-        {/* DIVIDER */}
-        <div className="relative my-6 flex items-center">
-          <div className="flex-1 border-t border-[#E5E5E5]" />
-          <div className="flex items-center gap-2 px-3">
-            <span className="text-[10px] font-semibold tracking-[2px] text-[#767676]">ACEITAS</span>
-            {accepted.length > 0 && (
-              <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-2.5 text-[12px] font-medium text-white" style={{ background: "#2E7D32" }}>
-                {accepted.length}
+      {/* TABS */}
+      <div className="flex gap-1 px-4 pb-4">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="relative flex-1 rounded-[10px] py-2.5 text-[13px] font-semibold transition-all"
+            style={{
+              background: activeTab === tab ? "#276EF1" : "rgba(255,255,255,0.06)",
+              color: activeTab === tab ? "#FFFFFF" : "#767676",
+            }}
+          >
+            {tab}
+            {counts[tab] > 0 && (
+              <span
+                className="absolute -top-1.5 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                style={{
+                  background: tab === "Em Análise" ? "#F59E0B" : tab === "Aceitas" ? "#2E7D32" : "#276EF1",
+                }}
+              >
+                {counts[tab]}
               </span>
             )}
-          </div>
-          <div className="flex-1 border-t border-[#E5E5E5]" />
-        </div>
-
-        {/* ACCEPTED */}
-        <div>
-          {accepted.length > 0 ? (
-            <AnimatePresence>
-              {accepted.map((opp) => (
-                <motion.div key={opp.id}
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
-                  <OppCard opp={opp} variant="accepted" />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          ) : (
-            <p className="py-5 text-center text-[13px] text-[#767676]">
-              Nenhuma oportunidade aceita ainda.
-            </p>
-          )}
-        </div>
+          </button>
+        ))}
       </div>
+
+      {/* BODY */}
+      <div className="flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5 overflow-y-auto">
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeTab === "Disponíveis" && (
+                <>
+                  {available.length > 0 ? (
+                    available.map((opp) => (
+                      <OppCard key={opp.id} opp={opp} variant="available" onApply={() => setApplyModal(opp)} />
+                    ))
+                  ) : (
+                    <p className="py-10 text-center text-[13px] text-[#767676]">
+                      Nenhuma oportunidade disponível no momento.
+                    </p>
+                  )}
+                </>
+              )}
+
+              {activeTab === "Em Análise" && (
+                <>
+                  {applications.length > 0 ? (
+                    applications.map((app) =>
+                      app.opportunity ? (
+                        <OppCard key={app.id} opp={app.opportunity} variant="analysis" />
+                      ) : null
+                    )
+                  ) : (
+                    <p className="py-10 text-center text-[13px] text-[#767676]">
+                      Nenhuma candidatura em análise.
+                    </p>
+                  )}
+                </>
+              )}
+
+              {activeTab === "Aceitas" && (
+                <>
+                  {accepted.length > 0 ? (
+                    accepted.map((opp) => (
+                      <OppCard key={opp.id} opp={opp} variant="accepted" />
+                    ))
+                  ) : (
+                    <p className="py-10 text-center text-[13px] text-[#767676]">
+                      Nenhuma oportunidade aceita ainda.
+                    </p>
+                  )}
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* APPLY MODAL */}
+      <AnimatePresence>
+        {applyModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !applying && setApplyModal(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center">
+                <Zap size={32} fill="#276EF1" color="#276EF1" />
+              </div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Me candidatar?</h2>
+              <div className="mt-4 rounded-xl bg-[#F7F7F7] p-3.5">
+                <p className="text-[15px] font-semibold text-black">{applyModal.title}</p>
+                {applyModal.budget != null && (
+                  <p className="mt-1 text-[14px] font-bold" style={{ color: "#2E7D32" }}>
+                    R$ {applyModal.budget.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </p>
+                )}
+              </div>
+              <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
+                Ao se candidatar, o cliente poderá te selecionar para este freela.
+              </p>
+              <button
+                onClick={handleApply}
+                disabled={applying}
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#276EF1] text-base font-bold text-white disabled:opacity-50"
+              >
+                {applying ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  "Confirmar candidatura"
+                )}
+              </button>
+              <button
+                onClick={() => setApplyModal(null)}
+                disabled={applying}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black"
+              >
+                Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <DashboardDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
       <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
