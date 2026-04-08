@@ -672,7 +672,7 @@ const DashboardPage = () => {
                   >
                     <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
                     {available.map((opp) => (
-                      <CarouselOppCard key={opp.id} opp={opp} />
+                      <CarouselOppCard key={opp.id} opp={opp} onApply={() => setApplyModal(opp)} />
                     ))}
                   </div>
                 ) : (
