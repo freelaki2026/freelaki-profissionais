@@ -165,14 +165,20 @@ export type Database = {
       contracts: {
         Row: {
           client_id: string | null
+          client_ip: string | null
           client_signed: boolean | null
           client_signed_at: string | null
+          client_user_agent: string | null
+          contract_hash: string | null
           contract_text: string | null
+          contract_version: string | null
           created_at: string | null
           id: string
           opportunity_id: string | null
           pdf_url: string | null
+          pro_user_agent: string | null
           professional_id: string | null
+          professional_ip: string | null
           professional_signed: boolean | null
           professional_signed_at: string | null
           sign_token_client: string | null
@@ -182,14 +188,20 @@ export type Database = {
         }
         Insert: {
           client_id?: string | null
+          client_ip?: string | null
           client_signed?: boolean | null
           client_signed_at?: string | null
+          client_user_agent?: string | null
+          contract_hash?: string | null
           contract_text?: string | null
+          contract_version?: string | null
           created_at?: string | null
           id?: string
           opportunity_id?: string | null
           pdf_url?: string | null
+          pro_user_agent?: string | null
           professional_id?: string | null
+          professional_ip?: string | null
           professional_signed?: boolean | null
           professional_signed_at?: string | null
           sign_token_client?: string | null
@@ -199,14 +211,20 @@ export type Database = {
         }
         Update: {
           client_id?: string | null
+          client_ip?: string | null
           client_signed?: boolean | null
           client_signed_at?: string | null
+          client_user_agent?: string | null
+          contract_hash?: string | null
           contract_text?: string | null
+          contract_version?: string | null
           created_at?: string | null
           id?: string
           opportunity_id?: string | null
           pdf_url?: string | null
+          pro_user_agent?: string | null
           professional_id?: string | null
+          professional_ip?: string | null
           professional_signed?: boolean | null
           professional_signed_at?: string | null
           sign_token_client?: string | null
@@ -225,7 +243,7 @@ export type Database = {
           {
             foreignKeyName: "contracts_opportunity_id_fkey"
             columns: ["opportunity_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "opportunities"
             referencedColumns: ["id"]
           },
@@ -1125,11 +1143,21 @@ export type Database = {
         Args: { p_opportunity_id: string }
         Returns: undefined
       }
+      generate_contract: { Args: { p_opportunity_id: string }; Returns: string }
       get_financial_summary: { Args: { p_profile_id: string }; Returns: Json }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       reject_document: {
         Args: { p_document_id: string; p_reason: string }
         Returns: undefined
+      }
+      sign_contract: {
+        Args: {
+          p_contract_id: string
+          p_ip_address: string
+          p_signer_type: string
+          p_user_agent: string
+        }
+        Returns: Json
       }
     }
     Enums: {
