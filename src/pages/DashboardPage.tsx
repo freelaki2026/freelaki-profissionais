@@ -452,7 +452,7 @@ const DashboardPage = () => {
         .select("id, status")
         .in("id", ids);
       if (data) {
-        const closedIds = data.filter((op) => op.status !== "open").map((op) => op.id);
+        const closedIds = data.filter((op) => !["open", "pending_selection"].includes(op.status!)).map((op) => op.id);
         if (closedIds.length > 0) {
           setAvailable((prev) => prev.filter((o) => !closedIds.includes(o.id)));
         }
@@ -488,10 +488,37 @@ const DashboardPage = () => {
     setApplyingId(true);
     const { data, error } = await supabase.rpc("apply_to_opportunity", { p_opportunity_id: applyModal.id });
     const result = typeof data === "string" ? JSON.parse(data) : data;
-    if (error || !result?.success) {
-      toast({ title: result?.error === "not_available" ? "Oportunidade não disponível." : "Erro ao se candidatar.", variant: "destructive" });
-    } else {
-      toast({ title: "Candidatura enviada! ⚡" });
+
+    if (error) {
+      toast({ title: "Erro ao enviar candidatura. Tente novamente.", variant: "destructive" });
+      setApplyingId(false);
+      setApplyModal(null);
+      return;
+    }
+
+    if (result?.error) {
+      switch (result.error) {
+        case "not_available":
+          toast({ title: "Esta oportunidade não está mais disponível.", variant: "destructive" });
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          window.dispatchEvent(new CustomEvent("opportunity_unavailable", { detail: { id: applyModal.id } }));
+          break;
+        case "already_applied":
+          toast({ title: "Você já se candidatou a esta oportunidade." });
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          break;
+        case "max_reached":
+          toast({ title: "Esta oportunidade atingiu o máximo de candidatos por enquanto. Fique atento a novas oportunidades!" });
+          setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+          break;
+        case "private":
+          toast({ title: "Esta oportunidade não está disponível.", variant: "destructive" });
+          break;
+        default:
+          toast({ title: "Erro ao se candidatar. Tente novamente.", variant: "destructive" });
+      }
+    } else if (result?.success) {
+      toast({ title: "Candidatura enviada! ⚡ Aguarde o cliente te selecionar." });
       setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
       loadOpportunities();
     }
