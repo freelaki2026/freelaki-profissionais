@@ -460,6 +460,44 @@ const DashboardPage = () => {
     return () => clearInterval(interval);
   }, [isOnline, user, available]);
 
+  // Realtime for applications
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("dashboard-apps-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "opportunity_applications" }, (payload) => {
+        const updated = payload.new as any;
+        if (updated?.professional_id !== user.id) return;
+        if (updated.status === "selected") {
+          toast({ title: "🎉 Você foi selecionado! Assine o contrato." });
+          navigator.vibrate?.([200, 100, 200]);
+          loadOpportunities();
+        } else if (updated.status === "rejected") {
+          toast({ title: "Outra pessoa foi escolhida. Continue online! 💪" });
+          setApplications(prev => prev.filter(a => a.id !== updated.id));
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadOpportunities]);
+
+  // Apply to opportunity handler
+  const handleApplyFromDashboard = async () => {
+    if (!user || !applyModal) return;
+    setApplyingId(true);
+    const { data, error } = await supabase.rpc("apply_to_opportunity", { p_opportunity_id: applyModal.id });
+    const result = typeof data === "string" ? JSON.parse(data) : data;
+    if (error || !result?.success) {
+      toast({ title: result?.error === "not_available" ? "Oportunidade não disponível." : "Erro ao se candidatar.", variant: "destructive" });
+    } else {
+      toast({ title: "Candidatura enviada! ⚡" });
+      setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+      loadOpportunities();
+    }
+    setApplyingId(false);
+    setApplyModal(null);
+  };
+
   // Listen for opportunity_accepted custom event from detail page
   useEffect(() => {
     const handler = (e: Event) => {
