@@ -125,13 +125,23 @@ const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) =>
       }}
     >
       <button onClick={() => navigate(`/oportunidade/${opp.id}`)} className="flex flex-1 flex-col text-left">
-        <span
-          className="inline-flex items-center gap-1 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold"
-          style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
-        >
-          <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
-          <span className="truncate">{opp.category_name || "Geral"}</span>
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+            style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
+          >
+            <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
+            <span className="truncate">{opp.category_name || "Geral"}</span>
+          </span>
+          {opp.status === "pending_selection" && opp.application_count != null && (
+            <span
+              className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+              style={{ background: "#FFF3E0", color: "#B45309" }}
+            >
+              {opp.application_count}/3
+            </span>
+          )}
+        </div>
         <p
           className="mt-2 text-[14px] font-bold text-foreground leading-[1.3]"
           style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
