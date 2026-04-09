@@ -10,7 +10,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
 import BottomNav from "@/components/dashboard/BottomNav";
-import BottomNav from "@/components/dashboard/BottomNav";
 import OpportunityCard from "@/components/dashboard/OpportunityCard";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
 
@@ -269,7 +268,7 @@ const DashboardPage = () => {
   const oppRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [bellShake, setBellShake] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -967,11 +966,8 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* DRAWER */}
-      <DashboardDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
-
       {/* BOTTOM NAV */}
-      <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
+      <BottomNav />
 
       <NotificationPanel
         open={notifOpen}
