@@ -8,11 +8,7 @@ interface NavItem {
   action?: () => void;
 }
 
-interface BottomNavProps {
-  onOpenDrawer?: () => void;
-}
-
-const BottomNav = ({ onOpenDrawer }: BottomNavProps) => {
+const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,7 +16,7 @@ const BottomNav = ({ onOpenDrawer }: BottomNavProps) => {
     { icon: Home, label: "Início", path: "/dashboard" },
     { icon: Zap, label: "Oportunidades", path: "/oportunidades" },
     { icon: FileText, label: "Contratos", path: "/contratos" },
-    { icon: Menu, label: "Menu", path: "/dashboard", action: onOpenDrawer },
+    { icon: Menu, label: "Menu", path: "/menu" },
   ];
 
   return (
