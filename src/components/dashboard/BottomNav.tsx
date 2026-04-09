@@ -5,7 +5,6 @@ interface NavItem {
   icon: LucideIcon;
   label: string;
   path: string;
-  action?: () => void;
 }
 
 const BottomNav = () => {

@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
-import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
+import BottomNav from "@/components/dashboard/BottomNav";
 import BottomNav from "@/components/dashboard/BottomNav";
 import OpportunityCard from "@/components/dashboard/OpportunityCard";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
