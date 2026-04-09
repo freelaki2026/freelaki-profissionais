@@ -699,7 +699,7 @@ const DashboardPage = () => {
 
           {/* Body */}
           <div
-            className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5"
+            className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-20 pt-5"
             style={{
               opacity: transitionPhase === "going-offline" ? 0 : 1,
               transition: "opacity 300ms ease",

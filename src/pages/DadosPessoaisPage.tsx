@@ -155,7 +155,7 @@ export default function DadosPessoaisPage() {
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="min-h-screen overflow-y-auto"
+        className="flex-1"
         style={{ background: "#F7F7F7", borderRadius: "24px 24px 0 0", padding: "20px 16px" }}
       >
         {/* DADOS DE ACESSO */}
