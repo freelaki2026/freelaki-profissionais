@@ -22,16 +22,13 @@ const BottomNav = () => {
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-[hsl(var(--border))] bg-white">
       {items.map((item, i) => {
-        const active = !item.action && location.pathname === item.path;
+        const active = location.pathname === item.path;
         const Icon = item.icon;
         const color = active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))";
         return (
           <button
             key={i}
-            onClick={() => {
-              if (item.action) { item.action(); return; }
-              navigate(item.path);
-            }}
+            onClick={() => navigate(item.path)}
             className="relative flex flex-col items-center gap-0.5 pt-1"
           >
             {active && (
