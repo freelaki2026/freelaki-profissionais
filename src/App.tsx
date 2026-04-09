@@ -29,6 +29,7 @@ import MensagensPage from "@/pages/MensagensPage";
 import ChatClientePage from "@/pages/ChatClientePage";
 import GanhosPage from "@/pages/GanhosPage";
 import MeusServicosPage from "@/pages/MeusServicosPage";
+import MenuPage from "@/pages/MenuPage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();

@@ -65,7 +65,7 @@ const OportunidadesPage = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loading, setLoading] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  
   const [applyModal, setApplyModal] = useState<Opp | null>(null);
   const [applying, setApplying] = useState(false);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
