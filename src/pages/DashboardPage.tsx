@@ -269,7 +269,6 @@ const DashboardPage = () => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
 
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [bellShake, setBellShake] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isOnline, setIsOnline] = useState(false);

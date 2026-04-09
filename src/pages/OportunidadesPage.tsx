@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import BottomNav from "@/components/dashboard/BottomNav";
-import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
+
 
 interface Opp {
   id: string;
