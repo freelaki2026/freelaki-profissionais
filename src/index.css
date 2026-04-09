@@ -64,3 +64,12 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Hide all scrollbars globally */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}

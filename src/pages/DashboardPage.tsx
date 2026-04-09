@@ -9,7 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
-import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
 import BottomNav from "@/components/dashboard/BottomNav";
 import OpportunityCard from "@/components/dashboard/OpportunityCard";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
@@ -269,7 +268,6 @@ const DashboardPage = () => {
   const oppRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [bellShake, setBellShake] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -701,7 +699,7 @@ const DashboardPage = () => {
 
           {/* Body */}
           <div
-            className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-24 pt-5"
+            className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-20 pt-5"
             style={{
               opacity: transitionPhase === "going-offline" ? 0 : 1,
               transition: "opacity 300ms ease",
@@ -967,11 +965,8 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* DRAWER */}
-      <DashboardDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
-
       {/* BOTTOM NAV */}
-      <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
+      <BottomNav />
 
       <NotificationPanel
         open={notifOpen}

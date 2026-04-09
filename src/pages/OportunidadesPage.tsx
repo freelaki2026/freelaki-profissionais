@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import BottomNav from "@/components/dashboard/BottomNav";
-import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
+
 
 interface Opp {
   id: string;
@@ -65,7 +65,7 @@ const OportunidadesPage = () => {
   const [applications, setApplications] = useState<Application[]>([]);
   const [accepted, setAccepted] = useState<Opp[]>([]);
   const [loading, setLoading] = useState(true);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  
   const [applyModal, setApplyModal] = useState<Opp | null>(null);
   const [applying, setApplying] = useState(false);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
@@ -534,8 +534,7 @@ const OportunidadesPage = () => {
         )}
       </AnimatePresence>
 
-      <DashboardDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
-      <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
+      <BottomNav />
     </div>
   );
 };
