@@ -534,8 +534,7 @@ const OportunidadesPage = () => {
         )}
       </AnimatePresence>
 
-      <DashboardDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} profile={profile} />
-      <BottomNav onOpenDrawer={() => setDrawerOpen(true)} />
+      <BottomNav />
     </div>
   );
 };
