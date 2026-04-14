@@ -158,9 +158,10 @@ const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) =>
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={(e) => { e.stopPropagation(); onApply(); }}
-        className="mt-auto flex h-[32px] w-full items-center justify-center rounded-[10px] bg-[#276EF1] text-[12px] font-semibold text-white"
+        className="mt-auto flex h-[32px] w-full items-center justify-center rounded-[10px] text-[12px] font-semibold text-white"
+        style={{ background: opp.is_private ? "#2E7D32" : "#276EF1" }}
       >
-        Me candidatar →
+        {opp.is_private ? "Aceitar ⚡" : "Me candidatar →"}
       </motion.button>
     </div>
   );
@@ -390,6 +391,7 @@ const DashboardPage = () => {
             location_address: o.location_address,
             category_name: o.categories?.name, category_icon: o.categories?.icon,
             application_count: o.opportunity_applications?.length || 0,
+            is_private: o.is_private || false,
           }))
       );
     }
