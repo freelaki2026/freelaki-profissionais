@@ -1031,7 +1031,9 @@ const DashboardPage = () => {
               <div className="flex justify-center">
                 <Zap size={32} fill="#276EF1" color="#276EF1" />
               </div>
-              <h2 className="mt-3 text-center text-xl font-bold text-foreground">Me candidatar?</h2>
+              <h2 className="mt-3 text-center text-xl font-bold text-foreground">
+                {applyModal.is_private ? "Aceitar proposta?" : "Me candidatar?"}
+              </h2>
               <div className="mt-4 rounded-xl bg-[#F7F7F7] p-3.5">
                 <p className="text-[15px] font-semibold text-foreground">{applyModal.title}</p>
                 {applyModal.budget != null && (
@@ -1040,16 +1042,25 @@ const DashboardPage = () => {
                   </p>
                 )}
               </div>
-              <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
-                Ao se candidatar, o cliente poderá te selecionar para este freela.
-              </p>
+              {applyModal.is_private ? (
+                <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
+                  Ao aceitar, você se compromete a realizar este serviço. Cancelamentos geram penalidades.
+                </p>
+              ) : (
+                <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
+                  Ao se candidatar, o cliente poderá te selecionar para este freela.
+                </p>
+              )}
               <button
                 onClick={handleApplyFromDashboard}
                 disabled={applyingId}
-                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#276EF1] text-base font-bold text-white disabled:opacity-50"
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: applyModal.is_private ? "#2E7D32" : "#276EF1" }}
               >
                 {applyingId ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : applyModal.is_private ? (
+                  "Confirmar e aceitar"
                 ) : (
                   "Confirmar candidatura"
                 )}
