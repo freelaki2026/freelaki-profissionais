@@ -436,9 +436,18 @@ const OportunidadeDetalhePage = () => {
               </motion.button>
             </div>
           ) : hasApplied ? (
-            <button disabled className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#E8F5E9] text-base font-semibold" style={{ color: "#2E7D32" }}>
-              Já me candidatei ✓
-            </button>
+            <div className="space-y-2">
+              <button disabled className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#E8F5E9] text-base font-semibold" style={{ color: "#2E7D32" }}>
+                Já me candidatei ✓
+              </button>
+              <button
+                onClick={() => setShowWithdrawModal(true)}
+                className="flex h-[42px] w-full items-center justify-center gap-1.5 rounded-2xl text-[13px] font-semibold"
+                style={{ background: "#FFEBEE", color: "#C62828" }}
+              >
+                <XCircle className="h-4 w-4" /> Desistir da oportunidade
+              </button>
+            </div>
           ) : (
             <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowApplyModal(true)}
               className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#276EF1] text-base font-bold text-white">
