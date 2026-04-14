@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, MapPin, Calendar, AlertCircle } from "lucide-react";
+import { Zap, MapPin, Calendar, AlertCircle, XCircle } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,6 +69,8 @@ const OportunidadesPage = () => {
   const [applyModal, setApplyModal] = useState<Opp | null>(null);
   const [applying, setApplying] = useState(false);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+  const [withdrawApp, setWithdrawApp] = useState<Application | null>(null);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   // Load profile
   useEffect(() => {
