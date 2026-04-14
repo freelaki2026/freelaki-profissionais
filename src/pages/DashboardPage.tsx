@@ -530,6 +530,25 @@ const DashboardPage = () => {
   const handleApplyFromDashboard = async () => {
     if (!user || !applyModal) return;
     setApplyingId(true);
+
+    // Private opportunities use accept_opportunity RPC
+    if (applyModal.is_private) {
+      const { data, error } = await supabase.rpc("accept_opportunity", { p_opportunity_id: applyModal.id });
+      const result = typeof data === "string" ? JSON.parse(data) : data;
+      if (error || !result?.success) {
+        toast({ title: result?.error === "already_taken" ? "Esta oportunidade não está mais disponível." : "Erro ao aceitar. Tente novamente.", variant: "destructive" });
+      } else {
+        toast({ title: "Oportunidade aceita! Mensagem enviada ao cliente. 🎉" });
+        window.dispatchEvent(new CustomEvent("opportunity_accepted", { detail: { id: applyModal.id } }));
+        setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+        loadOpportunities();
+      }
+      setApplyingId(false);
+      setApplyModal(null);
+      return;
+    }
+
+    // Public opportunities use apply_to_opportunity RPC
     const { data, error } = await supabase.rpc("apply_to_opportunity", { p_opportunity_id: applyModal.id });
     const result = typeof data === "string" ? JSON.parse(data) : data;
 
@@ -554,9 +573,6 @@ const DashboardPage = () => {
         case "max_reached":
           toast({ title: "Esta oportunidade atingiu o máximo de candidatos por enquanto. Fique atento a novas oportunidades!" });
           setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
-          break;
-        case "private":
-          toast({ title: "Esta oportunidade não está disponível.", variant: "destructive" });
           break;
         default:
           toast({ title: "Erro ao se candidatar. Tente novamente.", variant: "destructive" });
