@@ -50,6 +50,7 @@ interface Opp {
   category_name?: string;
   category_icon?: string;
   application_count?: number;
+  is_private?: boolean;
 }
 
 const formatSchedule = (scheduledAt: string | null | undefined): string => {
@@ -157,9 +158,10 @@ const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) =>
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={(e) => { e.stopPropagation(); onApply(); }}
-        className="mt-auto flex h-[32px] w-full items-center justify-center rounded-[10px] bg-[#276EF1] text-[12px] font-semibold text-white"
+        className="mt-auto flex h-[32px] w-full items-center justify-center rounded-[10px] text-[12px] font-semibold text-white"
+        style={{ background: opp.is_private ? "#2E7D32" : "#276EF1" }}
       >
-        Me candidatar →
+        {opp.is_private ? "Aceitar ⚡" : "Me candidatar →"}
       </motion.button>
     </div>
   );
@@ -389,6 +391,7 @@ const DashboardPage = () => {
             location_address: o.location_address,
             category_name: o.categories?.name, category_icon: o.categories?.icon,
             application_count: o.opportunity_applications?.length || 0,
+            is_private: o.is_private || false,
           }))
       );
     }
@@ -527,6 +530,25 @@ const DashboardPage = () => {
   const handleApplyFromDashboard = async () => {
     if (!user || !applyModal) return;
     setApplyingId(true);
+
+    // Private opportunities use accept_opportunity RPC
+    if (applyModal.is_private) {
+      const { data, error } = await supabase.rpc("accept_opportunity", { p_opportunity_id: applyModal.id });
+      const result = typeof data === "string" ? JSON.parse(data) : data;
+      if (error || !result?.success) {
+        toast({ title: result?.error === "already_taken" ? "Esta oportunidade não está mais disponível." : "Erro ao aceitar. Tente novamente.", variant: "destructive" });
+      } else {
+        toast({ title: "Oportunidade aceita! Mensagem enviada ao cliente. 🎉" });
+        window.dispatchEvent(new CustomEvent("opportunity_accepted", { detail: { id: applyModal.id } }));
+        setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
+        loadOpportunities();
+      }
+      setApplyingId(false);
+      setApplyModal(null);
+      return;
+    }
+
+    // Public opportunities use apply_to_opportunity RPC
     const { data, error } = await supabase.rpc("apply_to_opportunity", { p_opportunity_id: applyModal.id });
     const result = typeof data === "string" ? JSON.parse(data) : data;
 
@@ -551,9 +573,6 @@ const DashboardPage = () => {
         case "max_reached":
           toast({ title: "Esta oportunidade atingiu o máximo de candidatos por enquanto. Fique atento a novas oportunidades!" });
           setAvailable(prev => prev.filter(o => o.id !== applyModal.id));
-          break;
-        case "private":
-          toast({ title: "Esta oportunidade não está disponível.", variant: "destructive" });
           break;
         default:
           toast({ title: "Erro ao se candidatar. Tente novamente.", variant: "destructive" });
@@ -1012,7 +1031,9 @@ const DashboardPage = () => {
               <div className="flex justify-center">
                 <Zap size={32} fill="#276EF1" color="#276EF1" />
               </div>
-              <h2 className="mt-3 text-center text-xl font-bold text-foreground">Me candidatar?</h2>
+              <h2 className="mt-3 text-center text-xl font-bold text-foreground">
+                {applyModal.is_private ? "Aceitar proposta?" : "Me candidatar?"}
+              </h2>
               <div className="mt-4 rounded-xl bg-[#F7F7F7] p-3.5">
                 <p className="text-[15px] font-semibold text-foreground">{applyModal.title}</p>
                 {applyModal.budget != null && (
@@ -1021,16 +1042,25 @@ const DashboardPage = () => {
                   </p>
                 )}
               </div>
-              <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
-                Ao se candidatar, o cliente poderá te selecionar para este freela.
-              </p>
+              {applyModal.is_private ? (
+                <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
+                  Ao aceitar, você se compromete a realizar este serviço. Cancelamentos geram penalidades.
+                </p>
+              ) : (
+                <p className="mt-3 text-center text-[13px] leading-relaxed text-[#767676]">
+                  Ao se candidatar, o cliente poderá te selecionar para este freela.
+                </p>
+              )}
               <button
                 onClick={handleApplyFromDashboard}
                 disabled={applyingId}
-                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#276EF1] text-base font-bold text-white disabled:opacity-50"
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: applyModal.is_private ? "#2E7D32" : "#276EF1" }}
               >
                 {applyingId ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : applyModal.is_private ? (
+                  "Confirmar e aceitar"
                 ) : (
                   "Confirmar candidatura"
                 )}
