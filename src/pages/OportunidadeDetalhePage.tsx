@@ -263,6 +263,25 @@ const OportunidadeDetalhePage = () => {
     navigate("/dashboard");
   };
 
+  const handleWithdraw = async () => {
+    if (!user || !opp) return;
+    setWithdrawing(true);
+    const { error } = await supabase
+      .from("opportunity_applications")
+      .update({ status: "withdrawn", withdrawn_at: new Date().toISOString() } as any)
+      .eq("opportunity_id", opp.id)
+      .eq("professional_id", user.id);
+
+    if (error) {
+      toast.error("Erro ao desistir. Tente novamente.");
+    } else {
+      toast("Você desistiu da oportunidade.");
+      navigate("/dashboard");
+    }
+    setWithdrawing(false);
+    setShowWithdrawModal(false);
+  };
+
   const isPrivateForMe = opp?.is_private && opp?.target_professional_id === user?.id;
   const isPublicOpen = opp && !opp.is_private && (opp.status === "open" || opp.status === "pending_selection");
   const statusBadge = opp ? getStatusBadge(opp.status) : null;
