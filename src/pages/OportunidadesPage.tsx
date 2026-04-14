@@ -323,7 +323,7 @@ const OportunidadesPage = () => {
     return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
   };
 
-  const OppCard = ({ opp, variant, onApply }: { opp: Opp; variant: "available" | "analysis" | "accepted"; onApply?: () => void }) => (
+  const OppCard = ({ opp, variant, onApply, onWithdraw }: { opp: Opp; variant: "available" | "analysis" | "accepted"; onApply?: () => void; onWithdraw?: () => void }) => (
     <div className="mb-3 rounded-[20px] bg-white p-4" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold"
