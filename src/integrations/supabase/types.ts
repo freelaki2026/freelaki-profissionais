@@ -129,6 +129,42 @@ export type Database = {
           },
         ]
       }
+      cancellation_rules: {
+        Row: {
+          cancelled_by_role: string
+          created_at: string
+          description: string | null
+          hours_before_service: number | null
+          id: string
+          is_active: boolean | null
+          pay_to_professional_percent: number
+          penalty_percent: number
+          refund_to_client_percent: number
+        }
+        Insert: {
+          cancelled_by_role: string
+          created_at?: string
+          description?: string | null
+          hours_before_service?: number | null
+          id?: string
+          is_active?: boolean | null
+          pay_to_professional_percent?: number
+          penalty_percent?: number
+          refund_to_client_percent?: number
+        }
+        Update: {
+          cancelled_by_role?: string
+          created_at?: string
+          description?: string | null
+          hours_before_service?: number | null
+          id?: string
+          is_active?: boolean | null
+          pay_to_professional_percent?: number
+          penalty_percent?: number
+          refund_to_client_percent?: number
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string | null
@@ -711,6 +747,126 @@ export type Database = {
           },
           {
             foreignKeyName: "opportunity_applications_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          client_hold: number
+          client_id: string | null
+          contract_id: string | null
+          created_at: string
+          freelancer_amount: number
+          frozen_at: string | null
+          gross_amount: number
+          id: string
+          opportunity_id: string | null
+          payment_method: string
+          pix_qr_code: string | null
+          pix_qr_code_url: string | null
+          pix_transaction_id: string | null
+          platform_fee: number
+          professional_id: string | null
+          refunded_at: string | null
+          released_at: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          client_hold?: number
+          client_id?: string | null
+          contract_id?: string | null
+          created_at?: string
+          freelancer_amount?: number
+          frozen_at?: string | null
+          gross_amount: number
+          id?: string
+          opportunity_id?: string | null
+          payment_method?: string
+          pix_qr_code?: string | null
+          pix_qr_code_url?: string | null
+          pix_transaction_id?: string | null
+          platform_fee?: number
+          professional_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          client_hold?: number
+          client_id?: string | null
+          contract_id?: string | null
+          created_at?: string
+          freelancer_amount?: number
+          frozen_at?: string | null
+          gross_amount?: number
+          id?: string
+          opportunity_id?: string | null
+          payment_method?: string
+          pix_qr_code?: string | null
+          pix_qr_code_url?: string | null
+          pix_transaction_id?: string | null
+          platform_fee?: number
+          professional_id?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "profiles"
