@@ -297,6 +297,26 @@ const OportunidadesPage = () => {
     }
   };
 
+  const handleWithdraw = async () => {
+    if (!user || !withdrawApp) return;
+    setWithdrawing(true);
+    const { error } = await supabase
+      .from("opportunity_applications")
+      .update({ status: "withdrawn", withdrawn_at: new Date().toISOString() } as any)
+      .eq("opportunity_id", withdrawApp.opportunity_id)
+      .eq("professional_id", user.id);
+
+    if (error) {
+      toast.error("Erro ao desistir. Tente novamente.");
+    } else {
+      toast("Você desistiu da oportunidade.");
+      loadData();
+      navigate("/dashboard");
+    }
+    setWithdrawing(false);
+    setWithdrawApp(null);
+  };
+
   const shortAddr = (addr: string | null | undefined) => {
     if (!addr) return "";
     const parts = addr.split(",").map((s) => s.trim());
