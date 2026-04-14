@@ -92,38 +92,47 @@ const OportunidadesPage = () => {
     const catIds = cats?.map((r) => r.category_id!).filter(Boolean) || [];
 
     // Available (public, open/pending_selection, in my categories)
+    // Load my existing applications to filter out
+    const { data: myApps } = await supabase
+      .from("opportunity_applications")
+      .select("opportunity_id")
+      .eq("professional_id", user.id);
+    const appliedSet = new Set(myApps?.map(a => a.opportunity_id) || []);
+    setAppliedIds(appliedSet);
+
+    // Public opportunities in my categories
+    let publicAvail: any[] = [];
     if (catIds.length > 0) {
-      const { data: avail } = await supabase
+      const { data } = await supabase
         .from("opportunities")
         .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
         .in("status", ["open", "pending_selection"])
         .eq("is_private", false)
         .in("category_id", catIds)
         .order("created_at", { ascending: false });
-
-      if (avail) {
-        // Also load my existing applications to filter out
-        const { data: myApps } = await supabase
-          .from("opportunity_applications")
-          .select("opportunity_id")
-          .eq("professional_id", user.id);
-        const appliedSet = new Set(myApps?.map(a => a.opportunity_id) || []);
-        setAppliedIds(appliedSet);
-
-        setAvailable(
-          avail
-            .filter((o: any) => !appliedSet.has(o.id))
-            .map((o: any) => ({
-              id: o.id, title: o.title, description: o.description,
-              budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
-              location_address: o.location_address, is_private: o.is_private,
-              category_name: o.categories?.name, category_icon: o.categories?.icon,
-            }))
-        );
-      }
-    } else {
-      setAvailable([]);
+      publicAvail = data || [];
     }
+
+    // Private opportunities targeted directly at me
+    const { data: privateAvail } = await supabase
+      .from("opportunities")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+      .in("status", ["open", "pending_selection"])
+      .eq("is_private", true)
+      .eq("target_professional_id", user.id)
+      .order("created_at", { ascending: false });
+
+    const allAvail = [...publicAvail, ...(privateAvail || [])];
+    setAvailable(
+      allAvail
+        .filter((o: any) => !appliedSet.has(o.id))
+        .map((o: any) => ({
+          id: o.id, title: o.title, description: o.description,
+          budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
+          location_address: o.location_address, is_private: o.is_private,
+          category_name: o.categories?.name, category_icon: o.categories?.icon,
+        }))
+    );
 
     // Applications (Em Análise)
     const { data: apps } = await supabase

@@ -359,13 +359,25 @@ const DashboardPage = () => {
     setApplications(appsList);
 
     // Available (exclude already applied)
-    const { data: avail } = await supabase
+    // Public opportunities in my categories
+    const { data: publicAvail } = await supabase
       .from("opportunities")
       .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon), opportunity_applications(id)")
       .in("status", ["open", "pending_selection"])
       .eq("is_private", false)
       .in("category_id", catIds.length > 0 ? catIds : ["__none__"])
       .order("created_at", { ascending: false });
+
+    // Private opportunities targeted directly at me
+    const { data: privateAvail } = await supabase
+      .from("opportunities")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon), opportunity_applications(id)")
+      .in("status", ["open", "pending_selection"])
+      .eq("is_private", true)
+      .eq("target_professional_id", user.id)
+      .order("created_at", { ascending: false });
+
+    const avail = [...(publicAvail || []), ...(privateAvail || [])];
 
     if (avail) {
       setAvailable(
@@ -410,7 +422,8 @@ const DashboardPage = () => {
       .channel("opportunities-realtime")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "opportunities" }, async (payload) => {
         const newOp = payload.new as any;
-        if (newOp && userCategories.includes(newOp.category_id)) {
+        const isForMe = (newOp.is_private && newOp.target_professional_id === user.id) || (!newOp.is_private && userCategories.includes(newOp.category_id));
+        if (newOp && isForMe) {
           const { data } = await supabase
             .from("opportunities")
             .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
