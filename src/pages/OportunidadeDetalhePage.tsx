@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle } from "lucide-react";
+import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle, XCircle } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +70,8 @@ const OportunidadeDetalhePage = () => {
   const [hasApplied, setHasApplied] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   const loadOpp = async () => {
     if (!id) return;
