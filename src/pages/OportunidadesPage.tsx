@@ -386,8 +386,19 @@ const OportunidadesPage = () => {
         </button>
       )}
       {variant === "analysis" && (
-        <div className="mt-3 rounded-[12px] bg-[#F7F7F7] py-2.5 text-center text-[12px] text-[#767676]">
-          O cliente está analisando os candidatos.
+        <div className="mt-3 space-y-2">
+          <div className="rounded-[12px] bg-[#F7F7F7] py-2.5 text-center text-[12px] text-[#767676]">
+            O cliente está analisando os candidatos.
+          </div>
+          {onWithdraw && (
+            <button
+              onClick={onWithdraw}
+              className="flex h-[36px] w-full items-center justify-center gap-1.5 rounded-[12px] text-[12px] font-semibold"
+              style={{ background: "#FFEBEE", color: "#C62828" }}
+            >
+              <XCircle className="h-3.5 w-3.5" /> Desistir da oportunidade
+            </button>
+          )}
         </div>
       )}
       {variant === "accepted" && (
