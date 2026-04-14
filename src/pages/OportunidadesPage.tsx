@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, MapPin, Calendar, AlertCircle } from "lucide-react";
+import { Zap, MapPin, Calendar, AlertCircle, XCircle } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,6 +69,8 @@ const OportunidadesPage = () => {
   const [applyModal, setApplyModal] = useState<Opp | null>(null);
   const [applying, setApplying] = useState(false);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+  const [withdrawApp, setWithdrawApp] = useState<Application | null>(null);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   // Load profile
   useEffect(() => {
@@ -295,13 +297,33 @@ const OportunidadesPage = () => {
     }
   };
 
+  const handleWithdraw = async () => {
+    if (!user || !withdrawApp) return;
+    setWithdrawing(true);
+    const { error } = await supabase
+      .from("opportunity_applications")
+      .update({ status: "withdrawn", withdrawn_at: new Date().toISOString() } as any)
+      .eq("opportunity_id", withdrawApp.opportunity_id)
+      .eq("professional_id", user.id);
+
+    if (error) {
+      toast.error("Erro ao desistir. Tente novamente.");
+    } else {
+      toast("Você desistiu da oportunidade.");
+      loadData();
+      navigate("/dashboard");
+    }
+    setWithdrawing(false);
+    setWithdrawApp(null);
+  };
+
   const shortAddr = (addr: string | null | undefined) => {
     if (!addr) return "";
     const parts = addr.split(",").map((s) => s.trim());
     return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
   };
 
-  const OppCard = ({ opp, variant, onApply }: { opp: Opp; variant: "available" | "analysis" | "accepted"; onApply?: () => void }) => (
+  const OppCard = ({ opp, variant, onApply, onWithdraw }: { opp: Opp; variant: "available" | "analysis" | "accepted"; onApply?: () => void; onWithdraw?: () => void }) => (
     <div className="mb-3 rounded-[20px] bg-white p-4" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold"
@@ -364,8 +386,19 @@ const OportunidadesPage = () => {
         </button>
       )}
       {variant === "analysis" && (
-        <div className="mt-3 rounded-[12px] bg-[#F7F7F7] py-2.5 text-center text-[12px] text-[#767676]">
-          O cliente está analisando os candidatos.
+        <div className="mt-3 space-y-2">
+          <div className="rounded-[12px] bg-[#F7F7F7] py-2.5 text-center text-[12px] text-[#767676]">
+            O cliente está analisando os candidatos.
+          </div>
+          {onWithdraw && (
+            <button
+              onClick={onWithdraw}
+              className="flex h-[36px] w-full items-center justify-center gap-1.5 rounded-[12px] text-[12px] font-semibold"
+              style={{ background: "#FFEBEE", color: "#C62828" }}
+            >
+              <XCircle className="h-3.5 w-3.5" /> Desistir da oportunidade
+            </button>
+          )}
         </div>
       )}
       {variant === "accepted" && (
@@ -457,7 +490,7 @@ const OportunidadesPage = () => {
                   {applications.length > 0 ? (
                     applications.map((app) =>
                       app.opportunity ? (
-                        <OppCard key={app.id} opp={app.opportunity} variant="analysis" />
+                        <OppCard key={app.id} opp={app.opportunity} variant="analysis" onWithdraw={() => setWithdrawApp(app)} />
                       ) : null
                     )
                   ) : (
@@ -537,6 +570,56 @@ const OportunidadesPage = () => {
                 className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black"
               >
                 Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* WITHDRAW MODAL */}
+      <AnimatePresence>
+        {withdrawApp && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !withdrawing && setWithdrawApp(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center">
+                <AlertCircle className="h-8 w-8" style={{ color: "#C62828" }} />
+              </div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Tem certeza que deseja desistir?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]">
+                Esta ação não pode ser desfeita.
+              </p>
+              <button
+                onClick={handleWithdraw}
+                disabled={withdrawing}
+                className="mt-6 flex h-[48px] w-full items-center justify-center rounded-xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#E53935" }}
+              >
+                {withdrawing ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  "Confirmar desistência"
+                )}
+              </button>
+              <button
+                onClick={() => setWithdrawApp(null)}
+                disabled={withdrawing}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-xl bg-[#F7F7F7] text-base font-semibold text-black"
+              >
+                Cancelar
               </button>
             </motion.div>
           </motion.div>

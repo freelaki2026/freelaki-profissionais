@@ -722,6 +722,7 @@ export type Database = {
           opportunity_id: string | null
           professional_id: string | null
           status: string | null
+          withdrawn_at: string | null
         }
         Insert: {
           created_at?: string | null
@@ -729,6 +730,7 @@ export type Database = {
           opportunity_id?: string | null
           professional_id?: string | null
           status?: string | null
+          withdrawn_at?: string | null
         }
         Update: {
           created_at?: string | null
@@ -736,6 +738,7 @@ export type Database = {
           opportunity_id?: string | null
           professional_id?: string | null
           status?: string | null
+          withdrawn_at?: string | null
         }
         Relationships: [
           {

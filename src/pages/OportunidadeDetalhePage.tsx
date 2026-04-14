@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle } from "lucide-react";
+import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle, XCircle } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,6 +70,8 @@ const OportunidadeDetalhePage = () => {
   const [hasApplied, setHasApplied] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   const loadOpp = async () => {
     if (!id) return;
@@ -261,6 +263,25 @@ const OportunidadeDetalhePage = () => {
     navigate("/dashboard");
   };
 
+  const handleWithdraw = async () => {
+    if (!user || !opp) return;
+    setWithdrawing(true);
+    const { error } = await supabase
+      .from("opportunity_applications")
+      .update({ status: "withdrawn", withdrawn_at: new Date().toISOString() } as any)
+      .eq("opportunity_id", opp.id)
+      .eq("professional_id", user.id);
+
+    if (error) {
+      toast.error("Erro ao desistir. Tente novamente.");
+    } else {
+      toast("Você desistiu da oportunidade.");
+      navigate("/dashboard");
+    }
+    setWithdrawing(false);
+    setShowWithdrawModal(false);
+  };
+
   const isPrivateForMe = opp?.is_private && opp?.target_professional_id === user?.id;
   const isPublicOpen = opp && !opp.is_private && (opp.status === "open" || opp.status === "pending_selection");
   const statusBadge = opp ? getStatusBadge(opp.status) : null;
@@ -415,9 +436,18 @@ const OportunidadeDetalhePage = () => {
               </motion.button>
             </div>
           ) : hasApplied ? (
-            <button disabled className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#E8F5E9] text-base font-semibold" style={{ color: "#2E7D32" }}>
-              Já me candidatei ✓
-            </button>
+            <div className="space-y-2">
+              <button disabled className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#E8F5E9] text-base font-semibold" style={{ color: "#2E7D32" }}>
+                Já me candidatei ✓
+              </button>
+              <button
+                onClick={() => setShowWithdrawModal(true)}
+                className="flex h-[42px] w-full items-center justify-center gap-1.5 rounded-2xl text-[13px] font-semibold"
+                style={{ background: "#FFEBEE", color: "#C62828" }}
+              >
+                <XCircle className="h-4 w-4" /> Desistir da oportunidade
+              </button>
+            </div>
           ) : (
             <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowApplyModal(true)}
               className="flex h-[54px] w-full items-center justify-center rounded-2xl bg-[#276EF1] text-base font-bold text-white">
@@ -590,6 +620,33 @@ const OportunidadeDetalhePage = () => {
               </button>
               <button onClick={() => setShowFinishModal(false)} disabled={finishing}
                 className="mt-2.5 flex h-[52px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Cancelar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* WITHDRAW MODAL */}
+      <AnimatePresence>
+        {showWithdrawModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !withdrawing && setShowWithdrawModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center"><AlertCircle className="h-8 w-8" style={{ color: "#C62828" }} /></div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Tem certeza que deseja desistir?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]">
+                Esta ação não pode ser desfeita.
+              </p>
+              <button onClick={handleWithdraw} disabled={withdrawing}
+                className="mt-6 flex h-[48px] w-full items-center justify-center rounded-xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#E53935" }}>
+                {withdrawing ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar desistência"}
+              </button>
+              <button onClick={() => setShowWithdrawModal(false)} disabled={withdrawing}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-xl bg-[#F7F7F7] text-base font-semibold text-black">
                 Cancelar
               </button>
             </motion.div>
