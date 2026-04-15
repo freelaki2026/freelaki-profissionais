@@ -180,34 +180,30 @@ const GanhosPage = () => {
 
   const confirmWithdraw = async () => {
     if (withdrawing) return;
-    setWithdrawing(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) { setWithdrawing(false); return; }
-    const uid = session.user.id;
-
-    const { error: insErr } = await supabase.from("withdrawals").insert({
-      profile_id: uid,
-      amount: summary.available,
-      status: "pending",
-      bank_account_id: bankAccount?.id || null,
-    });
-
-    if (insErr) {
-      toast.error("Erro ao solicitar saque.");
-      setWithdrawing(false);
+    if (bankAccount?.payment_type !== "pix") {
+      toast.error("Apenas saques via PIX são suportados. Cadastre uma chave PIX.");
       return;
     }
+    setWithdrawing(true);
 
-    await supabase
-      .from("earnings")
-      .update({ status: "withdrawn", withdrawn_at: new Date().toISOString() })
-      .eq("profile_id", uid)
-      .eq("status", "available");
+    try {
+      const { data, error } = await supabase.functions.invoke("process-pix-withdrawal");
 
-    toast.success("Saque solicitado! ✓ Transferência em até 2 dias úteis.");
-    setShowSheet(false);
-    setWithdrawing(false);
-    loadData();
+      if (error || !data?.success) {
+        const msg = data?.message || "Erro ao processar saque PIX. Tente novamente.";
+        toast.error(msg);
+        setWithdrawing(false);
+        return;
+      }
+
+      toast.success("⚡ PIX enviado! Transferência instantânea realizada.");
+      setShowSheet(false);
+      setWithdrawing(false);
+      loadData();
+    } catch (err) {
+      toast.error("Erro ao processar saque. Tente novamente.");
+      setWithdrawing(false);
+    }
   };
 
   const maskKey = (key: string | null) => {
