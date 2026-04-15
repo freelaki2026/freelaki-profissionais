@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  ArrowLeft, Camera, Star, MapPin, X, Plus, Trash2, Grid3X3,
-  Instagram, Globe, Linkedin, Github, Youtube,
+  ArrowLeft, Star, X, Plus, Trash2, Grid3X3,
+  Instagram, Globe, Linkedin, Github, Youtube, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ const SOCIAL_ICONS: Record<string, React.ElementType> = {
   website: Globe,
 };
 
-const MAX_PHOTOS = 5;
+const MAX_PHOTOS = 6;
 
 interface PortfolioPhoto {
   id: string;
@@ -46,7 +46,6 @@ const PerfilPublicoPage = () => {
 
   useEffect(() => {
     if (!user) return;
-    // Fetch all data in parallel
     const fetchAll = async () => {
       const [profileRes, photosRes, reviewsRes, catsRes, pricingRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).single(),
@@ -153,87 +152,80 @@ const PerfilPublicoPage = () => {
 
   const SocialIcon = ({ platform }: { platform: string }) => {
     const Icon = SOCIAL_ICONS[platform] || Globe;
-    return <Icon size={18} />;
+    return <Icon size={16} />;
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-black">
+    <div className="flex min-h-screen flex-col bg-[#0A0A0F]">
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
 
-      {/* Cover / Header area */}
-      <div className="relative">
-        {/* Gradient cover */}
-        <div className="h-36 w-full bg-gradient-to-br from-[#276EF1] via-[#1a4fc7] to-[#0d2d7a]" />
+      {/* Ambient glow */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -top-32 left-1/2 h-64 w-96 -translate-x-1/2 rounded-full bg-[#276EF1]/15 blur-[120px]" />
+        <div className="absolute top-1/3 -right-20 h-48 w-48 rounded-full bg-[#7C3AED]/10 blur-[100px]" />
+      </div>
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute left-4 z-20"
-          style={{ top: 48 }}
-        >
-          <ArrowLeft size={24} color="#fff" />
-        </button>
+      {/* Header */}
+      <div className="relative z-10" style={{ paddingTop: 48 }}>
+        <div className="flex items-center px-5 pb-6">
+          <button onClick={() => navigate(-1)}>
+            <ArrowLeft size={22} className="text-white/70" />
+          </button>
+          <div className="flex-1 flex items-center justify-center gap-1.5">
+            <Zap size={14} className="text-[#276EF1]" />
+            <span className="text-[14px] font-semibold tracking-wide text-white/60 uppercase">
+              Perfil Público
+            </span>
+          </div>
+          <div className="w-[22px]" />
+        </div>
 
-        {/* Title */}
-        <p className="absolute right-0 left-0 text-center text-[15px] font-semibold text-white/80" style={{ top: 52 }}>
-          Perfil Público
-        </p>
-
-        {/* Avatar overlapping cover */}
-        <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: -44 }}>
+        {/* Avatar + Name block */}
+        <div className="flex flex-col items-center px-6">
+          {/* Avatar with glow ring */}
           <div className="relative">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#276EF1] to-[#7C3AED] blur-md opacity-50 scale-110" />
             {profile?.avatar_url ? (
               <img
                 src={profile.avatar_url}
-                className="h-[88px] w-[88px] rounded-full border-[3px] border-white object-cover shadow-lg"
+                className="relative h-24 w-24 rounded-full border-2 border-[#276EF1]/50 object-cover"
                 alt=""
               />
             ) : (
-              <div className="flex h-[88px] w-[88px] items-center justify-center rounded-full border-[3px] border-white bg-[#276EF1] text-2xl font-bold text-white shadow-lg">
+              <div className="relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#276EF1]/50 bg-[#1A1A2E] text-2xl font-bold text-white">
                 {initials}
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Body */}
-      <motion.div
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.35 }}
-        className="flex-1 rounded-t-3xl bg-[#FAFAFA] pt-14 pb-10"
-        style={{ marginTop: -16 }}
-      >
-        {/* Name + Rating */}
-        <div className="text-center px-6">
-          <h1 className="text-[20px] font-bold text-foreground">
+          {/* Name */}
+          <h1 className="mt-4 text-[22px] font-bold text-white tracking-tight">
             {profile?.full_name || "Profissional"}
           </h1>
 
           {/* Stars */}
-          <div className="mt-1 flex items-center justify-center gap-0.5">
+          <div className="mt-1.5 flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((i) => (
               <Star
                 key={i}
-                size={16}
+                size={14}
                 fill={avgRating !== null && i <= Math.round(avgRating) ? "#F59E0B" : "none"}
-                color={avgRating !== null && i <= Math.round(avgRating) ? "#F59E0B" : "#D1D5DB"}
+                color={avgRating !== null && i <= Math.round(avgRating) ? "#F59E0B" : "#3A3A4A"}
                 strokeWidth={1.5}
               />
             ))}
-            <span className="ml-1.5 text-[13px] text-muted-foreground">
+            <span className="ml-1.5 text-[12px] text-white/40">
               {avgRating !== null ? `${avgRating} (${reviewCount})` : "Sem avaliações"}
             </span>
           </div>
 
-          {/* Categories tags */}
+          {/* Category tags */}
           {categories.length > 0 && (
             <div className="mt-3 flex flex-wrap justify-center gap-1.5">
               {categories.map((c) => (
                 <span
                   key={c}
-                  className="rounded-full bg-[#276EF1]/10 px-3 py-1 text-[11px] font-medium text-[#276EF1]"
+                  className="rounded-full bg-[#276EF1]/15 border border-[#276EF1]/25 px-3 py-1 text-[11px] font-medium text-[#6B9BFF]"
                 >
                   {c}
                 </span>
@@ -243,46 +235,54 @@ const PerfilPublicoPage = () => {
         </div>
 
         {/* Stats row */}
-        <div className="mt-5 flex items-center justify-center gap-8 border-y border-[#E8E8E8] py-3 px-6">
+        <div className="mt-6 mx-6 flex items-center justify-around rounded-2xl bg-white/[0.04] border border-white/[0.06] py-4 backdrop-blur-sm">
           <div className="text-center">
-            <p className="text-[18px] font-bold text-foreground">{photos.length}</p>
-            <p className="text-[11px] text-muted-foreground">Trabalhos</p>
+            <p className="text-[20px] font-bold text-white">{photos.length}</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Trabalhos</p>
           </div>
-          <div className="h-6 w-px bg-[#E8E8E8]" />
+          <div className="h-8 w-px bg-white/10" />
           <div className="text-center">
-            <p className="text-[18px] font-bold text-foreground">{reviewCount}</p>
-            <p className="text-[11px] text-muted-foreground">Avaliações</p>
+            <p className="text-[20px] font-bold text-white">{reviewCount}</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Avaliações</p>
           </div>
           {pricing && (
             <>
-              <div className="h-6 w-px bg-[#E8E8E8]" />
+              <div className="h-8 w-px bg-white/10" />
               <div className="text-center">
-                <p className="text-[18px] font-bold text-foreground">
-                  R$ {pricing.hourly_rate || 0}
+                <p className="text-[20px] font-bold text-white">
+                  R${pricing.hourly_rate || 0}
                 </p>
-                <p className="text-[11px] text-muted-foreground">/hora</p>
+                <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">/hora</p>
               </div>
             </>
           )}
         </div>
+      </div>
 
+      {/* Content area */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="relative z-10 flex-1 mt-6 px-6 pb-10"
+      >
         {/* Bio */}
         {profile?.bio && (
-          <div className="mt-4 px-6">
-            <p className="text-[13px] leading-relaxed text-[#444]">{profile.bio}</p>
+          <div className="mb-5 rounded-2xl bg-white/[0.04] border border-white/[0.06] p-4">
+            <p className="text-[13px] leading-relaxed text-white/60">{profile.bio}</p>
           </div>
         )}
 
         {/* Social links */}
         {socials.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2 px-6">
+          <div className="mb-6 flex flex-wrap gap-2">
             {socials.map((s) => (
               <a
                 key={s.platform}
                 href={getSocialUrl(s.platform, s.value)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-full border border-[#E0E0E0] bg-white px-3 py-1.5 text-[12px] font-medium text-[#333] transition-colors hover:border-[#276EF1] hover:text-[#276EF1]"
+                className="flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] px-3 py-1.5 text-[12px] font-medium text-white/50 transition-all hover:bg-[#276EF1]/20 hover:border-[#276EF1]/40 hover:text-[#6B9BFF]"
               >
                 <SocialIcon platform={s.platform} />
                 {s.platform}
@@ -292,51 +292,59 @@ const PerfilPublicoPage = () => {
         )}
 
         {/* Portfolio grid */}
-        <div className="mt-6 px-6">
+        <div>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Grid3X3 size={18} className="text-muted-foreground" />
-              <span className="text-[14px] font-semibold text-foreground">Portfólio</span>
+              <Grid3X3 size={16} className="text-white/30" />
+              <span className="text-[13px] font-semibold text-white/70">Portfólio</span>
             </div>
-            <span className="text-[12px] text-muted-foreground">{photos.length}/{MAX_PHOTOS}</span>
+            <span className="text-[11px] text-white/25 font-medium">{photos.length}/{MAX_PHOTOS}</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-1">
-            {photos.map((photo) => (
-              <div key={photo.id} className="group relative aspect-square overflow-hidden rounded-md">
+          <div className="grid grid-cols-3 gap-[3px]">
+            {photos.map((photo, idx) => (
+              <motion.div
+                key={photo.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
+                className="group relative aspect-square overflow-hidden rounded-lg"
+              >
                 <img
                   src={photo.photo_url}
                   alt=""
-                  className="h-full w-full object-cover cursor-pointer transition-transform hover:scale-105"
+                  className="h-full w-full object-cover cursor-pointer transition-all duration-300 group-hover:scale-110 group-hover:brightness-75"
                   onClick={() => setLightbox(photo.photo_url)}
                 />
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                 <button
                   onClick={() => handleDelete(photo)}
-                  className="absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500"
                 >
-                  <Trash2 size={12} />
+                  <Trash2 size={13} />
                 </button>
-              </div>
+              </motion.div>
             ))}
 
-            {/* Add photo button */}
+            {/* Add photo slot */}
             {photos.length < MAX_PHOTOS && (
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="flex aspect-square items-center justify-center rounded-md border-2 border-dashed border-[#D0D0D0] bg-white transition-colors hover:border-[#276EF1] hover:bg-[#276EF1]/5"
+                className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] transition-all hover:border-[#276EF1]/40 hover:bg-[#276EF1]/10"
               >
                 {uploading ? (
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
                 ) : (
-                  <Plus size={24} className="text-[#999]" />
+                  <Plus size={22} className="text-white/20" />
                 )}
               </button>
             )}
           </div>
 
           {photos.length === 0 && !uploading && (
-            <p className="mt-2 text-center text-[12px] text-muted-foreground">
+            <p className="mt-3 text-center text-[12px] text-white/25">
               Adicione fotos dos seus trabalhos para atrair mais clientes
             </p>
           )}
@@ -350,18 +358,19 @@ const PerfilPublicoPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm"
             onClick={() => setLightbox(null)}
           >
-            <button className="absolute top-12 right-4 text-white" onClick={() => setLightbox(null)}>
+            <button className="absolute top-12 right-4 text-white/60 hover:text-white transition-colors" onClick={() => setLightbox(null)}>
               <X size={28} />
             </button>
             <motion.img
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
               src={lightbox}
-              className="max-h-[80vh] max-w-full rounded-lg object-contain"
+              className="max-h-[80vh] max-w-full rounded-xl object-contain"
               alt=""
             />
           </motion.div>
