@@ -348,6 +348,8 @@ const OportunidadeDetalhePage = () => {
       .update({ work_started_at: new Date().toISOString(), status: "in_progress" } as any)
       .eq("id", contract.id);
     if (error) {
+      console.error("❌ handleStartWork ERROR:", JSON.stringify(error, null, 2));
+      console.error("❌ code:", error.code, "| message:", error.message, "| details:", error.details, "| hint:", error.hint);
       toast.error("Erro ao iniciar trabalho. Tente novamente.");
     } else {
       toast.success("Trabalho iniciado! Boa sorte 💪");
