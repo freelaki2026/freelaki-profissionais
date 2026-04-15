@@ -10,7 +10,7 @@ import CadastroStep2 from "@/pages/CadastroStep2";
 import CadastroStep3 from "@/pages/CadastroStep3";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-import Splash from "@/pages/Splash";
+
 import NotFound from "@/pages/NotFound";
 import Login from "@/pages/Login";
 import CategoriasPage from "@/pages/CategoriasPage";
@@ -42,7 +42,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {/* Rotas públicas */}
-          <Route path="/" element={<Splash />} />
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/cadastro" element={<CadastroStep1 />} />
           <Route path="/cadastro/etapa2" element={<CadastroStep2 />} />
