@@ -110,23 +110,51 @@ const MenuPage = () => {
       >
         {/* Profile header */}
         <div className="px-6 pt-6">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} className="h-14 w-14 rounded-full object-cover" alt="" />
-          ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#276EF1] text-lg font-bold text-white">
-              {initials}
+          <div className="flex items-center gap-4">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} className="h-14 w-14 rounded-full object-cover" alt="" />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#276EF1] text-lg font-bold text-white">
+                {initials}
+              </div>
+            )}
+            {/* Stars */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    size={16}
+                    fill={avgRating !== null && i <= Math.round(avgRating) ? "#F59E0B" : "none"}
+                    color={avgRating !== null && i <= Math.round(avgRating) ? "#F59E0B" : "#D1D5DB"}
+                    strokeWidth={1.5}
+                  />
+                ))}
+              </div>
+              <span className="mt-0.5 text-[12px] text-[#767676]">
+                {avgRating !== null ? `${avgRating} (${reviewCount})` : "Sem avaliações"}
+              </span>
             </div>
-          )}
+          </div>
           <p className="mt-3 text-[17px] font-bold text-foreground">
             {profile?.full_name || "Profissional"}
           </p>
-          <button
-            onClick={badge.click}
-            className="mt-2 rounded-full px-3 py-1 text-xs font-medium"
-            style={{ background: badge.bg, color: badge.color }}
-          >
-            {badge.text}
-          </button>
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              onClick={badge.click}
+              className="rounded-full px-3 py-1 text-xs font-medium"
+              style={{ background: badge.bg, color: badge.color }}
+            >
+              {badge.text}
+            </button>
+            <button
+              onClick={() => navigate("/perfil")}
+              className="flex items-center gap-1.5 rounded-full border border-[#276EF1] px-3 py-1 text-xs font-medium text-[#276EF1]"
+            >
+              <Eye size={13} />
+              Ver meu perfil público
+            </button>
+          </div>
         </div>
 
         {/* Menu items */}
