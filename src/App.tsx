@@ -30,6 +30,7 @@ import ChatClientePage from "@/pages/ChatClientePage";
 import GanhosPage from "@/pages/GanhosPage";
 import MeusServicosPage from "@/pages/MeusServicosPage";
 import MenuPage from "@/pages/MenuPage";
+import PerfilPublicoPage from "@/pages/PerfilPublicoPage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
