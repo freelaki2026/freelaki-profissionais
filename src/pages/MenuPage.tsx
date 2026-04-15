@@ -148,7 +148,7 @@ const MenuPage = () => {
               {badge.text}
             </button>
             <button
-              onClick={() => navigate("/perfil")}
+              onClick={() => navigate("/perfil-publico")}
               className="flex items-center gap-1.5 rounded-full border border-[#276EF1] px-3 py-1 text-xs font-medium text-[#276EF1]"
             >
               <Eye size={13} />
