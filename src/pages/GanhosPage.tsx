@@ -67,8 +67,7 @@ const GanhosPage = () => {
     if (!session?.user) return;
     const uid = session.user.id;
 
-    const [summaryRes, earningsRes, withdrawalsRes, contractsRes] = await Promise.all([
-      supabase.rpc("get_financial_summary", { p_profile_id: uid }),
+    const [earningsRes, withdrawalsRes, contractsRes] = await Promise.all([
       supabase
         .from("earnings")
         .select("*")
@@ -83,8 +82,24 @@ const GanhosPage = () => {
         .from("contracts")
         .select("opportunity_id, created_at")
         .eq("professional_id", uid)
-        .in("status", ["payment_confirmed", "in_progress", "both_signed"]),
+        .in("status", ["payment_confirmed", "in_progress"]),
     ]);
+
+    // Available = sum earnings with status 'available'
+    const availableTotal = earningsRes.data
+      ?.filter((e: any) => e.status === "available")
+      .reduce((sum: number, e: any) => sum + Number(e.net_amount), 0) || 0;
+
+    // Withdrawn = sum withdrawals completed
+    const withdrawnTotal = withdrawalsRes.data
+      ?.filter((w: any) => w.status === "completed")
+      .reduce((sum: number, w: any) => sum + Number(w.amount), 0) || 0;
+
+    // Total = sum all earnings
+    const totalEarned = earningsRes.data
+      ?.reduce((sum: number, e: any) => sum + Number(e.net_amount), 0) || 0;
+
+    setSummary({ reserved: 0, available: availableTotal, withdrawn: withdrawnTotal, total: totalEarned });
 
     // Calculate reserved from active contracts with dynamic fee per contract
     if (contractsRes.data && contractsRes.data.length > 0) {
@@ -110,8 +125,6 @@ const GanhosPage = () => {
     } else {
       setReservedFromContracts(0);
     }
-
-    if (summaryRes.data) setSummary(summaryRes.data as unknown as FinancialSummary);
 
     if (earningsRes.data) {
       // Fetch opportunity details for each earning
