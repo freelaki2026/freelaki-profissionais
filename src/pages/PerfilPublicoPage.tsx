@@ -235,27 +235,21 @@ const PerfilPublicoPage = () => {
         </div>
 
         {/* Stats row */}
-        <div className="mt-6 mx-6 flex items-center justify-around rounded-2xl bg-white/[0.04] border border-white/[0.06] py-4 backdrop-blur-sm">
-          <div className="text-center">
-            <p className="text-[20px] font-bold text-white">{photos.length}</p>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">publicações</p>
+        <div className="mt-6 mx-6 grid grid-cols-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] py-4 backdrop-blur-sm">
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-[20px] font-bold text-white leading-none">{photos.length}</p>
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-white/30">publicações</p>
           </div>
-          <div className="h-8 w-px bg-white/10" />
-          <div className="text-center">
-            <p className="text-[20px] font-bold text-white">{reviewCount}</p>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Avaliações</p>
+          <div className="flex flex-col items-center justify-center border-x border-white/10">
+            <p className="text-[20px] font-bold text-white leading-none">{reviewCount}</p>
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-white/30">avaliações</p>
           </div>
-          {pricing && (
-            <>
-              <div className="h-8 w-px bg-white/10" />
-              <div className="text-center">
-                <p className="text-[20px] font-bold text-white">
-                  R${pricing.hourly_rate || 0}
-                </p>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">/hora</p>
-              </div>
-            </>
-          )}
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-[20px] font-bold text-white leading-none">
+              {pricing ? `R$${pricing.hourly_rate || 0}` : "—"}
+            </p>
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-white/30">/hora</p>
+          </div>
         </div>
       </div>
 
