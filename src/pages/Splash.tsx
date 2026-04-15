@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
-const TOTAL_DURATION = 4000;
+const TOTAL_DURATION = 5000;
 
 const Splash = () => {
   const navigate = useNavigate();
   const [showTagline, setShowTagline] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setShowTagline(true), 800);
+    const t1 = setTimeout(() => setShowTagline(true), 1200);
 
     const tEnd = setTimeout(async () => {
       const { data: { session } } = await supabase.auth.getSession();
