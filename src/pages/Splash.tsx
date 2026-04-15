@@ -3,26 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
-const TOTAL_DURATION = 5000;
+const MIN_SPLASH_DURATION = 1800;
+const TAGLINE_DELAY = 250;
 
 const Splash = () => {
   const navigate = useNavigate();
   const [showTagline, setShowTagline] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setShowTagline(true), 1200);
+    let isActive = true;
+    const taglineTimer = setTimeout(() => setShowTagline(true), TAGLINE_DELAY);
 
-    const tEnd = setTimeout(async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const resolveNextPath = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) {
-        navigate("/login", { replace: true });
-        return;
+        return { path: "/login", state: undefined };
       }
 
       if (!session.user.email_confirmed_at) {
-        navigate("/confirmar-email", { replace: true, state: { email: session.user.email } });
-        return;
+        return {
+          path: "/confirmar-email",
+          state: { email: session.user.email },
+        };
       }
 
       const { count } = await supabase
@@ -30,34 +35,44 @@ const Splash = () => {
         .select("*", { count: "exact", head: true })
         .eq("profile_id", session.user.id);
 
-      if ((count ?? 0) === 0) {
-        navigate("/categorias", { replace: true });
-      } else {
-        navigate("/dashboard", { replace: true });
-      }
-    }, TOTAL_DURATION);
+      return {
+        path: (count ?? 0) === 0 ? "/categorias" : "/dashboard",
+        state: undefined,
+      };
+    };
+
+    const run = async () => {
+      const [{ path, state }] = await Promise.all([
+        resolveNextPath(),
+        new Promise((resolve) => setTimeout(resolve, MIN_SPLASH_DURATION)),
+      ]);
+
+      if (!isActive) return;
+      navigate(path, { replace: true, state });
+    };
+
+    run();
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(tEnd);
+      isActive = false;
+      clearTimeout(taglineTimer);
     };
   }, [navigate]);
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
+    <div
+      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
       style={{ background: "#0A0A0F" }}
     >
-      {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#276EF1]/8 blur-[120px]" />
       </div>
 
-      {/* Logo */}
       <motion.div
         className="relative z-10 flex flex-col items-center"
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
       >
         <h1 className="font-bold" style={{ fontSize: 42, letterSpacing: -1.5, lineHeight: 1 }}>
           <span className="text-white">Freela</span>
@@ -71,23 +86,20 @@ const Splash = () => {
         </p>
       </motion.div>
 
-      {/* Tagline */}
       <motion.div
         className="relative z-10 mt-10 text-center px-10"
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={showTagline ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
       >
         <p className="text-[18px] font-semibold text-white/90 leading-snug">
-          100% do que você ganha{" "}
-          <span style={{ color: "#276EF1" }}>é seu.</span>
+          100% do que você ganha <span style={{ color: "#276EF1" }}>é seu.</span>
         </p>
         <p className="mt-2 text-[13px] text-white/30 font-light">
           Grátis pra sempre. Sem taxa escondida.
         </p>
       </motion.div>
 
-      {/* Progress bar */}
       <div
         className="fixed flex flex-col items-center"
         style={{ bottom: 52, left: "50%", transform: "translateX(-50%)" }}
@@ -105,7 +117,7 @@ const Splash = () => {
             style={{
               height: "100%",
               background: "#276EF1",
-              animation: `progress-fill ${TOTAL_DURATION}ms linear forwards`,
+              animation: `progress-fill ${MIN_SPLASH_DURATION}ms linear forwards`,
             }}
           />
         </div>
@@ -122,3 +134,4 @@ const Splash = () => {
 };
 
 export default Splash;
+
