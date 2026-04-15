@@ -918,6 +918,33 @@ const OportunidadeDetalhePage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FINISH WORK CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showFinishWorkModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !finishingWork && setShowFinishWorkModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center"><Square className="h-8 w-8" style={{ color: "#E65100" }} /></div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Finalizar trabalho?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]">
+                Tem certeza que deseja finalizar? O cliente será notificado para confirmar a conclusão.
+              </p>
+              <button onClick={handleFinishWork} disabled={finishingWork}
+                className="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#E65100" }}>
+                {finishingWork ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar"}
+              </button>
+              <button onClick={() => setShowFinishWorkModal(false)} disabled={finishingWork}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Cancelar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
