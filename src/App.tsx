@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Splash from "@/pages/Splash";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
 import DocumentosPage from "@/pages/DocumentosPage";
 import EnderecoPage from "@/pages/EnderecoPage";
 import { Toaster as Sonner } from "@/components/ui/sonner";
