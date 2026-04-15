@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle, XCircle, Shield, Play, Square } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ interface OppDetail {
   title: string;
   description: string | null;
   budget: number | null;
+  total_amount: number | null;
   status: string | null;
   scheduled_at: string | null;
   location_address: string | null;
@@ -24,54 +25,25 @@ interface OppDetail {
   client_verified: boolean;
   is_private: boolean;
   target_professional_id: string | null;
+  accepted_by: string | null;
 }
 
-const formatScheduleDetail = (scheduledAt: string | null): string => {
-  if (!scheduledAt) return "A combinar";
-  const date = new Date(scheduledAt);
-  if (isToday(date)) return `Hoje às ${format(date, "HH:mm")}`;
-  if (isTomorrow(date)) return `Amanhã às ${format(date, "HH:mm")}`;
-  return format(date, "EEEE, d 'de' MMMM 'às' HH:mm", { locale: ptBR });
-};
+interface ContractInfo {
+  id: string;
+  status: string | null;
+  work_started_at: string | null;
+  work_finished_at: string | null;
+}
 
-const getStatusBadge = (status: string | null) => {
-  switch (status) {
-    case "open": return { label: "● Disponível", bg: "#E8F5E9", color: "#2E7D32" };
-    case "pending_selection": return { label: "● Em análise", bg: "#FFF3E0", color: "#B45309" };
-    case "awaiting_signatures": return { label: "✍️ Assinatura pendente", bg: "#E3F2FD", color: "#1565C0" };
-    case "accepted": return { label: "✓ Aguardando início", bg: "#FFF3E0", color: "#B45309" };
-    case "in_progress": return { label: "● Em andamento", bg: "#E8F5E9", color: "#2E7D32" };
-    case "completed": return { label: "● Finalizado", bg: "#F7F7F7", color: "#767676" };
-    case "cancelled": return { label: "● Cancelada", bg: "#FFEBEE", color: "#C62828" };
-    default: return { label: "● Desconhecido", bg: "#F7F7F7", color: "#767676" };
-  }
-};
-
-const getInitials = (name: string | null) => {
-  if (!name) return "?";
-  return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-};
-
-const OportunidadeDetalhePage = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
-  const [opp, setOpp] = useState<OppDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [networkError, setNetworkError] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [showNextSteps, setShowNextSteps] = useState(false);
-  const [accepting, setAccepting] = useState(false);
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [declining, setDeclining] = useState(false);
-  const [applying, setApplying] = useState(false);
-  const [showApplyModal, setShowApplyModal] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
-  const [showFinishModal, setShowFinishModal] = useState(false);
-  const [finishing, setFinishing] = useState(false);
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
+const CANCELLATION_REASONS = [
+  "O cliente não estava presente no local",
+  "O local estava inacessível ou inadequado",
+  "O cliente solicitou serviços fora do escopo contratado",
+  "O cliente foi desrespeitoso ou gerou ambiente hostil",
+  "Problemas de saúde ou emergência pessoal",
+  "Condições climáticas ou de força maior",
+  "Outros",
+];
 
   const loadOpp = async () => {
     if (!id) return;
