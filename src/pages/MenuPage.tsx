@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid,
+  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid, Star, Eye,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import BottomNav from "@/components/dashboard/BottomNav";
@@ -39,6 +39,8 @@ const MenuPage = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showVersion, setShowVersion] = useState(false);
   const [unreadMsgs, setUnreadMsgs] = useState(0);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -55,6 +57,18 @@ const MenuPage = () => {
       .eq("professional_id", user.id)
       .then(({ data }) => {
         if (data) setUnreadMsgs(data.reduce((s: number, c: any) => s + (c.unread_pro || 0), 0));
+      });
+
+    supabase
+      .from("reviews")
+      .select("rating")
+      .eq("professional_id", user.id)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const sum = data.reduce((s: number, r: any) => s + (r.rating || 0), 0);
+          setAvgRating(Math.round((sum / data.length) * 10) / 10);
+          setReviewCount(data.length);
+        }
       });
   }, [user]);
 
@@ -96,23 +110,51 @@ const MenuPage = () => {
       >
         {/* Profile header */}
         <div className="px-6 pt-6">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} className="h-14 w-14 rounded-full object-cover" alt="" />
-          ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#276EF1] text-lg font-bold text-white">
-              {initials}
+          <div className="flex items-center gap-4">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} className="h-14 w-14 rounded-full object-cover" alt="" />
+            ) : (
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#276EF1] text-lg font-bold text-white">
+                {initials}
+              </div>
+            )}
+            {/* Stars */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    size={16}
+                    fill={avgRating !== null && i <= Math.round(avgRating) ? "#F59E0B" : "none"}
+                    color={avgRating !== null && i <= Math.round(avgRating) ? "#F59E0B" : "#D1D5DB"}
+                    strokeWidth={1.5}
+                  />
+                ))}
+              </div>
+              <span className="mt-0.5 text-[12px] text-[#767676]">
+                {avgRating !== null ? `${avgRating} (${reviewCount})` : "Sem avaliações"}
+              </span>
             </div>
-          )}
+          </div>
           <p className="mt-3 text-[17px] font-bold text-foreground">
             {profile?.full_name || "Profissional"}
           </p>
-          <button
-            onClick={badge.click}
-            className="mt-2 rounded-full px-3 py-1 text-xs font-medium"
-            style={{ background: badge.bg, color: badge.color }}
-          >
-            {badge.text}
-          </button>
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              onClick={badge.click}
+              className="rounded-full px-3 py-1 text-xs font-medium"
+              style={{ background: badge.bg, color: badge.color }}
+            >
+              {badge.text}
+            </button>
+            <button
+              onClick={() => navigate("/perfil")}
+              className="flex items-center gap-1.5 rounded-full border border-[#276EF1] px-3 py-1 text-xs font-medium text-[#276EF1]"
+            >
+              <Eye size={13} />
+              Ver meu perfil público
+            </button>
+          </div>
         </div>
 
         {/* Menu items */}
