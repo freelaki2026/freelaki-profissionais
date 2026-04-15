@@ -288,11 +288,14 @@ const GanhosPage = () => {
               <p style={{ fontSize: 12, fontWeight: 500, color: "#767676" }}>Reservado</p>
               <div className="flex items-center gap-2 mt-1">
                 <p style={{ fontSize: 22, fontWeight: 700, color: "#F59E0B" }}>
-                  {formatCurrency(summary.reserved)}
+                  {formatCurrency(reservedFromContracts)}
                 </p>
                 <Clock size={14} color="#F59E0B" />
               </div>
-              <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 4 }}>
+              <p style={{ fontSize: 10, fontWeight: 400, color: "#999", marginTop: 2 }}>
+                7% de taxa já descontado
+              </p>
+              <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 2 }}>
                 Liberado após conclusão
               </p>
             </div>
