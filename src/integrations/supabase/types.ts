@@ -1451,6 +1451,10 @@ export type Database = {
       }
       generate_contract: { Args: { p_opportunity_id: string }; Returns: string }
       get_financial_summary: { Args: { p_profile_id: string }; Returns: Json }
+      get_platform_fee_rate: {
+        Args: { reference_date?: string }
+        Returns: number
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       reject_document: {
         Args: { p_document_id: string; p_reason: string }
