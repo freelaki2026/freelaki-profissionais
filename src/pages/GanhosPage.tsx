@@ -85,6 +85,26 @@ const GanhosPage = () => {
         .in("status", ["payment_confirmed", "in_progress", "both_signed"]),
     ]);
 
+    // Calculate reserved from active contracts
+    if (contractsRes.data && contractsRes.data.length > 0) {
+      const oppIds = contractsRes.data.map((c: any) => c.opportunity_id).filter(Boolean);
+      if (oppIds.length > 0) {
+        const { data: opps } = await supabase
+          .from("opportunities")
+          .select("total_amount")
+          .in("id", oppIds);
+        if (opps) {
+          const total = opps.reduce((sum: number, o: any) => {
+            const amount = Number(o.total_amount) || 0;
+            return sum + amount * 0.93; // 7% platform fee
+          }, 0);
+          setReservedFromContracts(total);
+        }
+      }
+    } else {
+      setReservedFromContracts(0);
+    }
+
     if (summaryRes.data) setSummary(summaryRes.data as unknown as FinancialSummary);
 
     if (earningsRes.data) {
