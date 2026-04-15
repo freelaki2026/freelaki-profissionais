@@ -45,6 +45,65 @@ const CANCELLATION_REASONS = [
   "Outros",
 ];
 
+const formatScheduleDetail = (scheduledAt: string | null): string => {
+  if (!scheduledAt) return "A combinar";
+  const date = new Date(scheduledAt);
+  if (isToday(date)) return `Hoje às ${format(date, "HH:mm")}`;
+  if (isTomorrow(date)) return `Amanhã às ${format(date, "HH:mm")}`;
+  return format(date, "EEEE, d 'de' MMMM 'às' HH:mm", { locale: ptBR });
+};
+
+const getStatusBadge = (status: string | null) => {
+  switch (status) {
+    case "open": return { label: "● Disponível", bg: "#E8F5E9", color: "#2E7D32" };
+    case "pending_selection": return { label: "● Em análise", bg: "#FFF3E0", color: "#B45309" };
+    case "awaiting_signatures": return { label: "✍️ Assinatura pendente", bg: "#E3F2FD", color: "#1565C0" };
+    case "payment_confirmed": return { label: "💰 Pagamento confirmado", bg: "#E8F5E9", color: "#2E7D32" };
+    case "accepted": return { label: "✓ Aguardando início", bg: "#FFF3E0", color: "#B45309" };
+    case "in_progress": return { label: "● Em andamento", bg: "#E8F5E9", color: "#2E7D32" };
+    case "completed": return { label: "● Finalizado", bg: "#F7F7F7", color: "#767676" };
+    case "cancelled": return { label: "● Cancelada", bg: "#FFEBEE", color: "#C62828" };
+    default: return { label: "● Desconhecido", bg: "#F7F7F7", color: "#767676" };
+  }
+};
+
+const getInitials = (name: string | null) => {
+  if (!name) return "?";
+  return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+};
+
+const OportunidadeDetalhePage = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [opp, setOpp] = useState<OppDetail | null>(null);
+  const [contract, setContract] = useState<ContractInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [networkError, setNetworkError] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showNextSteps, setShowNextSteps] = useState(false);
+  const [accepting, setAccepting] = useState(false);
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [declining, setDeclining] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [finishing, setFinishing] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+
+  // Work lifecycle states
+  const [startingWork, setStartingWork] = useState(false);
+  const [finishingWork, setFinishingWork] = useState(false);
+
+  // Cancel freela states
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelOtherText, setCancelOtherText] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+
   const loadOpp = async () => {
     if (!id) return;
     setLoading(true);
@@ -52,7 +111,7 @@ const CANCELLATION_REASONS = [
     const { data, error } = await supabase
       .from("opportunities")
       .select(
-        "id, title, description, budget, status, scheduled_at, location_address, is_private, target_professional_id, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
+        "id, title, description, budget, total_amount, status, scheduled_at, location_address, is_private, target_professional_id, accepted_by, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
       )
       .eq("id", id)
       .single();
@@ -62,7 +121,7 @@ const CANCELLATION_REASONS = [
       const prof = (data as any).profiles;
       setOpp({
         id: data.id, title: data.title, description: data.description,
-        budget: data.budget, status: data.status, scheduled_at: data.scheduled_at,
+        budget: data.budget, total_amount: (data as any).total_amount, status: data.status, scheduled_at: data.scheduled_at,
         location_address: data.location_address,
         category_name: cat?.name || "Geral", category_icon: cat?.icon || "📦",
         category_description: cat?.description || null,
@@ -70,7 +129,18 @@ const CANCELLATION_REASONS = [
         client_verified: prof?.is_approved || false,
         is_private: data.is_private || false,
         target_professional_id: data.target_professional_id || null,
+        accepted_by: (data as any).accepted_by || null,
       });
+
+      // Load contract for this opportunity
+      const { data: contractData } = await supabase
+        .from("contracts")
+        .select("id, status, work_started_at, work_finished_at")
+        .eq("opportunity_id", data.id)
+        .maybeSingle();
+      if (contractData) {
+        setContract(contractData as ContractInfo);
+      }
 
       // Check if already applied (for public opportunities)
       if (!data.is_private && user) {
@@ -100,6 +170,21 @@ const CANCELLATION_REASONS = [
         setOpp((prev) => prev ? { ...prev, status: updated.status } : prev);
         if (updated.status !== "open" && updated.status !== "pending_selection" && updated.accepted_by !== user.id) {
           toast.error("Esta oportunidade acabou de ser aceita por outro profissional.");
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, user]);
+
+  // Realtime for contracts
+  useEffect(() => {
+    if (!id || !user) return;
+    const channel = supabase
+      .channel(`contract-detail-${id}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "contracts" }, (payload) => {
+        const updated = payload.new as any;
+        if (updated.opportunity_id === id) {
+          setContract({ id: updated.id, status: updated.status, work_started_at: updated.work_started_at, work_finished_at: updated.work_finished_at });
         }
       })
       .subscribe();
@@ -220,7 +305,6 @@ const CANCELLATION_REASONS = [
       return;
     }
 
-    // Notify client
     await supabase.from("notifications").insert({
       profile_id: (await supabase.from("opportunities").select("client_id").eq("id", opp.id).single()).data?.client_id,
       type: "oportunidade",
@@ -254,9 +338,68 @@ const CANCELLATION_REASONS = [
     setShowWithdrawModal(false);
   };
 
+  const handleStartWork = async () => {
+    if (!contract) return;
+    setStartingWork(true);
+    const { error } = await supabase
+      .from("contracts")
+      .update({ work_started_at: new Date().toISOString(), status: "in_progress" } as any)
+      .eq("id", contract.id);
+    if (error) {
+      toast.error("Erro ao iniciar trabalho. Tente novamente.");
+    } else {
+      toast.success("Trabalho iniciado! Boa sorte 💪");
+      setContract(prev => prev ? { ...prev, status: "in_progress", work_started_at: new Date().toISOString() } : prev);
+    }
+    setStartingWork(false);
+  };
+
+  const handleFinishWork = async () => {
+    if (!contract) return;
+    setFinishingWork(true);
+    const { error } = await supabase
+      .from("contracts")
+      .update({ work_finished_at: new Date().toISOString(), status: "awaiting_confirmation" } as any)
+      .eq("id", contract.id);
+    if (error) {
+      toast.error("Erro ao finalizar trabalho. Tente novamente.");
+    } else {
+      toast.success("Trabalho finalizado! Aguarde a confirmação do cliente. 🎉");
+      setContract(prev => prev ? { ...prev, status: "awaiting_confirmation", work_finished_at: new Date().toISOString() } : prev);
+    }
+    setFinishingWork(false);
+  };
+
+  const handleCancelFreela = async () => {
+    if (!contract || !cancelReason) return;
+    setCancelling(true);
+    const reason = cancelReason === "Outros" ? cancelOtherText : cancelReason;
+    const { error } = await supabase
+      .from("contracts")
+      .update({
+        status: "cancelled",
+        cancelled_by: "professional",
+        cancellation_reason: reason,
+        cancelled_at: new Date().toISOString(),
+      } as any)
+      .eq("id", contract.id);
+    if (error) {
+      toast.error("Erro ao cancelar. Tente novamente.");
+    } else {
+      toast("Freela cancelado. Nossa equipe será notificada.");
+      navigate("/dashboard");
+    }
+    setCancelling(false);
+    setShowCancelModal(false);
+  };
+
   const isPrivateForMe = opp?.is_private && opp?.target_professional_id === user?.id;
   const isPublicOpen = opp && !opp.is_private && (opp.status === "open" || opp.status === "pending_selection");
   const statusBadge = opp ? getStatusBadge(opp.status) : null;
+
+  // Check if contract is in payment_confirmed and the professional is the accepted one
+  const isPaymentConfirmed = contract?.status === "payment_confirmed" && opp?.accepted_by === user?.id;
+  const isContractInProgress = contract?.status === "in_progress" && opp?.accepted_by === user?.id;
 
   if (loading) {
     return (
@@ -342,6 +485,22 @@ const CANCELLATION_REASONS = [
           <div className="mb-4 flex items-center gap-2 rounded-xl p-3.5" style={{ background: "#E8F5E9" }}>
             <CheckCircle className="h-4 w-4" style={{ color: "#2E7D32" }} />
             <span className="text-sm font-semibold" style={{ color: "#2E7D32" }}>Candidatura enviada ✓</span>
+          </div>
+        )}
+
+        {/* Frozen value card - payment_confirmed or in_progress */}
+        {(isPaymentConfirmed || isContractInProgress) && (
+          <div className="mb-4 rounded-2xl border border-[#E8F5E9] p-4" style={{ background: "linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%)" }}>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5" style={{ color: "#2E7D32" }} />
+              <span className="text-sm font-bold" style={{ color: "#2E7D32" }}>Valor congelado como garantia</span>
+            </div>
+            <p className="mt-2 text-[28px] font-extrabold" style={{ color: "#1B5E20" }}>
+              R$ {(opp.total_amount || opp.budget || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: "#4CAF50" }}>
+              Este valor será liberado para você após a conclusão confirmada pelo cliente.
+            </p>
           </div>
         )}
 
@@ -431,6 +590,32 @@ const CANCELLATION_REASONS = [
             className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white" style={{ background: "#1565C0" }}>
             ✍️ Assinar contrato →
           </motion.button>
+        ) : isPaymentConfirmed ? (
+          <div className="space-y-2">
+            <motion.button whileTap={{ scale: 0.97 }} onClick={handleStartWork} disabled={startingWork}
+              className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl text-base font-bold text-white disabled:opacity-50"
+              style={{ background: "#2E7D32" }}>
+              {startingWork ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <><Play className="h-5 w-5" /> Iniciar Trabalho</>}
+            </motion.button>
+            <button onClick={() => { setCancelReason(""); setCancelOtherText(""); setShowCancelModal(true); }}
+              className="flex h-[40px] w-full items-center justify-center gap-1.5 rounded-xl text-[13px] font-semibold"
+              style={{ background: "#FFEBEE", color: "#C62828" }}>
+              <XCircle className="h-4 w-4" /> Cancelar Freela
+            </button>
+          </div>
+        ) : isContractInProgress ? (
+          <div className="space-y-2">
+            <motion.button whileTap={{ scale: 0.97 }} onClick={handleFinishWork} disabled={finishingWork}
+              className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl text-base font-bold text-white disabled:opacity-50"
+              style={{ background: "#E65100" }}>
+              {finishingWork ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <><Square className="h-5 w-5" /> Finalizar Trabalho</>}
+            </motion.button>
+            <button onClick={() => { setCancelReason(""); setCancelOtherText(""); setShowCancelModal(true); }}
+              className="flex h-[40px] w-full items-center justify-center gap-1.5 rounded-xl text-[13px] font-semibold"
+              style={{ background: "#FFEBEE", color: "#C62828" }}>
+              <XCircle className="h-4 w-4" /> Cancelar Freela
+            </button>
+          </div>
         ) : opp.status === "accepted" ? (
           <div className="rounded-2xl py-4 text-center text-sm font-semibold" style={{ background: "#FFF3E0", color: "#B45309" }}>
             ✓ Aguardando cliente confirmar o início
@@ -581,9 +766,9 @@ const CANCELLATION_REASONS = [
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
               transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
               <div className="flex justify-center"><span className="text-[40px]">✅</span></div>
-              <h2 className="mt-3 text-center text-xl font-bold text-black" style={{ fontFamily: "Inter", fontWeight: 700, fontSize: 20 }}>Finalizar este freela?</h2>
-              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]" style={{ fontFamily: "Inter" }}>
-                Confirme que o serviço foi concluído.{"\n"}O cliente será notificado para confirmar.
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Finalizar este freela?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]">
+                Confirme que o serviço foi concluído. O cliente será notificado para confirmar.
               </p>
               <button onClick={handleFinish} disabled={finishing}
                 className="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
@@ -620,6 +805,67 @@ const CANCELLATION_REASONS = [
               <button onClick={() => setShowWithdrawModal(false)} disabled={withdrawing}
                 className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-xl bg-[#F7F7F7] text-base font-semibold text-black">
                 Cancelar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* CANCEL FREELA MODAL */}
+      <AnimatePresence>
+        {showCancelModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !cancelling && setShowCancelModal(false)}>
+            <motion.div initial={{ y: 300 }} animate={{ y: 0 }} exit={{ y: 300 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-lg rounded-t-3xl bg-white px-6 pb-8 pt-5" style={{ maxHeight: "85vh", overflowY: "auto" }}
+              onClick={(e) => e.stopPropagation()}>
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#E0E0E0]" />
+              <div className="flex justify-center"><AlertCircle className="h-8 w-8" style={{ color: "#C62828" }} /></div>
+              <h2 className="mt-3 text-center text-lg font-bold text-black">Por que você está cancelando?</h2>
+              <p className="mt-1 text-center text-[13px] text-[#767676]">Selecione o motivo do cancelamento</p>
+
+              <div className="mt-4 flex flex-col gap-2">
+                {CANCELLATION_REASONS.map((reason) => (
+                  <button key={reason} onClick={() => setCancelReason(reason)}
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-left text-[14px] font-medium transition-all"
+                    style={{
+                      background: cancelReason === reason ? "#FFEBEE" : "#F7F7F7",
+                      color: cancelReason === reason ? "#C62828" : "#333",
+                      border: cancelReason === reason ? "1.5px solid #EF9A9A" : "1.5px solid transparent",
+                    }}>
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
+                      style={{
+                        border: cancelReason === reason ? "none" : "2px solid #BDBDBD",
+                        background: cancelReason === reason ? "#C62828" : "transparent",
+                      }}>
+                      {cancelReason === reason && <div className="h-2 w-2 rounded-full bg-white" />}
+                    </div>
+                    {reason}
+                  </button>
+                ))}
+              </div>
+
+              {cancelReason === "Outros" && (
+                <textarea
+                  value={cancelOtherText}
+                  onChange={(e) => setCancelOtherText(e.target.value)}
+                  placeholder="Descreva o motivo..."
+                  className="mt-3 w-full rounded-xl border border-[#E0E0E0] p-3 text-sm focus:border-[#C62828] focus:outline-none"
+                  rows={3}
+                />
+              )}
+
+              <button onClick={handleCancelFreela}
+                disabled={cancelling || !cancelReason || (cancelReason === "Outros" && !cancelOtherText.trim())}
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-40"
+                style={{ background: "#E53935" }}>
+                {cancelling ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar cancelamento"}
+              </button>
+              <button onClick={() => setShowCancelModal(false)} disabled={cancelling}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Voltar
               </button>
             </motion.div>
           </motion.div>
