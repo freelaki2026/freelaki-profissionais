@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { getPlatformFeeRate } from "@/lib/feeUtils";
 import { ArrowLeft, Clock, TrendingUp, DollarSign, ArrowUpRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -80,23 +81,28 @@ const GanhosPage = () => {
         .order("created_at", { ascending: false }),
       supabase
         .from("contracts")
-        .select("opportunity_id")
+        .select("opportunity_id, created_at")
         .eq("professional_id", uid)
         .in("status", ["payment_confirmed", "in_progress", "both_signed"]),
     ]);
 
-    // Calculate reserved from active contracts
+    // Calculate reserved from active contracts with dynamic fee per contract
     if (contractsRes.data && contractsRes.data.length > 0) {
-      const oppIds = contractsRes.data.map((c: any) => c.opportunity_id).filter(Boolean);
+      const contractMap: Record<string, string> = {};
+      contractsRes.data.forEach((c: any) => {
+        if (c.opportunity_id) contractMap[c.opportunity_id] = c.created_at;
+      });
+      const oppIds = Object.keys(contractMap);
       if (oppIds.length > 0) {
         const { data: opps } = await supabase
           .from("opportunities")
-          .select("total_amount")
+          .select("id, budget")
           .in("id", oppIds);
         if (opps) {
           const total = opps.reduce((sum: number, o: any) => {
-            const amount = Number(o.total_amount) || 0;
-            return sum + amount * 0.93; // 7% platform fee
+            const budget = Number(o.budget) || 0;
+            const feeRate = getPlatformFeeRate(contractMap[o.id]);
+            return sum + budget * (1 - feeRate);
           }, 0);
           setReservedFromContracts(total);
         }
@@ -293,7 +299,7 @@ const GanhosPage = () => {
                 <Clock size={14} color="#F59E0B" />
               </div>
               <p style={{ fontSize: 10, fontWeight: 400, color: "#999", marginTop: 2 }}>
-                7% de taxa já descontado
+                Taxa da plataforma já descontada
               </p>
               <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 2 }}>
                 Liberado após conclusão

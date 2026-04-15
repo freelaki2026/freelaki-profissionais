@@ -7,6 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { getPlatformFeeRate, getFeePercentLabel } from "@/lib/feeUtils";
 
 interface OppDetail {
   id: string;
@@ -33,6 +34,7 @@ interface ContractInfo {
   status: string | null;
   work_started_at: string | null;
   work_finished_at: string | null;
+  created_at: string | null;
 }
 
 const CANCELLATION_REASONS = [
@@ -135,7 +137,7 @@ const OportunidadeDetalhePage = () => {
       // Load contract for this opportunity
       const { data: contractData } = await supabase
         .from("contracts")
-        .select("id, status, work_started_at, work_finished_at")
+        .select("id, status, work_started_at, work_finished_at, created_at")
         .eq("opportunity_id", data.id)
         .maybeSingle();
       if (contractData) {
@@ -184,7 +186,7 @@ const OportunidadeDetalhePage = () => {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "contracts" }, (payload) => {
         const updated = payload.new as any;
         if (updated.opportunity_id === id) {
-          setContract({ id: updated.id, status: updated.status, work_started_at: updated.work_started_at, work_finished_at: updated.work_finished_at });
+          setContract({ id: updated.id, status: updated.status, work_started_at: updated.work_started_at, work_finished_at: updated.work_finished_at, created_at: updated.created_at });
         }
       })
       .subscribe();
@@ -495,9 +497,22 @@ const OportunidadeDetalhePage = () => {
               <Shield className="h-5 w-5" style={{ color: "#2E7D32" }} />
               <span className="text-sm font-bold" style={{ color: "#2E7D32" }}>Valor congelado como garantia</span>
             </div>
-            <p className="mt-2 text-[28px] font-extrabold" style={{ color: "#1B5E20" }}>
-              R$ {(opp.total_amount || opp.budget || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-            </p>
+            {(() => {
+              const budget = opp.budget || 0;
+              const feeRate = contract?.created_at ? getPlatformFeeRate(contract.created_at) : 0.07;
+              const feePct = contract?.created_at ? getFeePercentLabel(contract.created_at) : "7%";
+              const netValue = budget * (1 - feeRate);
+              return (
+                <>
+                  <p className="mt-2 text-[28px] font-extrabold" style={{ color: "#1B5E20" }}>
+                    R$ {netValue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </p>
+                  <p className="mt-0.5 text-[10px]" style={{ color: "#666" }}>
+                    Taxa de {feePct} já descontada
+                  </p>
+                </>
+              );
+            })()}
             <p className="mt-1 text-xs leading-relaxed" style={{ color: "#4CAF50" }}>
               Este valor será liberado para você após a conclusão confirmada pelo cliente.
             </p>
