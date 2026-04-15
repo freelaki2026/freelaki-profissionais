@@ -53,6 +53,7 @@ const GanhosPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<FinancialSummary>({ reserved: 0, available: 0, withdrawn: 0, total: 0 });
+  const [reservedFromContracts, setReservedFromContracts] = useState(0);
   const [earnings, setEarnings] = useState<Earning[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [activeTab, setActiveTab] = useState<"ganhos" | "saques">("ganhos");
@@ -65,7 +66,7 @@ const GanhosPage = () => {
     if (!session?.user) return;
     const uid = session.user.id;
 
-    const [summaryRes, earningsRes, withdrawalsRes] = await Promise.all([
+    const [summaryRes, earningsRes, withdrawalsRes, contractsRes] = await Promise.all([
       supabase.rpc("get_financial_summary", { p_profile_id: uid }),
       supabase
         .from("earnings")
@@ -77,7 +78,32 @@ const GanhosPage = () => {
         .select("*")
         .eq("profile_id", uid)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("contracts")
+        .select("opportunity_id")
+        .eq("professional_id", uid)
+        .in("status", ["payment_confirmed", "in_progress", "both_signed"]),
     ]);
+
+    // Calculate reserved from active contracts
+    if (contractsRes.data && contractsRes.data.length > 0) {
+      const oppIds = contractsRes.data.map((c: any) => c.opportunity_id).filter(Boolean);
+      if (oppIds.length > 0) {
+        const { data: opps } = await supabase
+          .from("opportunities")
+          .select("total_amount")
+          .in("id", oppIds);
+        if (opps) {
+          const total = opps.reduce((sum: number, o: any) => {
+            const amount = Number(o.total_amount) || 0;
+            return sum + amount * 0.93; // 7% platform fee
+          }, 0);
+          setReservedFromContracts(total);
+        }
+      }
+    } else {
+      setReservedFromContracts(0);
+    }
 
     if (summaryRes.data) setSummary(summaryRes.data as unknown as FinancialSummary);
 
@@ -262,11 +288,14 @@ const GanhosPage = () => {
               <p style={{ fontSize: 12, fontWeight: 500, color: "#767676" }}>Reservado</p>
               <div className="flex items-center gap-2 mt-1">
                 <p style={{ fontSize: 22, fontWeight: 700, color: "#F59E0B" }}>
-                  {formatCurrency(summary.reserved)}
+                  {formatCurrency(reservedFromContracts)}
                 </p>
                 <Clock size={14} color="#F59E0B" />
               </div>
-              <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 4 }}>
+              <p style={{ fontSize: 10, fontWeight: 400, color: "#999", marginTop: 2 }}>
+                7% de taxa já descontado
+              </p>
+              <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 2 }}>
                 Liberado após conclusão
               </p>
             </div>
