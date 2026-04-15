@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { getPlatformFeeRate } from "@/lib/feeUtils";
+
 import { ArrowLeft, Clock, TrendingUp, DollarSign, ArrowUpRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -101,24 +101,16 @@ const GanhosPage = () => {
 
     setSummary({ reserved: 0, available: availableTotal, withdrawn: withdrawnTotal, total: totalEarned });
 
-    // Calculate reserved from active contracts with dynamic fee per contract
+    // Calculate reserved from active contracts — professional receives 100% of budget
     if (contractsRes.data && contractsRes.data.length > 0) {
-      const contractMap: Record<string, string> = {};
-      contractsRes.data.forEach((c: any) => {
-        if (c.opportunity_id) contractMap[c.opportunity_id] = c.created_at;
-      });
-      const oppIds = Object.keys(contractMap);
+      const oppIds = contractsRes.data.map((c: any) => c.opportunity_id).filter(Boolean);
       if (oppIds.length > 0) {
         const { data: opps } = await supabase
           .from("opportunities")
           .select("id, budget")
           .in("id", oppIds);
         if (opps) {
-          const total = opps.reduce((sum: number, o: any) => {
-            const budget = Number(o.budget) || 0;
-            const feeRate = getPlatformFeeRate(contractMap[o.id]);
-            return sum + budget * (1 - feeRate);
-          }, 0);
+          const total = opps.reduce((sum: number, o: any) => sum + (Number(o.budget) || 0), 0);
           setReservedFromContracts(total);
         }
       }
@@ -242,8 +234,9 @@ const GanhosPage = () => {
     return map[status] || { text: status, bg: "#F7F7F7", color: "#767676" };
   };
 
-  const fee = summary.available * 0.1;
-  const gross = summary.available + fee;
+  // Professional receives 100% — fee is paid by client
+  const fee = 0;
+  const gross = summary.available;
 
   if (loading) {
     return (
@@ -311,9 +304,6 @@ const GanhosPage = () => {
                 </p>
                 <Clock size={14} color="#F59E0B" />
               </div>
-              <p style={{ fontSize: 10, fontWeight: 400, color: "#999", marginTop: 2 }}>
-                Taxa da plataforma já descontada
-              </p>
               <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 2 }}>
                 Liberado após conclusão
               </p>
@@ -418,14 +408,11 @@ const GanhosPage = () => {
                         }}
                         className="flex items-center gap-3"
                       >
-                        <span style={{ fontSize: 11, color: "#767676" }}>
-                          Bruto: {formatCurrency(e.gross_amount)}
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#2E7D32" }}>
+                          Você recebe 100%: {formatCurrency(e.net_amount)}
                         </span>
-                        <span style={{ fontSize: 11, color: "#767676" }}>
-                          Taxa (10%): - {formatCurrency(e.platform_fee)}
-                        </span>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#000" }}>
-                          Líquido: {formatCurrency(e.net_amount)}
+                        <span style={{ fontSize: 10, color: "#999" }}>
+                          Taxa paga pelo cliente
                         </span>
                       </div>
                     </div>

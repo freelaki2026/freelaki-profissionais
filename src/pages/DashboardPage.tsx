@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Bell, MapPin, FileText, Clock, TrendingUp } from "lucide-react";
-import { getPlatformFeeRate } from "@/lib/feeUtils";
+
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -632,22 +632,14 @@ const DashboardPage = () => {
 
     let reservedTotal = 0;
     if (activeContracts && activeContracts.length > 0) {
-      const contractMap: Record<string, string> = {};
-      activeContracts.forEach((c: any) => {
-        if (c.opportunity_id) contractMap[c.opportunity_id] = c.created_at;
-      });
-      const oppIds = Object.keys(contractMap);
+      const oppIds = activeContracts.map((c: any) => c.opportunity_id).filter(Boolean);
       if (oppIds.length > 0) {
         const { data: opps } = await supabase
           .from('opportunities')
           .select('id, budget')
           .in('id', oppIds);
         if (opps) {
-          reservedTotal = opps.reduce((sum: number, o: any) => {
-            const budget = Number(o.budget) || 0;
-            const feeRate = getPlatformFeeRate(contractMap[o.id]);
-            return sum + budget * (1 - feeRate);
-          }, 0);
+          reservedTotal = opps.reduce((sum: number, o: any) => sum + (Number(o.budget) || 0), 0);
         }
       }
     }
