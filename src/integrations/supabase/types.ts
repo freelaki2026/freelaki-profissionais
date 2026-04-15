@@ -200,6 +200,10 @@ export type Database = {
       }
       contracts: {
         Row: {
+          cancellation_details: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           client_id: string | null
           client_ip: string | null
           client_signed: boolean | null
@@ -221,8 +225,14 @@ export type Database = {
           sign_token_professional: string | null
           status: string | null
           updated_at: string | null
+          work_finished_at: string | null
+          work_started_at: string | null
         }
         Insert: {
+          cancellation_details?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           client_id?: string | null
           client_ip?: string | null
           client_signed?: boolean | null
@@ -244,8 +254,14 @@ export type Database = {
           sign_token_professional?: string | null
           status?: string | null
           updated_at?: string | null
+          work_finished_at?: string | null
+          work_started_at?: string | null
         }
         Update: {
+          cancellation_details?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           client_id?: string | null
           client_ip?: string | null
           client_signed?: boolean | null
@@ -267,6 +283,8 @@ export type Database = {
           sign_token_professional?: string | null
           status?: string | null
           updated_at?: string | null
+          work_finished_at?: string | null
+          work_started_at?: string | null
         }
         Relationships: [
           {
@@ -757,6 +775,50 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          brand: string | null
+          created_at: string | null
+          exp_month: number | null
+          exp_year: number | null
+          id: string
+          is_default: boolean | null
+          last4: string | null
+          stripe_payment_method_id: string
+          user_id: string | null
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string | null
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean | null
+          last4?: string | null
+          stripe_payment_method_id: string
+          user_id?: string | null
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string | null
+          exp_month?: number | null
+          exp_year?: number | null
+          id?: string
+          is_default?: boolean | null
+          last4?: string | null
+          stripe_payment_method_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_transactions: {
         Row: {
           cancellation_reason: string | null
@@ -1082,6 +1144,7 @@ export type Database = {
           linkedin: string | null
           phone: string | null
           pinterest: string | null
+          stripe_customer_id: string | null
           terms_accepted: boolean | null
           terms_accepted_at: string | null
           tiktok: string | null
@@ -1114,6 +1177,7 @@ export type Database = {
           linkedin?: string | null
           phone?: string | null
           pinterest?: string | null
+          stripe_customer_id?: string | null
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
           tiktok?: string | null
@@ -1146,6 +1210,7 @@ export type Database = {
           linkedin?: string | null
           phone?: string | null
           pinterest?: string | null
+          stripe_customer_id?: string | null
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
           tiktok?: string | null
