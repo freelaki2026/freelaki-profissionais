@@ -398,7 +398,7 @@ const OportunidadeDetalhePage = () => {
   const statusBadge = opp ? getStatusBadge(opp.status) : null;
 
   // Check if contract is in payment_confirmed and the professional is the accepted one
-  const isPaymentConfirmed = contract?.status === "payment_confirmed" && opp?.accepted_by === user?.id;
+  const isPaymentConfirmed = (contract?.status === "payment_confirmed" || contract?.status === "both_signed") && opp?.accepted_by === user?.id;
   const isContractInProgress = contract?.status === "in_progress" && opp?.accepted_by === user?.id;
 
   if (loading) {
