@@ -354,6 +354,20 @@ const OportunidadeDetalhePage = () => {
     } else {
       toast.success("Trabalho iniciado! Boa sorte 💪");
       setContract(prev => prev ? { ...prev, status: "in_progress", work_started_at: new Date().toISOString() } : prev);
+
+      // Notify client
+      if (opp) {
+        const { data: oppData } = await supabase.from("opportunities").select("client_id").eq("id", opp.id).single();
+        if (oppData?.client_id) {
+          await supabase.from("notifications").insert({
+            profile_id: oppData.client_id,
+            type: "contrato",
+            title: "🚀 Trabalho iniciado!",
+            body: "O profissional iniciou o trabalho! Confirme o início para liberar o serviço.",
+            action_url: "/chamado/" + opp.id,
+          } as any);
+        }
+      }
     }
     setStartingWork(false);
   };
