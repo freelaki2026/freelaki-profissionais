@@ -652,7 +652,7 @@ const OportunidadeDetalhePage = () => {
           </div>
         ) : isContractInProgress ? (
           <div className="space-y-2">
-            <motion.button whileTap={{ scale: 0.97 }} onClick={handleFinishWork} disabled={finishingWork}
+            <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowFinishWorkModal(true)} disabled={finishingWork}
               className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl text-base font-bold text-white disabled:opacity-50"
               style={{ background: "#E65100" }}>
               {finishingWork ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <><Square className="h-5 w-5" /> Finalizar Trabalho</>}
