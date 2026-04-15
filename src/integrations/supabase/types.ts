@@ -200,6 +200,7 @@ export type Database = {
       }
       contracts: {
         Row: {
+          auto_confirmed: boolean | null
           cancellation_details: string | null
           cancellation_reason: string | null
           cancelled_at: string | null
@@ -209,6 +210,8 @@ export type Database = {
           client_signed: boolean | null
           client_signed_at: string | null
           client_user_agent: string | null
+          completion_confirmed_at: string | null
+          completion_requested_at: string | null
           contract_hash: string | null
           contract_text: string | null
           contract_version: string | null
@@ -229,6 +232,7 @@ export type Database = {
           work_started_at: string | null
         }
         Insert: {
+          auto_confirmed?: boolean | null
           cancellation_details?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
@@ -238,6 +242,8 @@ export type Database = {
           client_signed?: boolean | null
           client_signed_at?: string | null
           client_user_agent?: string | null
+          completion_confirmed_at?: string | null
+          completion_requested_at?: string | null
           contract_hash?: string | null
           contract_text?: string | null
           contract_version?: string | null
@@ -258,6 +264,7 @@ export type Database = {
           work_started_at?: string | null
         }
         Update: {
+          auto_confirmed?: boolean | null
           cancellation_details?: string | null
           cancellation_reason?: string | null
           cancelled_at?: string | null
@@ -267,6 +274,8 @@ export type Database = {
           client_signed?: boolean | null
           client_signed_at?: string | null
           client_user_agent?: string | null
+          completion_confirmed_at?: string | null
+          completion_requested_at?: string | null
           contract_hash?: string | null
           contract_text?: string | null
           contract_version?: string | null
