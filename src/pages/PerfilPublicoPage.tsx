@@ -238,7 +238,7 @@ const PerfilPublicoPage = () => {
         <div className="mt-6 mx-6 flex items-center justify-around rounded-2xl bg-white/[0.04] border border-white/[0.06] py-4 backdrop-blur-sm">
           <div className="text-center">
             <p className="text-[20px] font-bold text-white">{photos.length}</p>
-            <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">Trabalhos</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-white/30">publicações</p>
           </div>
           <div className="h-8 w-px bg-white/10" />
           <div className="text-center">
