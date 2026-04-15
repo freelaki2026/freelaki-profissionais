@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap, Bell, MapPin, FileText, Clock, TrendingUp } from "lucide-react";
+import { getPlatformFeeRate } from "@/lib/feeUtils";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -613,11 +614,46 @@ const DashboardPage = () => {
   // Load earnings summary
   const loadEarnings = useCallback(async () => {
     if (!user) return;
-    const { data: summary } = await supabase.rpc('get_financial_summary', { p_profile_id: user.id });
-    if (summary) {
-      const s = typeof summary === 'string' ? JSON.parse(summary) : summary;
-      setFinancialSummary({ available: Number(s.available) || 0, reserved: Number(s.reserved) || 0 });
+
+    // Available = sum of earnings with status 'available'
+    const { data: availableEarnings } = await supabase
+      .from('earnings')
+      .select('net_amount')
+      .eq('profile_id', user.id)
+      .eq('status', 'available');
+    const availableTotal = availableEarnings?.reduce((sum, e) => sum + Number(e.net_amount), 0) || 0;
+
+    // Reserved = sum from active contracts (payment_confirmed / in_progress)
+    const { data: activeContracts } = await supabase
+      .from('contracts')
+      .select('opportunity_id, created_at')
+      .eq('professional_id', user.id)
+      .in('status', ['payment_confirmed', 'in_progress']);
+
+    let reservedTotal = 0;
+    if (activeContracts && activeContracts.length > 0) {
+      const contractMap: Record<string, string> = {};
+      activeContracts.forEach((c: any) => {
+        if (c.opportunity_id) contractMap[c.opportunity_id] = c.created_at;
+      });
+      const oppIds = Object.keys(contractMap);
+      if (oppIds.length > 0) {
+        const { data: opps } = await supabase
+          .from('opportunities')
+          .select('id, budget')
+          .in('id', oppIds);
+        if (opps) {
+          reservedTotal = opps.reduce((sum: number, o: any) => {
+            const budget = Number(o.budget) || 0;
+            const feeRate = getPlatformFeeRate(contractMap[o.id]);
+            return sum + budget * (1 - feeRate);
+          }, 0);
+        }
+      }
     }
+
+    setFinancialSummary({ available: availableTotal, reserved: reservedTotal });
+
     const startOfWeek = new Date();
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
