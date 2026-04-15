@@ -31,6 +31,7 @@ import GanhosPage from "@/pages/GanhosPage";
 import MeusServicosPage from "@/pages/MeusServicosPage";
 import MenuPage from "@/pages/MenuPage";
 import PerfilPublicoPage from "@/pages/PerfilPublicoPage";
+import PerfilClientePage from "@/pages/PerfilClientePage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="/mensagens/:id" element={<ProtectedRoute><ChatClientePage /></ProtectedRoute>} />
           <Route path="/menu" element={<ProtectedRoute><MenuPage /></ProtectedRoute>} />
           <Route path="/perfil-publico" element={<ProtectedRoute><PerfilPublicoPage /></ProtectedRoute>} />
+          <Route path="/perfil-cliente/:id" element={<ProtectedRoute><PerfilClientePage /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
