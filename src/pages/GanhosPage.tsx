@@ -66,7 +66,7 @@ const GanhosPage = () => {
     if (!session?.user) return;
     const uid = session.user.id;
 
-    const [summaryRes, earningsRes, withdrawalsRes] = await Promise.all([
+    const [summaryRes, earningsRes, withdrawalsRes, contractsRes] = await Promise.all([
       supabase.rpc("get_financial_summary", { p_profile_id: uid }),
       supabase
         .from("earnings")
@@ -78,6 +78,11 @@ const GanhosPage = () => {
         .select("*")
         .eq("profile_id", uid)
         .order("created_at", { ascending: false }),
+      supabase
+        .from("contracts")
+        .select("opportunity_id")
+        .eq("professional_id", uid)
+        .in("status", ["payment_confirmed", "in_progress", "both_signed"]),
     ]);
 
     if (summaryRes.data) setSummary(summaryRes.data as unknown as FinancialSummary);
