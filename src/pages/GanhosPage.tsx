@@ -53,6 +53,7 @@ const GanhosPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<FinancialSummary>({ reserved: 0, available: 0, withdrawn: 0, total: 0 });
+  const [reservedFromContracts, setReservedFromContracts] = useState(0);
   const [earnings, setEarnings] = useState<Earning[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [activeTab, setActiveTab] = useState<"ganhos" | "saques">("ganhos");
