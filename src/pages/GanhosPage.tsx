@@ -230,9 +230,7 @@ const GanhosPage = () => {
     return map[status] || { text: status, bg: "#F7F7F7", color: "#767676" };
   };
 
-  // Professional receives 100% — fee is paid by client
-  const fee = 0;
-  const gross = summary.available;
+  const canWithdraw = bankAccount?.payment_type === "pix" && !withdrawing;
 
   if (loading) {
     return (
@@ -589,9 +587,9 @@ const GanhosPage = () => {
 
                   <button
                     onClick={confirmWithdraw}
-                    disabled={withdrawing}
+                    disabled={!canWithdraw}
                     style={{
-                      background: "#276EF1",
+                      background: canWithdraw ? "#276EF1" : "#CCC",
                       color: "#FFF",
                       borderRadius: 16,
                       height: 52,
@@ -603,7 +601,7 @@ const GanhosPage = () => {
                       opacity: withdrawing ? 0.6 : 1,
                     }}
                   >
-                    {withdrawing ? "Processando..." : "Confirmar saque →"}
+                    {withdrawing ? "Processando PIX..." : "⚡ Sacar via PIX →"}
                   </button>
                 </>
               )}
