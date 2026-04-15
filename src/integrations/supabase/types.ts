@@ -1388,10 +1388,12 @@ export type Database = {
       withdrawals: {
         Row: {
           amount: number
+          asaas_transfer_id: string | null
           bank_account_id: string | null
           created_at: string | null
           gateway_id: string | null
           id: string
+          pix_receipt_url: string | null
           processed_at: string | null
           profile_id: string | null
           status: string | null
@@ -1399,10 +1401,12 @@ export type Database = {
         }
         Insert: {
           amount: number
+          asaas_transfer_id?: string | null
           bank_account_id?: string | null
           created_at?: string | null
           gateway_id?: string | null
           id?: string
+          pix_receipt_url?: string | null
           processed_at?: string | null
           profile_id?: string | null
           status?: string | null
@@ -1410,10 +1414,12 @@ export type Database = {
         }
         Update: {
           amount?: number
+          asaas_transfer_id?: string | null
           bank_account_id?: string | null
           created_at?: string | null
           gateway_id?: string | null
           id?: string
+          pix_receipt_url?: string | null
           processed_at?: string | null
           profile_id?: string | null
           status?: string | null
