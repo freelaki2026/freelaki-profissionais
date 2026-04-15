@@ -92,6 +92,7 @@ const OportunidadeDetalhePage = () => {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
+  const [showFinishWorkModal, setShowFinishWorkModal] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
