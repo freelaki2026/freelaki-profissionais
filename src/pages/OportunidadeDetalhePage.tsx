@@ -23,6 +23,7 @@ interface OppDetail {
   category_description: string | null;
   client_name: string | null;
   client_avatar: string | null;
+  client_id: string | null;
   client_verified: boolean;
   is_private: boolean;
   target_professional_id: string | null;
@@ -129,6 +130,7 @@ const OportunidadeDetalhePage = () => {
         category_name: cat?.name || "Geral", category_icon: cat?.icon || "📦",
         category_description: cat?.description || null,
         client_name: prof?.full_name || null, client_avatar: prof?.avatar_url || null,
+        client_id: data.client_id || null,
         client_verified: prof?.is_approved || false,
         is_private: data.is_private || false,
         target_professional_id: data.target_professional_id || null,
@@ -580,7 +582,10 @@ const OportunidadeDetalhePage = () => {
         </div>
 
         {/* Client card */}
-        <div className="mt-4 rounded-2xl bg-[#F7F7F7] p-3.5">
+        <div
+          className="mt-4 rounded-2xl bg-[#F7F7F7] p-3.5 cursor-pointer active:bg-[#EBEBEB] transition-colors"
+          onClick={() => opp.client_id && navigate(`/perfil-cliente/${opp.client_id}`)}
+        >
           <span className="text-[10px] font-semibold tracking-[2px] text-[#767676]">CONTRATANTE</span>
           <div className="mt-2.5 flex items-center gap-3">
             {opp.client_avatar ? (
@@ -590,10 +595,11 @@ const OportunidadeDetalhePage = () => {
                 {getInitials(opp.client_name)}
               </div>
             )}
-            <div>
+            <div className="flex-1">
               <p className="text-[15px] font-semibold text-black">{opp.client_name || "Cliente"}</p>
               {opp.client_verified && <span className="text-[11px] font-medium text-[#2E7D32]">Verificado ✓</span>}
             </div>
+            <ArrowLeft size={16} className="text-[#767676] rotate-180" />
           </div>
         </div>
       </motion.div>

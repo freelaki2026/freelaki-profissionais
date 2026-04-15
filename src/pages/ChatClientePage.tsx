@@ -16,6 +16,7 @@ interface Msg {
 }
 
 interface ConvMeta {
+  client_id: string | null;
   client_name: string;
   client_avatar: string | null;
   job_title: string;
@@ -84,7 +85,7 @@ const ChatClientePage = () => {
           const { data: o } = await supabase.from("opportunities").select("title").eq("id", cv.opportunity_id).single();
           if (o) jobTitle = o.title;
         }
-        setMeta({ client_name: clientName, client_avatar: clientAvatar, job_title: jobTitle, opportunity_id: opportunityId });
+        setMeta({ client_id: cv.client_id, client_name: clientName, client_avatar: clientAvatar, job_title: jobTitle, opportunity_id: opportunityId });
       }
 
       // Messages
@@ -191,7 +192,10 @@ const ChatClientePage = () => {
         <button onClick={() => navigate("/mensagens")} className="z-10">
           <ArrowLeft size={24} color="#FFF" />
         </button>
-        <div className="absolute inset-x-0 flex flex-col items-center">
+        <div
+          className="absolute inset-x-0 flex flex-col items-center cursor-pointer"
+          onClick={() => meta?.client_id && navigate(`/perfil-cliente/${meta.client_id}`)}
+        >
           {meta?.client_avatar ? (
             <img src={meta.client_avatar} className="h-9 w-9 rounded-full object-cover" alt="" />
           ) : (
