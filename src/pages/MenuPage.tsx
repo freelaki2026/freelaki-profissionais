@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid,
+  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid, Star, Eye,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import BottomNav from "@/components/dashboard/BottomNav";
@@ -39,6 +39,8 @@ const MenuPage = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showVersion, setShowVersion] = useState(false);
   const [unreadMsgs, setUnreadMsgs] = useState(0);
+  const [avgRating, setAvgRating] = useState<number | null>(null);
+  const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -55,6 +57,18 @@ const MenuPage = () => {
       .eq("professional_id", user.id)
       .then(({ data }) => {
         if (data) setUnreadMsgs(data.reduce((s: number, c: any) => s + (c.unread_pro || 0), 0));
+      });
+
+    supabase
+      .from("reviews")
+      .select("rating")
+      .eq("professional_id", user.id)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const sum = data.reduce((s: number, r: any) => s + (r.rating || 0), 0);
+          setAvgRating(Math.round((sum / data.length) * 10) / 10);
+          setReviewCount(data.length);
+        }
       });
   }, [user]);
 
