@@ -1012,6 +1012,41 @@ export type Database = {
           },
         ]
       }
+      portfolio_photos: {
+        Row: {
+          created_at: string | null
+          file_name: string | null
+          id: string
+          order_index: number | null
+          photo_url: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          file_name?: string | null
+          id?: string
+          order_index?: number | null
+          photo_url: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string | null
+          id?: string
+          order_index?: number | null
+          photo_url?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_photos_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_categories: {
         Row: {
           category_id: string | null
