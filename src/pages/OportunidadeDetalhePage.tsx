@@ -7,6 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { getPlatformFeeRate, getFeePercentLabel } from "@/lib/feeUtils";
 
 interface OppDetail {
   id: string;
@@ -33,6 +34,7 @@ interface ContractInfo {
   status: string | null;
   work_started_at: string | null;
   work_finished_at: string | null;
+  created_at: string | null;
 }
 
 const CANCELLATION_REASONS = [
@@ -135,7 +137,7 @@ const OportunidadeDetalhePage = () => {
       // Load contract for this opportunity
       const { data: contractData } = await supabase
         .from("contracts")
-        .select("id, status, work_started_at, work_finished_at")
+        .select("id, status, work_started_at, work_finished_at, created_at")
         .eq("opportunity_id", data.id)
         .maybeSingle();
       if (contractData) {
