@@ -101,24 +101,16 @@ const GanhosPage = () => {
 
     setSummary({ reserved: 0, available: availableTotal, withdrawn: withdrawnTotal, total: totalEarned });
 
-    // Calculate reserved from active contracts with dynamic fee per contract
+    // Calculate reserved from active contracts — professional receives 100% of budget
     if (contractsRes.data && contractsRes.data.length > 0) {
-      const contractMap: Record<string, string> = {};
-      contractsRes.data.forEach((c: any) => {
-        if (c.opportunity_id) contractMap[c.opportunity_id] = c.created_at;
-      });
-      const oppIds = Object.keys(contractMap);
+      const oppIds = contractsRes.data.map((c: any) => c.opportunity_id).filter(Boolean);
       if (oppIds.length > 0) {
         const { data: opps } = await supabase
           .from("opportunities")
           .select("id, budget")
           .in("id", oppIds);
         if (opps) {
-          const total = opps.reduce((sum: number, o: any) => {
-            const budget = Number(o.budget) || 0;
-            const feeRate = getPlatformFeeRate(contractMap[o.id]);
-            return sum + budget * (1 - feeRate);
-          }, 0);
+          const total = opps.reduce((sum: number, o: any) => sum + (Number(o.budget) || 0), 0);
           setReservedFromContracts(total);
         }
       }
