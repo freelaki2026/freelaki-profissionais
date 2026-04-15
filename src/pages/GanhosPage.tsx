@@ -557,12 +557,12 @@ const GanhosPage = () => {
 
                   <div style={{ background: "#F7F7F7", borderRadius: 12, padding: 12, marginTop: 12 }}>
                     <div className="flex justify-between">
-                      <span style={{ fontSize: 13, color: "#767676" }}>Valor bruto</span>
-                      <span style={{ fontSize: 13, color: "#767676" }}>{formatCurrency(gross)}</span>
+                      <span style={{ fontSize: 13, color: "#767676" }}>Valor do serviço</span>
+                      <span style={{ fontSize: 13, color: "#767676" }}>{formatCurrency(summary.available)}</span>
                     </div>
                     <div className="flex justify-between mt-1">
-                      <span style={{ fontSize: 13, color: "#767676" }}>Taxa Freelaki (10%)</span>
-                      <span style={{ fontSize: 13, color: "#E53935" }}>- {formatCurrency(fee)}</span>
+                      <span style={{ fontSize: 13, color: "#2E7D32" }}>Taxa Freelaki</span>
+                      <span style={{ fontSize: 13, color: "#2E7D32" }}>R$ 0,00 (paga pelo cliente)</span>
                     </div>
                     <div style={{ height: 1, background: "#E5E5E5", margin: "8px 0" }} />
                     <div className="flex justify-between">
@@ -573,18 +573,19 @@ const GanhosPage = () => {
                     </div>
                   </div>
 
-                  <div
-                    style={{
-                      background: "#FFF3E0",
-                      borderRadius: 12,
-                      padding: 12,
-                      marginTop: 12,
-                    }}
-                  >
-                    <p style={{ fontSize: 12, fontWeight: 400, color: "#B45309" }}>
-                      ⏱ Prazo de transferência: até 2 dias úteis após solicitação.
-                    </p>
-                  </div>
+                  {bankAccount?.payment_type !== "pix" ? (
+                    <div style={{ background: "#FFEBEE", borderRadius: 12, padding: 12, marginTop: 12 }}>
+                      <p style={{ fontSize: 12, fontWeight: 500, color: "#C62828" }}>
+                        ⚠️ Apenas saques via PIX são suportados. Cadastre uma chave PIX em Dados Bancários.
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ background: "#E8F5E9", borderRadius: 12, padding: 12, marginTop: 12 }}>
+                      <p style={{ fontSize: 12, fontWeight: 500, color: "#2E7D32" }}>
+                        ⚡ Transferência instantânea via PIX. O valor será creditado em segundos.
+                      </p>
+                    </div>
+                  )}
 
                   <button
                     onClick={confirmWithdraw}
