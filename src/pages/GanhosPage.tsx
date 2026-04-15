@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { getPlatformFeeRate } from "@/lib/feeUtils";
+
 import { ArrowLeft, Clock, TrendingUp, DollarSign, ArrowUpRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
