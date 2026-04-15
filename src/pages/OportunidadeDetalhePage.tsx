@@ -186,7 +186,7 @@ const OportunidadeDetalhePage = () => {
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "contracts" }, (payload) => {
         const updated = payload.new as any;
         if (updated.opportunity_id === id) {
-          setContract({ id: updated.id, status: updated.status, work_started_at: updated.work_started_at, work_finished_at: updated.work_finished_at });
+          setContract({ id: updated.id, status: updated.status, work_started_at: updated.work_started_at, work_finished_at: updated.work_finished_at, created_at: updated.created_at });
         }
       })
       .subscribe();
