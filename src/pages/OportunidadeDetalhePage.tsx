@@ -92,6 +92,7 @@ const OportunidadeDetalhePage = () => {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
+  const [showFinishWorkModal, setShowFinishWorkModal] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
@@ -373,19 +374,34 @@ const OportunidadeDetalhePage = () => {
   };
 
   const handleFinishWork = async () => {
-    if (!contract) return;
+    if (!contract || !opp) return;
     setFinishingWork(true);
     const { error } = await supabase
       .from("contracts")
-      .update({ work_finished_at: new Date().toISOString(), status: "awaiting_confirmation" } as any)
+      .update({ work_finished_at: new Date().toISOString(), status: "awaiting_confirmation", completion_requested_at: new Date().toISOString() } as any)
       .eq("id", contract.id);
     if (error) {
       toast.error("Erro ao finalizar trabalho. Tente novamente.");
     } else {
       toast.success("Trabalho finalizado! Aguarde a confirmação do cliente. 🎉");
       setContract(prev => prev ? { ...prev, status: "awaiting_confirmation", work_finished_at: new Date().toISOString() } : prev);
+
+      // Fetch professional name and client_id, then notify
+      const { data: oppData } = await supabase.from("opportunities").select("client_id").eq("id", opp.id).single();
+      const { data: proData } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+      const proName = proData?.full_name || "O profissional";
+      if (oppData?.client_id) {
+        await supabase.from("notifications").insert({
+          profile_id: oppData.client_id,
+          type: "contrato",
+          title: "✅ Serviço finalizado!",
+          body: `${proName} finalizou o serviço! Confirme a conclusão para liberar o pagamento. Você tem 30 minutos.`,
+          action_url: "/chamado/" + opp.id,
+        } as any);
+      }
     }
     setFinishingWork(false);
+    setShowFinishWorkModal(false);
   };
 
   const handleCancelFreela = async () => {
@@ -636,7 +652,7 @@ const OportunidadeDetalhePage = () => {
           </div>
         ) : isContractInProgress ? (
           <div className="space-y-2">
-            <motion.button whileTap={{ scale: 0.97 }} onClick={handleFinishWork} disabled={finishingWork}
+            <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowFinishWorkModal(true)} disabled={finishingWork}
               className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl text-base font-bold text-white disabled:opacity-50"
               style={{ background: "#E65100" }}>
               {finishingWork ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <><Square className="h-5 w-5" /> Finalizar Trabalho</>}
@@ -897,6 +913,33 @@ const OportunidadeDetalhePage = () => {
               <button onClick={() => setShowCancelModal(false)} disabled={cancelling}
                 className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
                 Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FINISH WORK CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {showFinishWorkModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !finishingWork && setShowFinishWorkModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center"><Square className="h-8 w-8" style={{ color: "#E65100" }} /></div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Finalizar trabalho?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]">
+                Tem certeza que deseja finalizar? O cliente será notificado para confirmar a conclusão.
+              </p>
+              <button onClick={handleFinishWork} disabled={finishingWork}
+                className="mt-6 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#E65100" }}>
+                {finishingWork ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar"}
+              </button>
+              <button onClick={() => setShowFinishWorkModal(false)} disabled={finishingWork}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Cancelar
               </button>
             </motion.div>
           </motion.div>
