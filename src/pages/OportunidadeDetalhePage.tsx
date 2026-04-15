@@ -374,19 +374,34 @@ const OportunidadeDetalhePage = () => {
   };
 
   const handleFinishWork = async () => {
-    if (!contract) return;
+    if (!contract || !opp) return;
     setFinishingWork(true);
     const { error } = await supabase
       .from("contracts")
-      .update({ work_finished_at: new Date().toISOString(), status: "awaiting_confirmation" } as any)
+      .update({ work_finished_at: new Date().toISOString(), status: "awaiting_confirmation", completion_requested_at: new Date().toISOString() } as any)
       .eq("id", contract.id);
     if (error) {
       toast.error("Erro ao finalizar trabalho. Tente novamente.");
     } else {
       toast.success("Trabalho finalizado! Aguarde a confirmação do cliente. 🎉");
       setContract(prev => prev ? { ...prev, status: "awaiting_confirmation", work_finished_at: new Date().toISOString() } : prev);
+
+      // Fetch professional name and client_id, then notify
+      const { data: oppData } = await supabase.from("opportunities").select("client_id").eq("id", opp.id).single();
+      const { data: proData } = await supabase.from("profiles").select("full_name").eq("id", user!.id).single();
+      const proName = proData?.full_name || "O profissional";
+      if (oppData?.client_id) {
+        await supabase.from("notifications").insert({
+          profile_id: oppData.client_id,
+          type: "contrato",
+          title: "✅ Serviço finalizado!",
+          body: `${proName} finalizou o serviço! Confirme a conclusão para liberar o pagamento. Você tem 30 minutos.`,
+          action_url: "/chamado/" + opp.id,
+        } as any);
+      }
     }
     setFinishingWork(false);
+    setShowFinishWorkModal(false);
   };
 
   const handleCancelFreela = async () => {
