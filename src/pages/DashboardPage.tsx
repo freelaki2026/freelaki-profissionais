@@ -40,6 +40,7 @@ interface Profile {
   approval_status: string | null;
   is_online: boolean | null;
   is_approved: boolean | null;
+  cpf_cnpj: string | null;
 }
 
 interface Opp {
