@@ -1,66 +1,69 @@
 
 
-# Plano: Saque instantâneo via PIX com Asaas
+## Plano: Aditivos de contrato no app do Profissional
 
-## Contexto
-Atualmente, o saque apenas insere um registro na tabela `withdrawals` com status "pending" e mostra "até 2 dias úteis". O objetivo é integrar com a **API do Asaas** para realizar transferências PIX instantâneas ao profissional.
+### O que vai acontecer
 
-## Visão geral da arquitetura
+Trazer o componente `ContractAddendums.tsx` (já existente no app Cliente) para o app Profissional, com `userRole="professional"`, e renderizá-lo dentro da tela `Acompanhar Chamado` (`/chamado/:id` → `OportunidadeDetalhePage.tsx`), logo abaixo da seção de status do contrato.
+
+Toda a lógica pesada (RPCs `propose_contract_addendum` / `respond_contract_addendum` / `cancel_contract_addendum`, RLS, hash jurídico, notificações, soma na cobrança original) já está pronta no Supabase compartilhado — não precisa de migração nem de edge function nesta etapa.
+
+### Arquivos
+
+**1. Criar `src/components/ContractAddendums.tsx`** (cópia 1:1 do app Cliente, 654 linhas)
+- Mesmo componente, mesma assinatura: `{ contractId, contractStatus, userRole, professionalId, onChange }`
+- Funciona para os dois lados: detecta `auth.uid()` no banco e só mostra botões "Aprovar/Recusar" quando o aditivo NÃO foi proposto pelo usuário atual (linha `!isMine`); mostra "Cancelar proposta" quando foi.
+- Modal de criação carrega `professional_pricing.hourly_rate` + `professional_extras` do profissional do contrato → no nosso caso é o próprio usuário, mas a query continua igual (busca pelo `professionalId` passado como prop).
+
+**2. Editar `src/pages/OportunidadeDetalhePage.tsx`**
+- Importar `ContractAddendums`
+- Renderizar quando `contract?.id` existir e o status não for `cancelled` nem `completed`, em uma posição visível (acima do bloco de ações de status, dentro do container principal). Props:
+  ```tsx
+  <ContractAddendums
+    contractId={contract.id}
+    contractStatus={contract.status}
+    userRole="professional"
+    professionalId={user?.id ?? null}
+    onChange={loadDetail}  // recarrega total_amount da opp
+  />
+  ```
+
+### O que já está pronto (sem ação necessária)
+
+- **Cadastro de preços/extras**: `MeusServicosPage.tsx` já gerencia `professional_pricing.hourly_rate` e `professional_extras`. Se o profissional não tiver cadastrado, o modal mostra o aviso "Não cadastrou hora extra nem serviços extras".
+- **RLS `contract_addendums`**: políticas `addendum_parties_select/insert/update` já cobrem o profissional (`professional_id = auth.uid()`).
+- **Notificações**: as RPCs disparam automaticamente para a contraparte (📑 recebido / ✅ aprovado / ❌ recusado / 💳 pague aditivo).
+- **Soma na cobrança original**: lógica em `respond_contract_addendum` já decide `merged_with_original` baseado no status do pagamento Asaas.
+
+### Fora do escopo desta entrega
+
+- Edge function de cobrança PIX **separada** para aditivos aprovados após pagamento original confirmado (mencionada no pedido como "ainda precisa criar"). Fica para uma próxima task se desejado.
+
+### Diagrama do fluxo
 
 ```text
-[Frontend: GanhosPage]
-       │
-       ▼ supabase.functions.invoke("process-pix-withdrawal")
-[Edge Function: process-pix-withdrawal]
-       │
-       ├─ Valida sessão do usuário
-       ├─ Busca bank_account (chave PIX)
-       ├─ Busca saldo disponível em earnings
-       ├─ Chama API Asaas POST /transfers
-       ├─ Insere registro em withdrawals (status: completed ou failed)
-       ├─ Atualiza earnings para status: withdrawn
-       └─ Retorna resultado ao frontend
+Profissional em /chamado/:id
+        │
+        ▼
+ContractAddendums (userRole=professional)
+        │
+   ┌────┴────────────────┐
+   ▼                     ▼
+Lista aditivos       Botão "Novo"
+   │                     │
+   ▼                     ▼
+Aprovar/Recusar     Modal com hourly_rate
+(se proposto pelo    + extras do próprio
+ cliente)            profissional
+   │                     │
+   ▼                     ▼
+respond_contract_   propose_contract_
+addendum RPC        addendum RPC
+   │                     │
+   └─────────┬───────────┘
+             ▼
+   Notificação automática
+   ao cliente + soma na
+   cobrança ou nova fatura
 ```
-
-## Etapas
-
-### 1. Configurar secret do Asaas
-- Solicitar ao usuário a **API Key do Asaas** (sandbox e/ou produção)
-- Adicionar como secret `ASAAS_API_KEY` no projeto Supabase
-- Usar o ambiente sandbox (`https://sandbox.asaas.com/api/v3`) para testes e `https://api.asaas.com/api/v3` para produção
-
-### 2. Criar Edge Function `process-pix-withdrawal`
-- Valida JWT do usuário autenticado
-- Busca a `bank_account` do profissional (chave PIX obrigatória)
-- Calcula saldo disponível somando `earnings` com `status = 'available'`
-- Chama a API Asaas `POST /v3/transfers` com:
-  - `value`: valor do saque
-  - `operationType`: "PIX"
-  - `pixAddressKey`: chave PIX do profissional
-  - `pixAddressKeyType`: tipo da chave (CPF, EMAIL, PHONE, EVP)
-- Se sucesso: insere `withdrawal` com `status: completed`, atualiza `earnings` para `withdrawn`
-- Se falha: insere `withdrawal` com `status: failed`, retorna erro ao frontend
-
-### 3. Migração no banco de dados
-- Adicionar coluna `asaas_transfer_id` na tabela `withdrawals` para rastrear a transação
-- Adicionar coluna `pix_receipt_url` para comprovante
-
-### 4. Atualizar o frontend (`GanhosPage.tsx`)
-- `confirmWithdraw` passa a chamar a Edge Function ao invés de inserir direto no banco
-- Exibir feedback instantâneo: "Transferência PIX realizada!" (ao invés de "até 2 dias úteis")
-- Exibir comprovante/ID da transação no histórico de saques
-- Exigir que o `payment_type` seja "pix" (não permitir saque para conta bancária convencional via esta integração)
-- Atualizar o texto do bottom sheet: remover referência a "2 dias úteis", mostrar "⚡ Transferência instantânea via PIX"
-
-### 5. Mapeamento de tipos de chave PIX
-- O Asaas espera: `CPF`, `CNPJ`, `EMAIL`, `PHONE`, `EVP` (chave aleatória)
-- Mapear a partir do campo `pix_key_type` da tabela `bank_accounts`
-
-## O que o usuário precisa fazer
-1. Criar uma conta no [Asaas](https://www.asaas.com) (se ainda não tiver)
-2. Gerar a API Key no painel do Asaas
-3. Fornecer a API Key para configurar como secret
-
-## Orientações para o app do Cliente
-- Nenhuma mudança necessária no app do cliente para esta funcionalidade — o saque é exclusivo do profissional
 
