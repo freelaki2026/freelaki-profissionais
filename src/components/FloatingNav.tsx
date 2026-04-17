@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Wallet, Map as MapIcon, MessageCircle } from "lucide-react";
+import { Home, ScrollText, MessageCircle, Menu as MenuIcon } from "lucide-react";
 import { prefetchRoute } from "@/lib/routePrefetch";
 
 const NAV_ITEMS = [
-  { label: "Sacar",     icon: Wallet,        path: "/ganhos" },
-  { label: "Mapa",      icon: MapIcon,       path: "/mapa" },
+  { label: "Home",      icon: Home,          path: "/dashboard" },
+  { label: "Contratos", icon: ScrollText,    path: "/contratos" },
   { label: "Mensagens", icon: MessageCircle, path: "/mensagens" },
+  { label: "Menu",      icon: MenuIcon,      path: "/menu" },
 ];
 
 export function FloatingNav() {
