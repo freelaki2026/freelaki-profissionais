@@ -989,6 +989,38 @@ const OportunidadeDetalhePage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* REFUSE CONTRACT MODAL */}
+      <AnimatePresence>
+        {showRefuseContractModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !refusingContract && setShowRefuseContractModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center"><AlertCircle className="h-8 w-8" style={{ color: "#C62828" }} /></div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Não assinar o contrato?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]">
+                O contrato será cancelado e a vaga ficará disponível para outros profissionais. O cliente será notificado.
+              </p>
+              <div className="mt-4 rounded-xl bg-[#FFF3E0] p-3">
+                <p className="text-[12px] leading-relaxed text-[#B45309]">
+                  ⚠️ Recusar contratos pode afetar sua reputação na plataforma.
+                </p>
+              </div>
+              <button onClick={handleRefuseContract} disabled={refusingContract}
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#E53935" }}>
+                {refusingContract ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar recusa"}
+              </button>
+              <button onClick={() => setShowRefuseContractModal(false)} disabled={refusingContract}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Voltar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
