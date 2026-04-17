@@ -64,6 +64,36 @@ export type Database = {
           },
         ]
       }
+      asaas_webhooks: {
+        Row: {
+          created_at: string | null
+          event: string | null
+          id: string
+          payment_id: string | null
+          processed_at: string | null
+          raw_payload: Json | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event?: string | null
+          id?: string
+          payment_id?: string | null
+          processed_at?: string | null
+          raw_payload?: Json | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event?: string | null
+          id?: string
+          payment_id?: string | null
+          processed_at?: string | null
+          raw_payload?: Json | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       bank_accounts: {
         Row: {
           account_digit: string | null
@@ -200,6 +230,8 @@ export type Database = {
       }
       contracts: {
         Row: {
+          asaas_payment_id: string | null
+          asaas_payment_status: string | null
           auto_confirmed: boolean | null
           cancellation_details: string | null
           cancellation_reason: string | null
@@ -210,6 +242,7 @@ export type Database = {
           client_signed: boolean | null
           client_signed_at: string | null
           client_user_agent: string | null
+          completed_at: string | null
           completion_confirmed_at: string | null
           completion_requested_at: string | null
           contract_hash: string | null
@@ -218,6 +251,7 @@ export type Database = {
           created_at: string | null
           id: string
           opportunity_id: string | null
+          payment_method: string | null
           pdf_url: string | null
           pro_user_agent: string | null
           professional_id: string | null
@@ -226,12 +260,15 @@ export type Database = {
           professional_signed_at: string | null
           sign_token_client: string | null
           sign_token_professional: string | null
+          started_at: string | null
           status: string | null
           updated_at: string | null
           work_finished_at: string | null
           work_started_at: string | null
         }
         Insert: {
+          asaas_payment_id?: string | null
+          asaas_payment_status?: string | null
           auto_confirmed?: boolean | null
           cancellation_details?: string | null
           cancellation_reason?: string | null
@@ -242,6 +279,7 @@ export type Database = {
           client_signed?: boolean | null
           client_signed_at?: string | null
           client_user_agent?: string | null
+          completed_at?: string | null
           completion_confirmed_at?: string | null
           completion_requested_at?: string | null
           contract_hash?: string | null
@@ -250,6 +288,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           opportunity_id?: string | null
+          payment_method?: string | null
           pdf_url?: string | null
           pro_user_agent?: string | null
           professional_id?: string | null
@@ -258,12 +297,15 @@ export type Database = {
           professional_signed_at?: string | null
           sign_token_client?: string | null
           sign_token_professional?: string | null
+          started_at?: string | null
           status?: string | null
           updated_at?: string | null
           work_finished_at?: string | null
           work_started_at?: string | null
         }
         Update: {
+          asaas_payment_id?: string | null
+          asaas_payment_status?: string | null
           auto_confirmed?: boolean | null
           cancellation_details?: string | null
           cancellation_reason?: string | null
@@ -274,6 +316,7 @@ export type Database = {
           client_signed?: boolean | null
           client_signed_at?: string | null
           client_user_agent?: string | null
+          completed_at?: string | null
           completion_confirmed_at?: string | null
           completion_requested_at?: string | null
           contract_hash?: string | null
@@ -282,6 +325,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           opportunity_id?: string | null
+          payment_method?: string | null
           pdf_url?: string | null
           pro_user_agent?: string | null
           professional_id?: string | null
@@ -290,6 +334,7 @@ export type Database = {
           professional_signed_at?: string | null
           sign_token_client?: string | null
           sign_token_professional?: string | null
+          started_at?: string | null
           status?: string | null
           updated_at?: string | null
           work_finished_at?: string | null
@@ -436,6 +481,7 @@ export type Database = {
       }
       earnings: {
         Row: {
+          asaas_transfer_id: string | null
           available_at: string | null
           contract_id: string | null
           created_at: string | null
@@ -447,10 +493,12 @@ export type Database = {
           platform_fee: number
           profile_id: string | null
           status: string | null
+          transfer_status: string | null
           updated_at: string | null
           withdrawn_at: string | null
         }
         Insert: {
+          asaas_transfer_id?: string | null
           available_at?: string | null
           contract_id?: string | null
           created_at?: string | null
@@ -462,10 +510,12 @@ export type Database = {
           platform_fee?: number
           profile_id?: string | null
           status?: string | null
+          transfer_status?: string | null
           updated_at?: string | null
           withdrawn_at?: string | null
         }
         Update: {
+          asaas_transfer_id?: string | null
           available_at?: string | null
           contract_id?: string | null
           created_at?: string | null
@@ -477,6 +527,7 @@ export type Database = {
           platform_fee?: number
           profile_id?: string | null
           status?: string | null
+          transfer_status?: string | null
           updated_at?: string | null
           withdrawn_at?: string | null
         }
@@ -1012,6 +1063,44 @@ export type Database = {
           },
         ]
       }
+      pix_keys: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          label: string | null
+          pix_key: string
+          pix_key_type: string
+          professional_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string | null
+          pix_key: string
+          pix_key_type: string
+          professional_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          label?: string | null
+          pix_key?: string
+          pix_key_type?: string
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pix_keys_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_photos: {
         Row: {
           created_at: string | null
@@ -1230,6 +1319,11 @@ export type Database = {
       profiles: {
         Row: {
           approval_status: string | null
+          asaas_account_id: string | null
+          asaas_customer_id: string | null
+          asaas_error: string | null
+          asaas_pix_key: string | null
+          asaas_wallet_id: string | null
           avatar_url: string | null
           behance: string | null
           bio: string | null
@@ -1263,6 +1357,11 @@ export type Database = {
         }
         Insert: {
           approval_status?: string | null
+          asaas_account_id?: string | null
+          asaas_customer_id?: string | null
+          asaas_error?: string | null
+          asaas_pix_key?: string | null
+          asaas_wallet_id?: string | null
           avatar_url?: string | null
           behance?: string | null
           bio?: string | null
@@ -1296,6 +1395,11 @@ export type Database = {
         }
         Update: {
           approval_status?: string | null
+          asaas_account_id?: string | null
+          asaas_customer_id?: string | null
+          asaas_error?: string | null
+          asaas_pix_key?: string | null
+          asaas_wallet_id?: string | null
           avatar_url?: string | null
           behance?: string | null
           bio?: string | null
@@ -1485,11 +1589,14 @@ export type Database = {
       withdrawals: {
         Row: {
           amount: number
+          asaas_status: string | null
           asaas_transfer_id: string | null
           bank_account_id: string | null
           created_at: string | null
           gateway_id: string | null
           id: string
+          pix_key: string | null
+          pix_key_type: string | null
           pix_receipt_url: string | null
           processed_at: string | null
           profile_id: string | null
@@ -1498,11 +1605,14 @@ export type Database = {
         }
         Insert: {
           amount: number
+          asaas_status?: string | null
           asaas_transfer_id?: string | null
           bank_account_id?: string | null
           created_at?: string | null
           gateway_id?: string | null
           id?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
           pix_receipt_url?: string | null
           processed_at?: string | null
           profile_id?: string | null
@@ -1511,11 +1621,14 @@ export type Database = {
         }
         Update: {
           amount?: number
+          asaas_status?: string | null
           asaas_transfer_id?: string | null
           bank_account_id?: string | null
           created_at?: string | null
           gateway_id?: string | null
           id?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
           pix_receipt_url?: string | null
           processed_at?: string | null
           profile_id?: string | null
@@ -1565,6 +1678,14 @@ export type Database = {
       get_financial_summary: { Args: { p_profile_id: string }; Returns: Json }
       get_platform_fee_rate: {
         Args: { reference_date?: string }
+        Returns: number
+      }
+      get_professional_balance: {
+        Args: { p_profile_id: string }
+        Returns: number
+      }
+      get_professional_reserved_balance: {
+        Args: { p_profile_id: string }
         Returns: number
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
