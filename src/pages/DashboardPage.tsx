@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -115,8 +115,8 @@ const PulsingCircles = ({
   </div>
 );
 
-/* ───── Carousel Card ───── */
-const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) => {
+/* ───── Carousel Card (memoized: só re-renderiza se a oportunidade mudar) ───── */
+const CarouselOppCard = memo(({ opp, onApply }: { opp: Opp; onApply: () => void }) => {
   const navigate = useNavigate();
   const shortAddr = extractShortAddress(opp.location_address);
 
@@ -169,7 +169,8 @@ const CarouselOppCard = ({ opp, onApply }: { opp: Opp; onApply: () => void }) =>
       </motion.button>
     </div>
   );
-};
+});
+CarouselOppCard.displayName = "CarouselOppCard";
 
 /* ───── State 1: Documents Pending ───── */
 const DocumentsPendingState = () => {
