@@ -1206,6 +1206,27 @@ export type Database = {
           },
         ]
       }
+      professional_unavailable_dates: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          unavailable_date: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          unavailable_date: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          unavailable_date?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           approval_status: string | null
