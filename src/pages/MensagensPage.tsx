@@ -56,60 +56,73 @@ const getDateLabel = (iso: string | null) => {
   return d.toLocaleDateString("pt-BR");
 };
 
-/* ───── Clients Tab ───── */
+/* ───── Clients Tab (agrupado POR CLIENTE) ───── */
 const ClientsTab = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [cards, setCards] = useState<ClientCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!user) return;
-    const { data } = await supabase
+    // 1) Todas as conversas do profissional, mais recente primeiro
+    const { data: convs } = await supabase
       .from("conversations")
       .select("id, client_id, opportunity_id, last_message, last_message_at, unread_pro")
       .eq("professional_id", user.id)
       .order("last_message_at", { ascending: false });
 
-    if (!data) { setLoading(false); return; }
-
-    const enriched: Conversation[] = [];
-    for (const cv of data) {
-      let clientName = "Cliente";
-      let clientAvatar: string | null = null;
-      let jobTitle = "";
-      let categoryIcon = "📦";
-
-      if (cv.client_id) {
-        const { data: p } = await supabase
-          .from("profiles")
-          .select("full_name, avatar_url")
-          .eq("id", cv.client_id)
-          .single();
-        if (p) { clientName = p.full_name || "Cliente"; clientAvatar = p.avatar_url; }
-      }
-      if (cv.opportunity_id) {
-        const { data: o } = await supabase
-          .from("opportunities")
-          .select("title, category_id, categories(icon)")
-          .eq("id", cv.opportunity_id)
-          .single();
-        if (o) {
-          jobTitle = o.title;
-          categoryIcon = (o as any).categories?.icon || "📦";
-        }
-      }
-
-      enriched.push({
-        ...cv,
-        client_name: clientName,
-        client_avatar: clientAvatar,
-        job_title: jobTitle,
-        category_icon: categoryIcon,
-      });
+    if (!convs || convs.length === 0) {
+      setCards([]);
+      setLoading(false);
+      return;
     }
 
-    setConversations(enriched);
+    // 2) Coleta IDs únicos para batch fetch
+    const clientIds = Array.from(new Set(convs.map((c) => c.client_id).filter(Boolean) as string[]));
+    const oppIds = Array.from(new Set(convs.map((c) => c.opportunity_id).filter(Boolean) as string[]));
+
+    const [profilesRes, oppsRes] = await Promise.all([
+      clientIds.length
+        ? supabase.from("profiles").select("id, full_name, avatar_url").in("id", clientIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; avatar_url: string | null }> }),
+      oppIds.length
+        ? supabase.from("opportunities").select("id, title, categories(icon)").in("id", oppIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; title: string; categories: { icon: string | null } | null }> }),
+    ]);
+
+    const profMap = new Map((profilesRes.data || []).map((p) => [p.id, p] as const));
+    const oppMap = new Map(
+      (oppsRes.data || []).map((o) => [o.id, { title: o.title, icon: (o as any).categories?.icon || "📦" }] as const)
+    );
+
+    // 3) Agrega por client_id (convs já vêm ordenadas desc por last_message_at)
+    const byClient = new Map<string, ClientCard>();
+    for (const cv of convs) {
+      if (!cv.client_id) continue;
+      const existing = byClient.get(cv.client_id);
+      const opp = cv.opportunity_id ? oppMap.get(cv.opportunity_id) : null;
+
+      if (!existing) {
+        const p = profMap.get(cv.client_id);
+        byClient.set(cv.client_id, {
+          client_id: cv.client_id,
+          client_name: p?.full_name || "Cliente",
+          client_avatar: p?.avatar_url || null,
+          last_message: cv.last_message,
+          last_message_at: cv.last_message_at,
+          unread_pro: cv.unread_pro || 0,
+          job_title: opp?.title || "",
+          category_icon: opp?.icon || "📦",
+          conv_count: 1,
+        });
+      } else {
+        existing.unread_pro += cv.unread_pro || 0;
+        existing.conv_count += 1;
+      }
+    }
+
+    setCards(Array.from(byClient.values()));
     setLoading(false);
   }, [user]);
 
@@ -135,7 +148,7 @@ const ClientsTab = () => {
     );
   }
 
-  if (conversations.length === 0) {
+  if (cards.length === 0) {
     return (
       <div className="flex flex-col items-center pt-16">
         <MessageSquare size={48} color="#E5E5E5" />
@@ -147,45 +160,50 @@ const ClientsTab = () => {
 
   return (
     <>
-      {conversations.map((cv) => (
+      {cards.map((c) => (
         <button
-          key={cv.id}
-          onClick={() => navigate(`/mensagens/${cv.id}`)}
+          key={c.client_id}
+          onClick={() => navigate(`/mensagens/cliente/${c.client_id}`)}
           className="mb-2.5 flex w-full items-center gap-3 rounded-[16px] bg-white p-4 text-left"
           style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
         >
           <div className="relative shrink-0">
-            {cv.client_avatar ? (
-              <img src={cv.client_avatar} className="h-[52px] w-[52px] rounded-full object-cover" alt="" />
+            {c.client_avatar ? (
+              <img src={c.client_avatar} className="h-[52px] w-[52px] rounded-full object-cover" alt="" />
             ) : (
               <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#276EF1] text-[16px] font-bold text-white">
-                {initials(cv.client_name)}
+                {initials(c.client_name)}
               </div>
             )}
             <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black text-[11px]">
-              {cv.category_icon}
+              {c.category_icon}
             </span>
           </div>
           <div className="flex-1 overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-[15px] font-semibold text-black truncate">{cv.client_name}</span>
-              <span className="shrink-0 text-[11px] text-[#767676]">{timeAgo(cv.last_message_at)}</span>
+              <span className="text-[15px] font-semibold text-black truncate">{c.client_name}</span>
+              <span className="shrink-0 text-[11px] text-[#767676]">{timeAgo(c.last_message_at)}</span>
             </div>
-            {cv.job_title && (
+            {c.conv_count > 1 ? (
+              <span className="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] text-[#276EF1]"
+                style={{ background: "#EAF2FF" }}>
+                {c.conv_count} oportunidades
+              </span>
+            ) : c.job_title ? (
               <span className="mt-0.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] text-[#767676]"
                 style={{ background: "#F7F7F7" }}>
-                <span className="text-[11px]">{cv.category_icon}</span> {cv.job_title}
+                <span className="text-[11px]">{c.category_icon}</span> {c.job_title}
               </span>
-            )}
+            ) : null}
             <p className="mt-0.5 truncate text-[13px]"
-              style={{ color: (cv.unread_pro || 0) > 0 ? "#000" : "#767676", fontWeight: (cv.unread_pro || 0) > 0 ? 500 : 400 }}>
-              {cv.last_message || "..."}
+              style={{ color: c.unread_pro > 0 ? "#000" : "#767676", fontWeight: c.unread_pro > 0 ? 500 : 400 }}>
+              {c.last_message || "..."}
             </p>
           </div>
-          {(cv.unread_pro || 0) > 0 ? (
+          {c.unread_pro > 0 ? (
             <span className="flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-bold"
               style={{ background: "#F59E0B", color: "#000" }}>
-              {cv.unread_pro}
+              {c.unread_pro}
             </span>
           ) : (
             <ChevronRight size={18} color="#E5E5E5" className="shrink-0" />
