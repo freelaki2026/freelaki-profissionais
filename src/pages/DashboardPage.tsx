@@ -2,7 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Bell, MapPin, FileText, Clock, TrendingUp, CalendarDays } from "lucide-react";
+import {
+  Zap, Bell, MapPin, FileText, Clock,
+  Eye, EyeOff, ArrowUp, ArrowDown, Plus, CheckCircle,
+} from "lucide-react";
 
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -10,8 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
-import BottomNav from "@/components/dashboard/BottomNav";
-import OpportunityCard from "@/components/dashboard/OpportunityCard";
+import { FloatingNav } from "@/components/FloatingNav";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
 
 const SOUND_ONLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.mp3';
