@@ -228,6 +228,111 @@ export type Database = {
         }
         Relationships: []
       }
+      contract_addendums: {
+        Row: {
+          addendum_hash: string | null
+          addendum_text: string | null
+          addendum_version: string | null
+          asaas_payment_id: string | null
+          asaas_payment_status: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          items: Json
+          merged_with_original: boolean | null
+          opportunity_id: string | null
+          paid_at: string | null
+          payment_method: string | null
+          proposed_at: string
+          proposed_by: string
+          proposed_by_role: string
+          proposer_ip: string | null
+          proposer_user_agent: string | null
+          reason: string | null
+          rejection_reason: string | null
+          responded_at: string | null
+          responded_by: string | null
+          responder_ip: string | null
+          responder_user_agent: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          addendum_hash?: string | null
+          addendum_text?: string | null
+          addendum_version?: string | null
+          asaas_payment_id?: string | null
+          asaas_payment_status?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          items?: Json
+          merged_with_original?: boolean | null
+          opportunity_id?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          proposed_at?: string
+          proposed_by: string
+          proposed_by_role: string
+          proposer_ip?: string | null
+          proposer_user_agent?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          responder_ip?: string | null
+          responder_user_agent?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          addendum_hash?: string | null
+          addendum_text?: string | null
+          addendum_version?: string | null
+          asaas_payment_id?: string | null
+          asaas_payment_status?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          items?: Json
+          merged_with_original?: boolean | null
+          opportunity_id?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          proposed_at?: string
+          proposed_by?: string
+          proposed_by_role?: string
+          proposer_ip?: string | null
+          proposer_user_agent?: string | null
+          reason?: string | null
+          rejection_reason?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          responder_ip?: string | null
+          responder_user_agent?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_addendums_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_addendums_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           asaas_payment_id: string | null
@@ -1667,6 +1772,10 @@ export type Database = {
         Args: { p_profile_id: string }
         Returns: undefined
       }
+      cancel_contract_addendum: {
+        Args: { p_addendum_id: string }
+        Returns: Json
+      }
       check_cpf_cnpj_exists: { Args: { p_cpf_cnpj: string }; Returns: boolean }
       check_email_exists: { Args: { p_email: string }; Returns: boolean }
       check_phone_exists: { Args: { p_phone: string }; Returns: boolean }
@@ -1689,10 +1798,30 @@ export type Database = {
         Returns: number
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      propose_contract_addendum: {
+        Args: {
+          p_contract_id: string
+          p_ip?: string
+          p_items: Json
+          p_reason: string
+          p_user_agent?: string
+        }
+        Returns: Json
+      }
       refuse_contract: { Args: { p_contract_id: string }; Returns: Json }
       reject_document: {
         Args: { p_document_id: string; p_reason: string }
         Returns: undefined
+      }
+      respond_contract_addendum: {
+        Args: {
+          p_action: string
+          p_addendum_id: string
+          p_ip?: string
+          p_rejection_reason?: string
+          p_user_agent?: string
+        }
+        Returns: Json
       }
       select_professional: {
         Args: { p_opportunity_id: string; p_professional_id: string }
