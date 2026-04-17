@@ -759,6 +759,11 @@ const DashboardPage = () => {
   const saldoDisponivel = financialSummary.available;
   const acceptedOpportunities = accepted;
 
+  // 🔒 Lock presencial: profissional só pode ter 1 contrato presencial ativo por vez.
+  // Home office (is_remote=true) NÃO bloqueia — pode acumular vários em paralelo.
+  const activePresencial = accepted.find((o) => !o.is_remote);
+  const hasActivePresencial = !!activePresencial;
+
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       {!isApproved ? (
