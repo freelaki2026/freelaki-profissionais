@@ -889,7 +889,7 @@ const DashboardPage = () => {
           {/* 3d. Card "Meus Jobs" */}
           <div className="px-5 mb-5">
             <div className="flex justify-between items-center mb-2.5">
-              <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Meus Jobs</span>
+              <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Meus Freelas</span>
               {acceptedOpportunities.length > 0 && (
                 <button
                   type="button"
