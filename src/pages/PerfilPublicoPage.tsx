@@ -299,6 +299,32 @@ const PerfilPublicoPage = () => {
           </div>
         )}
 
+        {/* Equipamentos */}
+        {equipments.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Wrench size={16} className="text-white/30" />
+              <span className="text-[13px] font-semibold text-white/70">Equipamentos</span>
+              <span className="text-[11px] text-white/25 font-medium">({equipments.length})</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {equipments.map((eq) => {
+                const Icon = EQUIPMENT_ICONS[eq.category || "other"] || Wrench;
+                return (
+                  <div
+                    key={eq.id}
+                    title={eq.description || eq.name}
+                    className="flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] px-3 py-1.5 text-[12px] font-medium text-white/70"
+                  >
+                    <Icon size={13} className="text-[#6B9BFF]" />
+                    {eq.name}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Portfolio grid */}
         <div>
           <div className="flex items-center justify-between mb-3">
