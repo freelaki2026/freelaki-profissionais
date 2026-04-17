@@ -1547,6 +1547,7 @@ export type Database = {
         Returns: number
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      refuse_contract: { Args: { p_contract_id: string }; Returns: Json }
       reject_document: {
         Args: { p_document_id: string; p_reason: string }
         Returns: undefined

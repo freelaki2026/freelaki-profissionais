@@ -97,6 +97,8 @@ const OportunidadeDetalhePage = () => {
   const [finishing, setFinishing] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
+  const [showRefuseContractModal, setShowRefuseContractModal] = useState(false);
+  const [refusingContract, setRefusingContract] = useState(false);
 
   // Work lifecycle states
   const [startingWork, setStartingWork] = useState(false);
@@ -341,6 +343,31 @@ const OportunidadeDetalhePage = () => {
     }
     setWithdrawing(false);
     setShowWithdrawModal(false);
+  };
+
+  const handleRefuseContract = async () => {
+    if (!user || !opp || !contract) return;
+    setRefusingContract(true);
+    const { data, error } = await supabase.rpc("refuse_contract" as any, { p_contract_id: contract.id });
+    const result: any = typeof data === "string" ? JSON.parse(data) : data;
+
+    if (error || !result?.success) {
+      const errMsg = result?.error === "already_signed"
+        ? "Você já assinou este contrato."
+        : result?.error === "unauthorized"
+        ? "Você não tem permissão para esta ação."
+        : "Erro ao recusar contrato. Tente novamente.";
+      toast.error(errMsg);
+      setRefusingContract(false);
+      setShowRefuseContractModal(false);
+      return;
+    }
+
+    toast("Contrato recusado. O cliente foi notificado.");
+    window.dispatchEvent(new CustomEvent("opportunity_unavailable", { detail: { id: opp.id } }));
+    setRefusingContract(false);
+    setShowRefuseContractModal(false);
+    navigate("/dashboard");
   };
 
   const handleStartWork = async () => {
@@ -639,10 +666,21 @@ const OportunidadeDetalhePage = () => {
             </motion.button>
           )
         ) : opp.status === "awaiting_signatures" ? (
-          <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate("/contratos")}
-            className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white" style={{ background: "#1565C0" }}>
-            ✍️ Assinar contrato →
-          </motion.button>
+          <div className="space-y-2">
+            <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate("/contratos")}
+              className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white" style={{ background: "#1565C0" }}>
+              ✍️ Assinar contrato →
+            </motion.button>
+            {contract && opp.accepted_by === user?.id && (
+              <button
+                onClick={() => setShowRefuseContractModal(true)}
+                className="flex h-[42px] w-full items-center justify-center gap-1.5 rounded-2xl text-[13px] font-semibold"
+                style={{ background: "#FFEBEE", color: "#C62828" }}
+              >
+                <XCircle className="h-4 w-4" /> Não vou assinar o contrato
+              </button>
+            )}
+          </div>
         ) : isPaymentConfirmed ? (
           <div className="space-y-2">
             <motion.button whileTap={{ scale: 0.97 }} onClick={handleStartWork} disabled={startingWork}
@@ -946,6 +984,38 @@ const OportunidadeDetalhePage = () => {
               <button onClick={() => setShowFinishWorkModal(false)} disabled={finishingWork}
                 className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
                 Cancelar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* REFUSE CONTRACT MODAL */}
+      <AnimatePresence>
+        {showRefuseContractModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => !refusingContract && setShowRefuseContractModal(false)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }} className="mx-6 w-full max-w-sm rounded-3xl bg-white p-7" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-center"><AlertCircle className="h-8 w-8" style={{ color: "#C62828" }} /></div>
+              <h2 className="mt-3 text-center text-xl font-bold text-black">Não assinar o contrato?</h2>
+              <p className="mt-2 text-center text-[13px] leading-relaxed text-[#767676]">
+                O contrato será cancelado e a vaga ficará disponível para outros profissionais. O cliente será notificado.
+              </p>
+              <div className="mt-4 rounded-xl bg-[#FFF3E0] p-3">
+                <p className="text-[12px] leading-relaxed text-[#B45309]">
+                  ⚠️ Recusar contratos pode afetar sua reputação na plataforma.
+                </p>
+              </div>
+              <button onClick={handleRefuseContract} disabled={refusingContract}
+                className="mt-5 flex h-[52px] w-full items-center justify-center rounded-2xl text-base font-bold text-white disabled:opacity-50"
+                style={{ background: "#E53935" }}>
+                {refusingContract ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : "Confirmar recusa"}
+              </button>
+              <button onClick={() => setShowRefuseContractModal(false)} disabled={refusingContract}
+                className="mt-2.5 flex h-[48px] w-full items-center justify-center rounded-2xl bg-[#F7F7F7] text-base font-semibold text-black">
+                Voltar
               </button>
             </motion.div>
           </motion.div>
