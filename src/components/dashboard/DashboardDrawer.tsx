@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   X, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid,
+  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid, Wrench,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 
@@ -25,6 +25,7 @@ interface DashboardDrawerProps {
 const menuItems = [
   { icon: User, label: "Meu Perfil", path: "/perfil" },
   { icon: LayoutGrid, label: "Meus Serviços", path: "/meus-servicos" },
+  { icon: Wrench, label: "Meus Equipamentos", path: "/equipamentos" },
   { icon: FileText, label: "Documentos", path: "/documentos" },
   { icon: MapPin, label: "Endereço", path: "/endereco" },
   { icon: CreditCard, label: "Dados Pessoais", path: "/dados-pessoais" },
