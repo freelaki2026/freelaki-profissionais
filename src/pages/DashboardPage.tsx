@@ -904,106 +904,181 @@ const DashboardPage = () => {
             ))}
           </div>
 
-          {/* 3d. Card "Meus Jobs" */}
-          <div className="px-5 mb-5">
-            <div className="flex justify-between items-center mb-2.5">
-              <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Meus Freelas</span>
-              {acceptedOpportunities.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => navigate("/contratos")}
-                  className="text-[11px] text-zinc-500 outline-none"
-                >
-                  Ver todos →
-                </button>
-              )}
-            </div>
-            <div
-              className="rounded-2xl p-4 border border-blue-900/40"
-              style={{ background: "linear-gradient(145deg, #1a2744 0%, #0d1b38 60%, #0a1229 100%)" }}
-            >
-              {loadingOpps ? (
-                <div className="flex justify-center py-4">
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
-                </div>
-              ) : acceptedOpportunities.length === 0 ? (
-                <p className="text-xs text-zinc-500 text-center py-4">Nenhum job ativo no momento.</p>
-              ) : (
-                acceptedOpportunities.map((job, i) => (
-                  <div
-                    key={job.id}
-                    className={`flex items-center justify-between py-3 ${
-                      i < acceptedOpportunities.length - 1 ? "border-b border-white/5" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                      <div className="w-8 h-8 rounded-full bg-blue-900/60 flex items-center justify-center flex-shrink-0">
-                        <Zap size={13} className="text-blue-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-zinc-200 leading-none mb-0.5 truncate">{job.title}</p>
-                        <p className="text-[10px] text-zinc-500 truncate">
-                          {job.description ? `${job.description.slice(0, 30)}${job.description.length > 30 ? "..." : ""}` : "Sem descrição"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-2">
-                      <p className="text-sm font-medium text-white">
-                        R$ {Number(job.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/oportunidade/${job.id}`)}
-                        className="text-[10px] text-blue-400 outline-none"
-                      >
-                        Ver detalhes →
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* AVAILABLE — carrossel quando online */}
-          {isOnline && available.length > 0 && (
-            <div className="px-5 mb-5" ref={oppRef}>
-              <div className="flex justify-between items-center mb-2.5">
-                <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Disponíveis</span>
-                <span className="text-[11px] text-zinc-500">{available.length}</span>
-              </div>
-              <div
-                className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2"
-                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
-              >
-                {available.map((opp) => (
-                  <CarouselOppCard key={opp.id} opp={opp} onApply={() => setApplyModal(opp)} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* EM ANÁLISE */}
-          {applications.length > 0 && (
+          {/* 🔒 Modo Exclusivo: contrato presencial ativo */}
+          {hasActivePresencial ? (
             <div className="px-5 mb-5">
               <div className="flex justify-between items-center mb-2.5">
-                <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Em Análise</span>
-                <span className="text-[11px] text-amber-500">{applications.length}</span>
+                <span className="text-[11px] text-amber-500 uppercase tracking-widest font-semibold">
+                  ⚡ Freela em andamento
+                </span>
+                <span className="text-[10px] text-zinc-500">Presencial</span>
               </div>
-              {applications.map((app) => (
-                <div
-                  key={app.id}
-                  className="mb-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-3.5"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{app.opportunity.category_icon || "📦"}</span>
-                    <span className="text-[11px] text-zinc-400">{app.opportunity.category_name || "Geral"}</span>
-                    <span className="ml-auto text-[10px] text-amber-500">Aguardando ⏳</span>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="rounded-3xl p-5 border border-amber-500/30"
+                style={{
+                  background:
+                    "linear-gradient(145deg, #2a1f0d 0%, #1a1408 60%, #0f0a04 100%)",
+                  boxShadow: "0 8px 24px rgba(245,158,11,0.08)",
+                }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+                    <Zap size={16} className="text-amber-400" />
                   </div>
-                  <p className="mt-1.5 text-sm font-medium text-zinc-200">{app.opportunity.title}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] text-amber-500/80 uppercase tracking-wider mb-0.5">
+                      {activePresencial?.category_icon} {activePresencial?.category_name || "Freela"}
+                    </p>
+                    <p className="text-[15px] font-semibold text-white leading-tight truncate">
+                      {activePresencial?.title}
+                    </p>
+                  </div>
                 </div>
-              ))}
+
+                {activePresencial?.location_address && (
+                  <div className="flex items-start gap-2 mb-2">
+                    <MapPin size={13} className="text-zinc-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-[12px] text-zinc-400 leading-snug">
+                      {extractShortAddress(activePresencial.location_address)}
+                    </p>
+                  </div>
+                )}
+                {activePresencial?.scheduled_at && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock size={13} className="text-zinc-500 flex-shrink-0" />
+                    <p className="text-[12px] text-zinc-400">
+                      {formatSchedule(activePresencial.scheduled_at)}
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-3 border-t border-white/5 mb-3">
+                  <span className="text-[11px] text-zinc-500 uppercase tracking-wider">Valor</span>
+                  <span className="text-[18px] font-bold text-white">
+                    R$ {Number(activePresencial?.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigate(`/oportunidade/${activePresencial?.id}`)}
+                  className="w-full h-[48px] rounded-2xl bg-amber-500 text-[14px] font-bold text-black active:scale-[0.98] transition-transform outline-none"
+                >
+                  Acompanhar chamado →
+                </button>
+              </motion.div>
+
+              <p className="mt-3 text-center text-[11px] text-zinc-600 leading-relaxed px-4">
+                Você está em um freela presencial. Conclua para liberar novas oportunidades.
+              </p>
             </div>
+          ) : (
+            <>
+              {/* 3d. Card "Meus Jobs" (modo normal) */}
+              <div className="px-5 mb-5">
+                <div className="flex justify-between items-center mb-2.5">
+                  <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Meus Freelas</span>
+                  {acceptedOpportunities.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/contratos")}
+                      className="text-[11px] text-zinc-500 outline-none"
+                    >
+                      Ver todos →
+                    </button>
+                  )}
+                </div>
+                <div
+                  className="rounded-2xl p-4 border border-blue-900/40"
+                  style={{ background: "linear-gradient(145deg, #1a2744 0%, #0d1b38 60%, #0a1229 100%)" }}
+                >
+                  {loadingOpps ? (
+                    <div className="flex justify-center py-4">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+                    </div>
+                  ) : acceptedOpportunities.length === 0 ? (
+                    <p className="text-xs text-zinc-500 text-center py-4">Nenhum job ativo no momento.</p>
+                  ) : (
+                    acceptedOpportunities.map((job, i) => (
+                      <div
+                        key={job.id}
+                        className={`flex items-center justify-between py-3 ${
+                          i < acceptedOpportunities.length - 1 ? "border-b border-white/5" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <div className="w-8 h-8 rounded-full bg-blue-900/60 flex items-center justify-center flex-shrink-0">
+                            <Zap size={13} className="text-blue-400" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-zinc-200 leading-none mb-0.5 truncate">{job.title}</p>
+                            <p className="text-[10px] text-zinc-500 truncate">
+                              {job.is_remote ? "🏠 Home office" : job.description ? `${job.description.slice(0, 30)}${job.description.length > 30 ? "..." : ""}` : "Sem descrição"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <p className="text-sm font-medium text-white">
+                            R$ {Number(job.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/oportunidade/${job.id}`)}
+                            className="text-[10px] text-blue-400 outline-none"
+                          >
+                            Ver detalhes →
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* AVAILABLE — carrossel quando online */}
+              {isOnline && available.length > 0 && (
+                <div className="px-5 mb-5" ref={oppRef}>
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Disponíveis</span>
+                    <span className="text-[11px] text-zinc-500">{available.length}</span>
+                  </div>
+                  <div
+                    className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2"
+                    style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
+                  >
+                    {available.map((opp) => (
+                      <CarouselOppCard key={opp.id} opp={opp} onApply={() => setApplyModal(opp)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* EM ANÁLISE */}
+              {applications.length > 0 && (
+                <div className="px-5 mb-5">
+                  <div className="flex justify-between items-center mb-2.5">
+                    <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Em Análise</span>
+                    <span className="text-[11px] text-amber-500">{applications.length}</span>
+                  </div>
+                  {applications.map((app) => (
+                    <div
+                      key={app.id}
+                      className="mb-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-3.5"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{app.opportunity.category_icon || "📦"}</span>
+                        <span className="text-[11px] text-zinc-400">{app.opportunity.category_name || "Geral"}</span>
+                        <span className="ml-auto text-[10px] text-amber-500">Aguardando ⏳</span>
+                      </div>
+                      <p className="mt-1.5 text-sm font-medium text-zinc-200">{app.opportunity.title}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
           {/* 3e. Histórico */}
