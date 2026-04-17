@@ -406,7 +406,7 @@ const DashboardPage = () => {
 
     const { data: acc } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, category_id, categories(name, icon)")
+      .select("id, title, description, budget, status, category_id, is_remote, location_address, scheduled_at, categories(name, icon)")
       .eq("accepted_by", user.id)
       .in("status", ["awaiting_signatures", "accepted", "in_progress"])
       .order("created_at", { ascending: false });
@@ -416,6 +416,8 @@ const DashboardPage = () => {
         acc.map((o: any) => ({
           id: o.id, title: o.title, description: o.description,
           budget: o.budget, status: o.status,
+          scheduled_at: o.scheduled_at, location_address: o.location_address,
+          is_remote: o.is_remote ?? false,
           category_name: o.categories?.name, category_icon: o.categories?.icon,
         }))
       );
