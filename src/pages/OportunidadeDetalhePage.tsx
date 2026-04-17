@@ -666,10 +666,21 @@ const OportunidadeDetalhePage = () => {
             </motion.button>
           )
         ) : opp.status === "awaiting_signatures" ? (
-          <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate("/contratos")}
-            className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white" style={{ background: "#1565C0" }}>
-            ✍️ Assinar contrato →
-          </motion.button>
+          <div className="space-y-2">
+            <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate("/contratos")}
+              className="flex h-[54px] w-full items-center justify-center rounded-2xl text-base font-bold text-white" style={{ background: "#1565C0" }}>
+              ✍️ Assinar contrato →
+            </motion.button>
+            {contract && opp.accepted_by === user?.id && (
+              <button
+                onClick={() => setShowRefuseContractModal(true)}
+                className="flex h-[42px] w-full items-center justify-center gap-1.5 rounded-2xl text-[13px] font-semibold"
+                style={{ background: "#FFEBEE", color: "#C62828" }}
+              >
+                <XCircle className="h-4 w-4" /> Não vou assinar o contrato
+              </button>
+            )}
+          </div>
         ) : isPaymentConfirmed ? (
           <div className="space-y-2">
             <motion.button whileTap={{ scale: 0.97 }} onClick={handleStartWork} disabled={startingWork}
