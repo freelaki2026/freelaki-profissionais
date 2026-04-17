@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import FloatingNav from "@/components/FloatingNav";
 
 /** Card agregado: 1 por cliente, somando todas as conversations daquele cliente. */
 interface ClientCard {
@@ -532,6 +533,7 @@ const MensagensPage = () => {
           <SupportTab />
         )}
       </div>
+      <FloatingNav />
     </div>
   );
 };
