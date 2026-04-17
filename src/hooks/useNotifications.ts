@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -36,25 +36,46 @@ export function useNotifications() {
     load();
   }, [load]);
 
-  // Realtime
+  // Realtime com BATCHING (200ms): agrupa múltiplas notificações que chegam
+  // juntas em um único setState — evita 5+ re-renders em cascata.
+  const pendingRef = useRef<Notification[]>([]);
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (!user) return;
+
+    const flush = () => {
+      const batch = pendingRef.current;
+      pendingRef.current = [];
+      flushTimerRef.current = null;
+      if (batch.length === 0) return;
+      setNotifications((prev) => {
+        const seen = new Set(prev.map((n) => n.id));
+        const fresh = batch.filter((n) => !seen.has(n.id));
+        if (fresh.length === 0) return prev;
+        return [...fresh, ...prev];
+      });
+      navigator.vibrate?.(200);
+    };
+
     const channel = supabase
       .channel("notifications-realtime")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `profile_id=eq.${user.id}` },
         (payload) => {
-          const newNotif = payload.new as Notification;
-          setNotifications((prev) => {
-            if (prev.some((n) => n.id === newNotif.id)) return prev;
-            return [newNotif, ...prev];
-          });
-          navigator.vibrate?.(200);
+          pendingRef.current.push(payload.new as Notification);
+          if (!flushTimerRef.current) {
+            flushTimerRef.current = setTimeout(flush, 200);
+          }
         }
       )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+    };
   }, [user]);
 
   const markAsRead = useCallback(async (id: string) => {
