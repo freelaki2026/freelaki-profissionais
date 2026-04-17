@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid, Star, Eye,
+  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid, Star, Eye, Wrench,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import BottomNav from "@/components/dashboard/BottomNav";
@@ -20,6 +20,7 @@ interface Profile {
 const menuItems = [
   { icon: User, label: "Meu Perfil", path: "/perfil" },
   { icon: LayoutGrid, label: "Meus Serviços", path: "/meus-servicos" },
+  { icon: Wrench, label: "Meus Equipamentos", path: "/equipamentos" },
   { icon: FileText, label: "Documentos", path: "/documentos" },
   { icon: MapPin, label: "Endereço", path: "/endereco" },
   { icon: CreditCard, label: "Dados Pessoais", path: "/dados-pessoais" },

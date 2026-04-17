@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Star, X, Plus, Trash2, Grid3X3,
   Instagram, Globe, Linkedin, Github, Youtube, Zap,
+  Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,6 +16,16 @@ const SOCIAL_ICONS: Record<string, React.ElementType> = {
   github: Github,
   youtube: Youtube,
   website: Globe,
+};
+
+const EQUIPMENT_ICONS: Record<string, React.ElementType> = {
+  camera: Camera,
+  audio: Mic,
+  lighting: Lightbulb,
+  smartphone: Smartphone,
+  computer: Laptop,
+  accessory: Package,
+  other: Wrench,
 };
 
 const MAX_PHOTOS = 6;
@@ -38,6 +49,7 @@ const PerfilPublicoPage = () => {
   const [uploading, setUploading] = useState(false);
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [pricing, setPricing] = useState<{ hourly_rate: number | null; daily_rate: number | null } | null>(null);
+  const [equipments, setEquipments] = useState<Array<{ id: string; name: string; category: string | null; description: string | null }>>([]);
 
   const socialFields = [
     "instagram", "tiktok", "youtube", "linkedin", "behance",
@@ -47,17 +59,19 @@ const PerfilPublicoPage = () => {
   useEffect(() => {
     if (!user) return;
     const fetchAll = async () => {
-      const [profileRes, photosRes, reviewsRes, catsRes, pricingRes] = await Promise.all([
+      const [profileRes, photosRes, reviewsRes, catsRes, pricingRes, equipRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).single(),
         supabase.from("portfolio_photos").select("*").eq("profile_id", user.id).order("order_index"),
         supabase.from("reviews").select("rating").eq("professional_id", user.id),
         supabase.from("professional_categories").select("category_id, categories(name)").eq("profile_id", user.id),
         supabase.from("professional_pricing").select("hourly_rate, daily_rate").eq("profile_id", user.id).maybeSingle(),
+        supabase.from("professional_equipments").select("id, name, category, description").eq("profile_id", user.id).order("order_index"),
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
       if (photosRes.data) setPhotos(photosRes.data as PortfolioPhoto[]);
       if (pricingRes.data) setPricing(pricingRes.data);
+      if (equipRes.data) setEquipments(equipRes.data as any);
 
       if (reviewsRes.data && reviewsRes.data.length > 0) {
         const sum = reviewsRes.data.reduce((s: number, r: any) => s + (r.rating || 0), 0);
@@ -282,6 +296,32 @@ const PerfilPublicoPage = () => {
                 {s.platform}
               </a>
             ))}
+          </div>
+        )}
+
+        {/* Equipamentos */}
+        {equipments.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Wrench size={16} className="text-white/30" />
+              <span className="text-[13px] font-semibold text-white/70">Equipamentos</span>
+              <span className="text-[11px] text-white/25 font-medium">({equipments.length})</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {equipments.map((eq) => {
+                const Icon = EQUIPMENT_ICONS[eq.category || "other"] || Wrench;
+                return (
+                  <div
+                    key={eq.id}
+                    title={eq.description || eq.name}
+                    className="flex items-center gap-1.5 rounded-full bg-white/[0.06] border border-white/[0.08] px-3 py-1.5 text-[12px] font-medium text-white/70"
+                  >
+                    <Icon size={13} className="text-[#6B9BFF]" />
+                    {eq.name}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
