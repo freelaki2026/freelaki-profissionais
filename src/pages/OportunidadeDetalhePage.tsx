@@ -97,6 +97,8 @@ const OportunidadeDetalhePage = () => {
   const [finishing, setFinishing] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
+  const [showRefuseContractModal, setShowRefuseContractModal] = useState(false);
+  const [refusingContract, setRefusingContract] = useState(false);
 
   // Work lifecycle states
   const [startingWork, setStartingWork] = useState(false);
