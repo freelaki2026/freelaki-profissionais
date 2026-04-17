@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAsaasOnboarding } from "@/hooks/useAsaasOnboarding";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
@@ -13,6 +14,8 @@ const EXEMPT_ROUTES = ["/termos", "/confirmar-email", "/categorias"];
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const location = useLocation();
+  // Tenta criar subconta Asaas em background — silencioso e idempotente.
+  useAsaasOnboarding();
   const [checkingCategories, setCheckingCategories] = useState(true);
   const [hasCategories, setHasCategories] = useState<boolean | null>(null);
 
