@@ -133,6 +133,14 @@ const Splash = () => {
           from { width: 0%; }
           to { width: 100%; }
         }
+        @keyframes splashLogoIn {
+          from { opacity: 0; transform: scale(0.96); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes splashTaglineIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
     </div>
   );
