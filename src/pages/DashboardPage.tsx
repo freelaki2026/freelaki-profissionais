@@ -291,6 +291,8 @@ const DashboardPage = () => {
   const [weekTotal, setWeekTotal] = useState(0);
   const [weekCount, setWeekCount] = useState(0);
   const [financialSummary, setFinancialSummary] = useState<{ available: number; reserved: number }>({ available: 0, reserved: 0 });
+  const [recentEarnings, setRecentEarnings] = useState<Array<{ id: string; description: string | null; amount: number; created_at: string }>>([]);
+  const [balanceVisible, setBalanceVisible] = useState(true);
 
   // Load profile
   useEffect(() => {
