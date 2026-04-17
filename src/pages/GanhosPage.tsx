@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-import { ArrowLeft, Clock, TrendingUp, DollarSign, ArrowUpRight, AlertCircle } from "lucide-react";
+import { ArrowLeft, Clock, TrendingUp, DollarSign, ArrowUpRight, AlertCircle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -62,10 +62,13 @@ const GanhosPage = () => {
   const [bankAccount, setBankAccount] = useState<BankAccount | null>(null);
   const [withdrawing, setWithdrawing] = useState(false);
 
-  const loadData = async () => {
+  const uidRef = useRef<string | null>(null);
+
+  const loadData = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return;
     const uid = session.user.id;
+    uidRef.current = uid;
 
     const [earningsRes, withdrawalsRes, contractsRes] = await Promise.all([
       supabase
@@ -78,11 +81,15 @@ const GanhosPage = () => {
         .select("*")
         .eq("profile_id", uid)
         .order("created_at", { ascending: false }),
+      // Contratos com pagamento confirmado mas serviço ainda não concluído.
+      // O valor fica RESERVADO até o cliente apertar "Concluir".
       supabase
         .from("contracts")
-        .select("opportunity_id, created_at")
+        .select("opportunity_id, status, asaas_payment_status, completion_confirmed_at, created_at")
         .eq("professional_id", uid)
-        .in("status", ["payment_confirmed", "in_progress"]),
+        .in("asaas_payment_status", ["CONFIRMED", "RECEIVED"])
+        .is("completion_confirmed_at", null)
+        .neq("status", "cancelled"),
     ]);
 
     // Available = sum earnings with status 'available'
@@ -99,9 +106,8 @@ const GanhosPage = () => {
     const totalEarned = earningsRes.data
       ?.reduce((sum: number, e: any) => sum + Number(e.net_amount), 0) || 0;
 
-    setSummary({ reserved: 0, available: availableTotal, withdrawn: withdrawnTotal, total: totalEarned });
-
-    // Calculate reserved from active contracts — professional receives 100% of budget
+    // Reserved from active contracts (paid but not yet concluded by client) — 60% pendente
+    let reservedTotal = 0;
     if (contractsRes.data && contractsRes.data.length > 0) {
       const oppIds = contractsRes.data.map((c: any) => c.opportunity_id).filter(Boolean);
       if (oppIds.length > 0) {
@@ -110,13 +116,12 @@ const GanhosPage = () => {
           .select("id, budget")
           .in("id", oppIds);
         if (opps) {
-          const total = opps.reduce((sum: number, o: any) => sum + (Number(o.budget) || 0), 0);
-          setReservedFromContracts(total);
+          reservedTotal = opps.reduce((sum: number, o: any) => sum + (Number(o.budget) || 0), 0);
         }
       }
-    } else {
-      setReservedFromContracts(0);
     }
+    setReservedFromContracts(reservedTotal);
+    setSummary({ reserved: reservedTotal, available: availableTotal, withdrawn: withdrawnTotal, total: totalEarned });
 
     if (earningsRes.data) {
       // Fetch opportunity details for each earning
@@ -162,9 +167,41 @@ const GanhosPage = () => {
 
     if (withdrawalsRes.data) setWithdrawals(withdrawalsRes.data);
     setLoading(false);
-  };
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Realtime: re-carrega quando contracts/earnings/withdrawals mudarem para o profissional logado
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled || !session?.user) return;
+      const uid = session.user.id;
+
+      channel = supabase
+        .channel(`ganhos-${uid}`)
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "contracts", filter: `professional_id=eq.${uid}` },
+          () => loadData())
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "earnings", filter: `profile_id=eq.${uid}` },
+          () => loadData())
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "withdrawals", filter: `profile_id=eq.${uid}` },
+          () => loadData())
+        .subscribe();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [loadData]);
 
   const handleWithdrawClick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -288,6 +325,27 @@ const GanhosPage = () => {
             </button>
           </div>
 
+          {/* Previsão de ganhos: disponível + reservado */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%)",
+              borderRadius: 20,
+              padding: 16,
+              border: "1px solid #C8E6C9",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} color="#2E7D32" />
+              <p style={{ fontSize: 12, fontWeight: 600, color: "#2E7D32" }}>Previsão de ganhos</p>
+            </div>
+            <p style={{ fontSize: 24, fontWeight: 800, color: "#1B5E20", marginTop: 4 }}>
+              {formatCurrency(summary.available + reservedFromContracts)}
+            </p>
+            <p style={{ fontSize: 11, fontWeight: 400, color: "#2E7D32", marginTop: 2 }}>
+              Total estimado considerando contratos pagos aguardando conclusão
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-[10px]">
             {/* Reserved */}
             <div style={{ background: "#FFF", borderRadius: 20, padding: 16, border: "1px solid #E5E5E5" }}>
@@ -299,7 +357,7 @@ const GanhosPage = () => {
                 <Clock size={14} color="#F59E0B" />
               </div>
               <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 2 }}>
-                Liberado após conclusão
+                Liberado quando o cliente concluir
               </p>
             </div>
 
