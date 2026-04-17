@@ -1,12 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Zap, FileText, User, Menu } from "lucide-react";
+import { Home, Zap, Menu } from "lucide-react";
 
 const NAV_ITEMS = [
-  { label: "Início",    icon: Home,     path: "/dashboard" },
-  { label: "Oport.",    icon: Zap,      path: "/oportunidades" },
-  { label: "Contratos", icon: FileText, path: "/contratos" },
-  { label: "Menu",      icon: Menu,     path: "/menu" },
-  { label: "Perfil",    icon: User,     path: "/perfil" },
+  { label: "Início",       icon: Home, path: "/dashboard" },
+  { label: "Oportunidades", icon: Zap,  path: "/oportunidades" },
+  { label: "Menu",         icon: Menu, path: "/menu" },
 ];
 
 export function FloatingNav() {
