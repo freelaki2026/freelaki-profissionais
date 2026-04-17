@@ -955,7 +955,6 @@ const DashboardPage = () => {
             </button>
           </div>
         </div>
-        </div>
       ) : (
         /* OFFLINE — full black bg with centered animation */
         <div
