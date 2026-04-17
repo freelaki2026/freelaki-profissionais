@@ -126,20 +126,32 @@ Deno.serve(async (req) => {
     if (!asaasRes.ok || asaasData.errors) {
       console.error("Asaas error:", JSON.stringify(asaasData));
 
-      // Insert failed withdrawal record
-      await supabaseAdmin.from("withdrawals").insert({
-        profile_id: uid,
-        amount: totalAvailable,
-        status: "failed",
-        bank_account_id: bankAccount.id,
-      });
+      const asaasCode = asaasData.errors?.[0]?.code || "";
+      const asaasDesc = asaasData.errors?.[0]?.description || "";
+      const isGatewayBalanceIssue =
+        asaasDesc.toLowerCase().includes("saldo insuficiente") ||
+        asaasCode === "invalid_action";
 
-      const errorMsg =
-        asaasData.errors?.[0]?.description ||
-        "Falha na transferência PIX. Tente novamente.";
+      // Only record a failed withdrawal for real transfer failures,
+      // not for gateway-side balance issues (which are not the user's fault).
+      if (!isGatewayBalanceIssue) {
+        await supabaseAdmin.from("withdrawals").insert({
+          profile_id: uid,
+          amount: totalAvailable,
+          status: "failed",
+          bank_account_id: bankAccount.id,
+        });
+      }
+
+      const errorMsg = isGatewayBalanceIssue
+        ? "Pagamentos temporariamente indisponíveis. Tente novamente em instantes ou contate o suporte."
+        : asaasDesc || "Falha na transferência PIX. Tente novamente.";
 
       return new Response(
-        JSON.stringify({ error: "transfer_failed", message: errorMsg }),
+        JSON.stringify({
+          error: isGatewayBalanceIssue ? "gateway_unavailable" : "transfer_failed",
+          message: errorMsg,
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
