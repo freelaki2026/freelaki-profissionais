@@ -7,17 +7,17 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface Conversation {
-  id: string;
-  client_id: string | null;
-  opportunity_id: string | null;
-  last_message: string | null;
-  last_message_at: string | null;
-  unread_pro: number | null;
+/** Card agregado: 1 por cliente, somando todas as conversations daquele cliente. */
+interface ClientCard {
+  client_id: string;
   client_name: string;
   client_avatar: string | null;
-  job_title: string;
+  last_message: string | null;
+  last_message_at: string | null;
+  unread_pro: number;
+  job_title: string; // título da oportunidade mais recente
   category_icon: string;
+  conv_count: number;
 }
 
 interface SupportMessage {
