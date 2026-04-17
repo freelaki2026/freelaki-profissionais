@@ -11,6 +11,7 @@ export const routeLoaders: Record<string, Loader> = {
   "/mapa": () => import("@/pages/MapaPage"),
   "/mensagens": () => import("@/pages/MensagensPage"),
   "/ganhos": () => import("@/pages/GanhosPage"),
+  "/financeiro": () => import("@/pages/FinanceiroPage"),
   "/contratos": () => import("@/pages/ContratosPage"),
   "/perfil": () => import("@/pages/PerfilPage"),
   "/perfil-publico": () => import("@/pages/PerfilPublicoPage"),

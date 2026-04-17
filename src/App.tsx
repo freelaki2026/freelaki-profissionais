@@ -42,6 +42,7 @@ const ContratosPage = lazyFromMap("/contratos");
 const SuportePage = lazyFromMap("/suporte");
 const MensagensPage = lazyFromMap("/mensagens");
 const GanhosPage = lazyFromMap("/ganhos");
+const FinanceiroPage = lazyFromMap("/financeiro");
 const MeusServicosPage = lazyFromMap("/meus-servicos");
 const EquipamentosPage = lazyFromMap("/equipamentos");
 const MenuPage = lazyFromMap("/menu");
@@ -109,6 +110,7 @@ const App = () => (
             <Route path="/suporte" element={<ProtectedRoute><SuportePage /></ProtectedRoute>} />
             <Route path="/oportunidade/:id" element={<ProtectedRoute><OportunidadeDetalhePage /></ProtectedRoute>} />
             <Route path="/ganhos" element={<ProtectedRoute><GanhosPage /></ProtectedRoute>} />
+            <Route path="/financeiro" element={<ProtectedRoute><FinanceiroPage /></ProtectedRoute>} />
             <Route path="/meus-servicos" element={<ProtectedRoute><MeusServicosPage /></ProtectedRoute>} />
             <Route path="/equipamentos" element={<ProtectedRoute><EquipamentosPage /></ProtectedRoute>} />
             <Route path="/mensagens" element={<ProtectedRoute><MensagensPage /></ProtectedRoute>} />
