@@ -297,7 +297,7 @@ const DashboardPage = () => {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("full_name, avatar_url, approval_status, is_online, is_approved")
+      .select("full_name, avatar_url, approval_status, is_online, is_approved, cpf_cnpj")
       .eq("id", user.id)
       .single()
       .then(({ data }) => {
