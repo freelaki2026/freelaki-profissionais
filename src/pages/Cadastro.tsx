@@ -69,9 +69,11 @@ const CadastroStep1 = () => {
   const pw8 = password.length >= 8;
   const pwMatch = confirm.length > 0 && password === confirm;
   const phoneDigits = phone.replace(/\D/g, "");
+  const nameParts = name.trim().split(/\s+/).filter((p) => p.length >= 2);
+  const fullNameValid = nameParts.length >= 2;
 
   const valid =
-    name.trim().length > 0 &&
+    fullNameValid &&
     email.trim().length > 0 &&
     phoneDigits.length === 11 &&
     pw8 &&
@@ -126,12 +128,19 @@ const CadastroStep1 = () => {
         </span>
 
         <div className="mt-5 flex flex-col gap-4">
-          <FreelakiInput
-            label="Nome completo"
-            placeholder="Seu nome"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <div>
+            <FreelakiInput
+              label="Nome completo"
+              placeholder="Nome e sobrenome"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            {name.trim().length > 0 && !fullNameValid && (
+              <p className="mt-1" style={{ fontSize: 12, color: "#E53935" }}>
+                Informe nome e sobrenome
+              </p>
+            )}
+          </div>
 
           <FreelakiInput
             label="Email"

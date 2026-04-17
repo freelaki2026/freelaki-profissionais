@@ -34,9 +34,10 @@ const PerfilClientePage = () => {
   const [servicesCount, setServicesCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const initials = profile?.full_name
-    ? profile.full_name.split(" ").map((w) => w[0]).join("").substring(0, 2).toUpperCase()
-    : "?";
+  const firstName = profile?.full_name
+    ? profile.full_name.trim().split(/\s+/)[0]
+    : "Cliente";
+  const initials = firstName.charAt(0).toUpperCase();
 
   const memberSince = profile?.created_at
     ? format(new Date(profile.created_at), "MMM yyyy", { locale: ptBR })
@@ -142,7 +143,7 @@ const PerfilClientePage = () => {
           </div>
 
           <h1 className="mt-4 text-[22px] font-bold text-white tracking-tight">
-            {profile?.full_name || "Cliente"}
+            {firstName}
           </h1>
 
           {/* Verified badge */}
