@@ -661,6 +661,22 @@ const DashboardPage = () => {
       .gte('created_at', startOfWeek.toISOString());
     setWeekTotal(weekEarnings?.reduce((sum, e) => sum + Number(e.net_amount), 0) || 0);
     setWeekCount(weekEarnings?.length || 0);
+
+    // Recent earnings for histórico
+    const { data: recent } = await supabase
+      .from('earnings')
+      .select('id, description, net_amount, created_at')
+      .eq('profile_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    setRecentEarnings(
+      (recent || []).map((e: any) => ({
+        id: e.id,
+        description: e.description,
+        amount: Number(e.net_amount),
+        created_at: e.created_at,
+      }))
+    );
   }, [user]);
 
   useEffect(() => { loadEarnings(); }, [loadEarnings]);
