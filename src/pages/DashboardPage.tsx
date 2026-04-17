@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, Bell, MapPin, FileText, Clock,
-  Eye, EyeOff, ArrowUp, ArrowDown, Plus, CheckCircle,
+  Eye, EyeOff, ArrowUp, ArrowDown, Plus, CheckCircle, Map, MessageCircle,
 } from "lucide-react";
 
 import { format, isToday, isTomorrow } from "date-fns";
@@ -871,8 +871,8 @@ const DashboardPage = () => {
           <div className="flex gap-3 px-5 mb-5">
             {[
               { icon: <ArrowUp size={18} />, label: "Sacar", onClick: () => navigate("/ganhos") },
-              { icon: <ArrowDown size={18} />, label: "Receber", onClick: () => navigate("/ganhos") },
-              { icon: <Plus size={18} />, label: "Novo job", onClick: () => navigate("/oportunidades") },
+              { icon: <Map size={18} />, label: "Mapa", onClick: () => navigate("/mapa") },
+              { icon: <MessageCircle size={18} />, label: "Mensagens", onClick: () => navigate("/mensagens") },
             ].map((btn) => (
               <button
                 key={btn.label}

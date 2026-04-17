@@ -35,6 +35,7 @@ import MenuPage from "@/pages/MenuPage";
 import PerfilPublicoPage from "@/pages/PerfilPublicoPage";
 import PerfilClientePage from "@/pages/PerfilClientePage";
 import AgendaPage from "@/pages/AgendaPage";
+import MapaPage from "@/pages/MapaPage";
 import { Cadastro } from "@/pages/PlaceholderPages";
 
 const queryClient = new QueryClient();
@@ -77,6 +78,7 @@ const App = () => (
           <Route path="/perfil-publico" element={<ProtectedRoute><PerfilPublicoPage /></ProtectedRoute>} />
           <Route path="/perfil-cliente/:id" element={<ProtectedRoute><PerfilClientePage /></ProtectedRoute>} />
           <Route path="/agenda" element={<ProtectedRoute><AgendaPage /></ProtectedRoute>} />
+          <Route path="/mapa" element={<ProtectedRoute><MapaPage /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
