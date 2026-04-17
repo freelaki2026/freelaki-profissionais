@@ -141,6 +141,8 @@ const ClientsTab = () => {
   const initials = (name: string) =>
     name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
+  const firstName = (name: string) => (name || "Cliente").trim().split(/\s+/)[0];
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -172,8 +174,8 @@ const ClientsTab = () => {
             {c.client_avatar ? (
               <img src={c.client_avatar} className="h-[52px] w-[52px] rounded-full object-cover" alt="" />
             ) : (
-              <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#276EF1] text-[16px] font-bold text-white">
-                {initials(c.client_name)}
+              <div className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#276EF1] text-[18px] font-bold text-white">
+                {firstName(c.client_name).charAt(0).toUpperCase()}
               </div>
             )}
             <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black text-[11px]">
@@ -182,7 +184,7 @@ const ClientsTab = () => {
           </div>
           <div className="flex-1 overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="text-[15px] font-semibold text-black truncate">{c.client_name}</span>
+              <span className="text-[15px] font-semibold text-black truncate">{firstName(c.client_name)}</span>
               <span className="shrink-0 text-[11px] text-[#767676]">{timeAgo(c.last_message_at)}</span>
             </div>
             {c.conv_count > 1 ? (

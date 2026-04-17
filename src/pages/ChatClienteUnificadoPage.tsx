@@ -232,7 +232,7 @@ const ChatClienteUnificadoPage = () => {
     ta.style.height = Math.min(ta.scrollHeight, 100) + "px";
   };
 
-  const initials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  const firstName = (name: string) => (name || "Cliente").trim().split(/\s+/)[0];
 
   let lastDateLabel = "";
   let lastConvId: string | null = null;
@@ -251,11 +251,11 @@ const ChatClienteUnificadoPage = () => {
           {meta?.client_avatar ? (
             <img src={meta.client_avatar} className="h-9 w-9 rounded-full object-cover" alt="" />
           ) : (
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#276EF1] text-[12px] font-bold text-white">
-              {initials(meta?.client_name || "?")}
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#276EF1] text-[14px] font-bold text-white">
+              {firstName(meta?.client_name || "?").charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="mt-1 text-[15px] font-semibold text-white">{meta?.client_name || "..."}</span>
+          <span className="mt-1 text-[15px] font-semibold text-white">{firstName(meta?.client_name || "...")}</span>
           {conversations.length > 0 && (
             <span className="text-[11px] text-[#767676]">
               {conversations.length === 1 ? "1 oportunidade" : `${conversations.length} oportunidades`}
