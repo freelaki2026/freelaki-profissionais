@@ -732,342 +732,301 @@ const DashboardPage = () => {
   const approvalStatus = profile?.approval_status || "incomplete";
   const isApproved = approvalStatus === "approved";
 
+  // Helpers for new layout
+  const profileFirstName = (profile?.full_name?.trim().split(" ")[0]) || "Profissional";
+  const profileInitials = profile?.full_name
+    ? profile.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+    : "?";
+  const maskedCpf = (() => {
+    const raw = (profile?.cpf_cnpj || "").replace(/\D/g, "");
+    if (!raw) return "CPF não informado";
+    const last3 = raw.slice(-3);
+    return `CPF •••.${last3}`;
+  })();
+  const saldoDisponivel = financialSummary.available;
+  const acceptedOpportunities = accepted;
+
   return (
-    <div className="flex min-h-screen flex-col bg-black">
-      {/* HEADER */}
-      <div className="flex items-center justify-between px-6 pt-[52px] pb-5">
-        <div className="w-[22px]" />
-        <div className="flex items-center" style={{ gap: 10 }}>
-          <Zap size={24} fill="#276EF1" color="#276EF1" />
-          <span className="font-bold text-white" style={{ fontSize: 22, letterSpacing: "-0.5px" }}>freelaki</span>
-        </div>
-        <button onClick={() => setNotifOpen(true)} className="relative"
-          style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}>
-          <Bell className="h-[22px] w-[22px]" style={{ color: unreadCount > 0 ? "#F59E0B" : "#FFFFFF", transition: "color 300ms ease" }} />
-          <AnimatePresence>
-            {unreadCount > 0 && (
-              <motion.span
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
-                style={{ background: "#F59E0B", color: "#000" }}>
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </button>
-      </div>
-
-      {/* STATE-BASED CONTENT */}
+    <div className="min-h-screen bg-black text-white overflow-x-hidden">
       {!isApproved ? (
-        approvalStatus === "pending" ? (
-          <UnderReviewState />
-        ) : (
-          <DocumentsPendingState />
-        )
-      ) : showOnlineLayout ? (
-        <div
-          className="flex flex-1 flex-col"
-          style={{
-            opacity: transitionPhase === "going-offline" ? 0 : 1,
-            transition: "opacity 300ms ease",
-          }}
-        >
-          {/* Online Card */}
-          <OnlineOfflineCard isOnline={isOnline} loading={togglingOnline} onToggle={toggleOnline} />
-
-          {/* Body */}
-          <div
-            className="mt-5 flex-1 rounded-t-3xl bg-[#F7F7F7] px-4 pb-20 pt-5"
-            style={{
-              opacity: transitionPhase === "going-offline" ? 0 : 1,
-              transition: "opacity 300ms ease",
-            }}
-          >
-            {/* AVAILABLE — Carousel */}
-            <div
-              ref={oppRef}
-              style={{
-                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
-                opacity: transitionPhase === "idle" ? 1 : 0,
-                transition: "transform 400ms ease 100ms, opacity 400ms ease 100ms",
-              }}
-            >
-              <div className="flex items-center gap-2 px-1">
-                <span className="text-base font-semibold text-foreground">Disponíveis</span>
-                {available.length > 0 && (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#276EF1] px-2.5 text-xs font-medium text-white">
-                    {available.length}
-                  </span>
-                )}
-              </div>
-
-              <div className="relative mt-3 -mx-4">
-                {loadingOpps ? (
-                  <div className="flex justify-center py-8">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
-                  </div>
-                ) : available.length > 0 ? (
-                  <div
-                    className="flex gap-3.5 overflow-x-auto px-6 pb-4 pt-2"
-                    style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch", cursor: "grab" }}
-                  >
-                    <style>{`.carousel-scroll::-webkit-scrollbar { display: none; }`}</style>
-                    {available.map((opp) => (
-                      <CarouselOppCard key={opp.id} opp={opp} onApply={() => setApplyModal(opp)} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center py-10">
-                    <Zap size={28} fill="#276EF1" color="#276EF1" />
-                    <p className="mt-3 text-[14px] font-semibold text-foreground">Nenhuma oportunidade no momento</p>
-                    <p className="mt-1.5 text-[13px] text-[#767676]">Fique online. Avisaremos assim que surgir algo.</p>
-                  </div>
-                )}
-              </div>
+        <>
+          <div className="flex items-center justify-between px-6 pt-[52px] pb-5">
+            <div className="w-[22px]" />
+            <div className="flex items-center" style={{ gap: 10 }}>
+              <Zap size={24} fill="#276EF1" color="#276EF1" />
+              <span className="font-bold text-white" style={{ fontSize: 22, letterSpacing: "-0.5px" }}>freelaki</span>
             </div>
-
-            {/* EM ANÁLISE */}
-            {applications.length > 0 && (
-              <div
-                className="mt-5"
-                style={{
-                  transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
-                  opacity: transitionPhase === "idle" ? 1 : 0,
-                  transition: "transform 400ms ease 150ms, opacity 400ms ease 150ms",
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-semibold text-foreground">Em Análise</span>
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-2.5 text-xs font-medium text-white" style={{ background: "#F59E0B" }}>
-                    {applications.length}
-                  </span>
-                </div>
-                <div className="mt-3">
-                  {applications.map((app) => (
-                    <div key={app.id} className="mb-2.5 rounded-2xl border border-[hsl(var(--border))] bg-white p-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{app.opportunity.category_icon || "📦"}</span>
-                        <span className="rounded-full px-2.5 py-0.5 text-xs font-medium" style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}>
-                          {app.opportunity.category_name || "Geral"}
-                        </span>
-                        <span className="ml-auto rounded-full px-2.5 py-0.5 text-[11px] font-medium" style={{ background: "#FFF3E0", color: "#B45309" }}>
-                          Aguardando seleção ⏳
-                        </span>
-                      </div>
-                      <p className="mt-2 text-[15px] font-semibold text-foreground">{app.opportunity.title}</p>
-                      <p className="mt-1 text-[12px] text-[#767676]">O cliente está analisando os candidatos.</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ACCEPTED */}
-            <div
-              className="mt-6"
-              style={{
-                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
-                opacity: transitionPhase === "idle" ? 1 : 0,
-                transition: "transform 400ms ease 200ms, opacity 400ms ease 200ms",
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-base font-semibold text-foreground">Aceitas</span>
-                {accepted.length > 0 && (
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-2.5 text-xs font-medium text-white" style={{ background: "#2E7D32" }}>
-                    {accepted.length}
-                  </span>
+            <button type="button" onClick={() => setNotifOpen(true)} className="relative outline-none"
+              style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}>
+              <Bell className="h-[22px] w-[22px]" style={{ color: unreadCount > 0 ? "#F59E0B" : "#FFFFFF", transition: "color 300ms ease" }} />
+              <AnimatePresence>
+                {unreadCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
+                    style={{ background: "#F59E0B", color: "#000" }}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </motion.span>
                 )}
-              </div>
-              <div className="mt-3">
-                <AnimatePresence>
-                  {accepted.length > 0 ? (
-                    accepted.map((opp) => (
-                      <motion.div
-                        key={opp.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <OpportunityCard opp={opp} variant="accepted" />
-                      </motion.div>
-                    ))
-                  ) : (
-                    <p className="py-5 text-center text-[13px] text-[#767676]">
-                      Nenhuma oportunidade aceita ainda.
-                    </p>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-
-            {/* EARNINGS PREVIEW CARD */}
-            <div
-              className="mt-4 cursor-pointer"
-              onClick={() => navigate('/ganhos')}
-              style={{
-                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
-                opacity: transitionPhase === "idle" ? 1 : 0,
-                transition: "transform 400ms ease 300ms, opacity 400ms ease 300ms",
-              }}
-            >
-              <div className="relative rounded-[20px] p-4" style={{ background: "#000000" }}>
-                {financialSummary.available > 0 && (
-                  <span
-                    className="absolute -top-2 right-3 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
-                    style={{ background: "#2E7D32", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }}
-                  >
-                    💰 Disponível para saque
-                  </span>
-                )}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <TrendingUp size={16} color="#2E7D32" />
-                    <span className="text-[13px] font-medium text-[#767676]">Ganhos desta semana</span>
-                  </div>
-                  <span className="text-[12px] font-medium text-[#276EF1]">Ver tudo →</span>
-                </div>
-                <p className="mt-2 text-[28px] font-extrabold text-white">
-                  R$ {weekTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
-                <p className="mt-0.5 text-[12px] text-[#767676]">
-                  {weekCount} serviço{weekCount !== 1 ? 's' : ''} realizado{weekCount !== 1 ? 's' : ''}
-                </p>
-                <div className="my-3" style={{ height: 1, background: "rgba(255,255,255,0.08)" }} />
-                <div className="flex gap-3">
-                  <div className="flex-1 rounded-[12px] p-2.5" style={{ background: "rgba(255,255,255,0.05)" }}>
-                    <span className="text-[11px] text-[#767676]">Disponível</span>
-                    <p className="text-[15px] font-bold text-[#2E7D32]">
-                      R$ {financialSummary.available.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                  <div className="flex-1 rounded-[12px] p-2.5" style={{ background: "rgba(255,255,255,0.05)" }}>
-                    <span className="text-[11px] text-[#767676]">Reservado</span>
-                    <p className="text-[15px] font-bold text-[#F59E0B]">
-                      R$ {financialSummary.reserved.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* AGENDA SHORTCUT CARD */}
-            <button
-              onClick={() => navigate('/agenda')}
-              className="mt-4 flex w-full items-center gap-3 rounded-[20px] border border-[#F0F0F0] bg-white p-4 text-left transition-colors hover:bg-[#F7F8FA]"
-              style={{
-                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
-                opacity: transitionPhase === "idle" ? 1 : 0,
-                transition: "transform 400ms ease 350ms, opacity 400ms ease 350ms",
-              }}
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-full" style={{ background: "#F0F4FF" }}>
-                <CalendarDays size={20} color="#276EF1" />
-              </div>
-              <div className="flex-1">
-                <p className="text-[14px] font-bold text-foreground">Minha Agenda</p>
-                <p className="text-[12px] text-[#767676]">Bloqueie dias que você não trabalha</p>
-              </div>
-              <span className="text-[12px] font-medium text-[#276EF1]">Abrir →</span>
+              </AnimatePresence>
             </button>
           </div>
-        </div>
+          {approvalStatus === "pending" ? <UnderReviewState /> : <DocumentsPendingState />}
+        </>
       ) : (
-        /* OFFLINE — full black bg with centered animation */
-        <div
-          className="flex flex-1 flex-col items-center justify-center px-6 pb-24"
-          style={{
-            background: "#000000",
-            opacity: transitionPhase === "going-online" ? 0 : 1,
-            transition: transitionPhase === "going-online" ? "opacity 400ms ease 500ms" : "opacity 300ms ease",
-          }}
-        >
-          <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
-            <div
-              className="offline-ring offline-ring-1 absolute rounded-full"
-              style={{
-                width: 80, height: 80,
-                border: "1.5px solid rgba(39,110,241,0.5)",
-                opacity: transitionPhase === "going-online" ? 0 : undefined,
-                transform: transitionPhase === "going-online" ? "scale(1.5)" : undefined,
-                transition: "transform 400ms ease, opacity 400ms ease",
-              }}
-            />
-            <div
-              className="offline-ring offline-ring-2 absolute rounded-full"
-              style={{
-                width: 120, height: 120,
-                border: "1px solid rgba(39,110,241,0.3)",
-                opacity: transitionPhase === "going-online" ? 0 : undefined,
-                transform: transitionPhase === "going-online" ? "scale(1.5)" : undefined,
-                transition: "transform 400ms ease 50ms, opacity 400ms ease 50ms",
-              }}
-            />
-            <div
-              className="offline-ring offline-ring-3 absolute rounded-full"
-              style={{
-                width: 160, height: 160,
-                border: "1px solid rgba(39,110,241,0.15)",
-                opacity: transitionPhase === "going-online" ? 0 : undefined,
-                transform: transitionPhase === "going-online" ? "scale(1.5)" : undefined,
-                transition: "transform 400ms ease 100ms, opacity 400ms ease 100ms",
-              }}
-            />
-            <svg
-              className={`offline-bolt relative ${transitionPhase === "going-online" ? "bolt-flash" : ""}`}
-              width="48" height="48" viewBox="0 0 24 24"
-              fill={transitionPhase === "going-online" ? "#00C853" : "#276EF1"}
-              stroke={transitionPhase === "going-online" ? "#00C853" : "#276EF1"}
-              strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
-              style={{ zIndex: 1, transition: "fill 300ms ease, stroke 300ms ease" }}
+        <main className="pb-28">
+          {/* 3a. Top bar */}
+          <div className="flex justify-between items-center px-5 pt-10 pb-2">
+            <div className="flex items-center gap-2 bg-zinc-900 rounded-full px-3 py-1.5">
+              <div className="flex">
+                <div className="w-4 h-4 rounded-full bg-blue-500" />
+                <div className="w-4 h-4 rounded-full bg-violet-400 -ml-1" />
+              </div>
+              <span className="text-xs text-zinc-400">{maskedCpf}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setNotifOpen(true)}
+              className="relative outline-none"
+              style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}
             >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
+              <Bell size={18} className="text-zinc-300" />
+              <AnimatePresence>
+                {unreadCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute -top-1.5 -right-1.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold"
+                    style={{ background: "#F59E0B", color: "#000" }}>
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/perfil")}
+              className="flex items-center gap-2 bg-zinc-900 rounded-full px-3 py-1.5 outline-none"
+            >
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-[9px] font-medium text-white">
+                  {profileInitials}
+                </div>
+              )}
+              <span className="text-xs text-zinc-300">{profileFirstName}</span>
+            </button>
           </div>
 
-          <p
-            className="mt-8 text-[18px] font-bold text-white"
-            style={{
-              opacity: transitionPhase === "going-online" ? 0 : 1,
-              transition: "opacity 200ms ease",
-            }}
-          >
-            Você está offline
-          </p>
-          <p
-            className="mt-1.5 text-[13px] text-[#767676]"
-            style={{
-              opacity: transitionPhase === "going-online" ? 0 : 1,
-              transition: "opacity 200ms ease",
-            }}
-          >
-            Fique online para receber oportunidades
-          </p>
-
-          <button
-            disabled={togglingOnline}
-            onClick={toggleOnline}
-            className="mt-7 flex h-[52px] w-[200px] items-center justify-center rounded-[16px] bg-[#276EF1] text-[16px] font-bold text-white disabled:opacity-50"
-            style={{
-              opacity: transitionPhase === "going-online" ? 0 : 1,
-              transition: "opacity 200ms ease",
-            }}
-          >
-            {togglingOnline ? (
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            ) : (
-              "Ficar Online →"
+          {/* 3b. Saldo disponível */}
+          <div className="flex flex-col items-center py-5 px-5">
+            <button
+              type="button"
+              onClick={toggleOnline}
+              disabled={togglingOnline}
+              className="flex items-center gap-1.5 bg-zinc-900 rounded-full px-3 py-1 mb-4 outline-none disabled:opacity-50"
+            >
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{
+                  background: isOnline ? "#00C853" : "#E53935",
+                  animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
+                }}
+              />
+              <span className="text-xs text-zinc-400">
+                {togglingOnline ? "..." : isOnline ? "Online • Carteira BRL" : "Offline • Toque para ativar"}
+              </span>
+            </button>
+            <p className="text-xs text-zinc-600 uppercase tracking-widest mb-1">Saldo disponível</p>
+            <div className="flex items-center gap-2">
+              <span className="text-4xl font-medium tracking-tight text-white">
+                {balanceVisible
+                  ? `R$ ${saldoDisponivel.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                  : "R$ ••••••"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setBalanceVisible(!balanceVisible)}
+                className="text-zinc-600 outline-none"
+              >
+                {balanceVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+              </button>
+            </div>
+            {financialSummary.reserved > 0 && (
+              <p className="mt-2 text-[11px] text-zinc-500">
+                + R$ {financialSummary.reserved.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} reservado
+              </p>
             )}
-          </button>
-        </div>
+          </div>
+
+          {/* 3c. Botões de ação */}
+          <div className="flex gap-3 px-5 mb-5">
+            {[
+              { icon: <ArrowUp size={18} />, label: "Sacar", onClick: () => navigate("/ganhos") },
+              { icon: <ArrowDown size={18} />, label: "Receber", onClick: () => navigate("/ganhos") },
+              { icon: <Plus size={18} />, label: "Novo job", onClick: () => navigate("/oportunidades") },
+            ].map((btn) => (
+              <button
+                key={btn.label}
+                type="button"
+                onClick={btn.onClick}
+                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl py-4 flex flex-col items-center gap-1.5 active:scale-95 transition-transform outline-none"
+              >
+                <span className="text-zinc-300">{btn.icon}</span>
+                <span className="text-[11px] text-zinc-400">{btn.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* 3d. Card "Meus Jobs" */}
+          <div className="px-5 mb-5">
+            <div className="flex justify-between items-center mb-2.5">
+              <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Meus Jobs</span>
+              {acceptedOpportunities.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/contratos")}
+                  className="text-[11px] text-zinc-500 outline-none"
+                >
+                  Ver todos →
+                </button>
+              )}
+            </div>
+            <div
+              className="rounded-2xl p-4 border border-blue-900/40"
+              style={{ background: "linear-gradient(145deg, #1a2744 0%, #0d1b38 60%, #0a1229 100%)" }}
+            >
+              {loadingOpps ? (
+                <div className="flex justify-center py-4">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+                </div>
+              ) : acceptedOpportunities.length === 0 ? (
+                <p className="text-xs text-zinc-500 text-center py-4">Nenhum job ativo no momento.</p>
+              ) : (
+                acceptedOpportunities.map((job, i) => (
+                  <div
+                    key={job.id}
+                    className={`flex items-center justify-between py-3 ${
+                      i < acceptedOpportunities.length - 1 ? "border-b border-white/5" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-full bg-blue-900/60 flex items-center justify-center flex-shrink-0">
+                        <Zap size={13} className="text-blue-400" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-zinc-200 leading-none mb-0.5 truncate">{job.title}</p>
+                        <p className="text-[10px] text-zinc-500 truncate">
+                          {job.description ? `${job.description.slice(0, 30)}${job.description.length > 30 ? "..." : ""}` : "Sem descrição"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="text-sm font-medium text-white">
+                        R$ {Number(job.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/oportunidade/${job.id}`)}
+                        className="text-[10px] text-blue-400 outline-none"
+                      >
+                        Ver detalhes →
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* AVAILABLE — carrossel quando online */}
+          {isOnline && available.length > 0 && (
+            <div className="px-5 mb-5" ref={oppRef}>
+              <div className="flex justify-between items-center mb-2.5">
+                <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Disponíveis</span>
+                <span className="text-[11px] text-zinc-500">{available.length}</span>
+              </div>
+              <div
+                className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2"
+                style={{ scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {available.map((opp) => (
+                  <CarouselOppCard key={opp.id} opp={opp} onApply={() => setApplyModal(opp)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* EM ANÁLISE */}
+          {applications.length > 0 && (
+            <div className="px-5 mb-5">
+              <div className="flex justify-between items-center mb-2.5">
+                <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Em Análise</span>
+                <span className="text-[11px] text-amber-500">{applications.length}</span>
+              </div>
+              {applications.map((app) => (
+                <div
+                  key={app.id}
+                  className="mb-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-3.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{app.opportunity.category_icon || "📦"}</span>
+                    <span className="text-[11px] text-zinc-400">{app.opportunity.category_name || "Geral"}</span>
+                    <span className="ml-auto text-[10px] text-amber-500">Aguardando ⏳</span>
+                  </div>
+                  <p className="mt-1.5 text-sm font-medium text-zinc-200">{app.opportunity.title}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 3e. Histórico */}
+          <div className="px-5 pb-4">
+            <p className="text-[11px] text-zinc-600 uppercase tracking-widest mb-3">Histórico</p>
+            {recentEarnings.length === 0 ? (
+              <p className="text-xs text-zinc-500">Nenhum pagamento registrado ainda.</p>
+            ) : (
+              recentEarnings.map((tx, i) => (
+                <div
+                  key={tx.id}
+                  className={`flex items-center gap-3 py-3 ${
+                    i < recentEarnings.length - 1 ? "border-b border-zinc-900" : ""
+                  }`}
+                >
+                  <div className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle size={15} className="text-green-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-zinc-200 font-medium leading-none mb-0.5 truncate">
+                      {tx.description ?? "Pagamento recebido"}
+                    </p>
+                    <p className="text-[11px] text-zinc-600">Pago via Pix</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-medium text-green-400">
+                      + R$ {Number(tx.amount ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-[10px] text-zinc-600">
+                      {new Date(tx.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </main>
       )}
 
-      {/* BOTTOM NAV */}
-      <BottomNav />
+      {/* FLOATING NAV */}
+      <FloatingNav />
 
       <NotificationPanel
         open={notifOpen}
