@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, Bell, MapPin, FileText, Clock, TrendingUp } from "lucide-react";
+import { Zap, Bell, MapPin, FileText, Clock, TrendingUp, CalendarDays } from "lucide-react";
 
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -933,7 +933,28 @@ const DashboardPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* AGENDA SHORTCUT CARD */}
+            <button
+              onClick={() => navigate('/agenda')}
+              className="mt-4 flex w-full items-center gap-3 rounded-[20px] border border-[#F0F0F0] bg-white p-4 text-left transition-colors hover:bg-[#F7F8FA]"
+              style={{
+                transform: transitionPhase === "idle" ? "translateY(0)" : "translateY(20px)",
+                opacity: transitionPhase === "idle" ? 1 : 0,
+                transition: "transform 400ms ease 350ms, opacity 400ms ease 350ms",
+              }}
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-full" style={{ background: "#F0F4FF" }}>
+                <CalendarDays size={20} color="#276EF1" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[14px] font-bold text-foreground">Minha Agenda</p>
+                <p className="text-[12px] text-[#767676]">Bloqueie dias que você não trabalha</p>
+              </div>
+              <span className="text-[12px] font-medium text-[#276EF1]">Abrir →</span>
+            </button>
           </div>
+        </div>
         </div>
       ) : (
         /* OFFLINE — full black bg with centered animation */
