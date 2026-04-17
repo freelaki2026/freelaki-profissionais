@@ -21,6 +21,7 @@ const CadastroStep3 = lazy(() => import("@/pages/CadastroStep3"));
 const ConfirmarEmailPage = lazy(() => import("@/pages/ConfirmarEmailPage"));
 const OportunidadeDetalhePage = lazy(() => import("@/pages/OportunidadeDetalhePage"));
 const ChatClientePage = lazy(() => import("@/pages/ChatClientePage"));
+const ChatClienteUnificadoPage = lazy(() => import("@/pages/ChatClienteUnificadoPage"));
 const PerfilClientePage = lazy(() => import("@/pages/PerfilClientePage"));
 
 // Helper para tipar lazy() a partir do mapa de loaders.
