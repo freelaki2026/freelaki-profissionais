@@ -345,6 +345,31 @@ const OportunidadeDetalhePage = () => {
     setShowWithdrawModal(false);
   };
 
+  const handleRefuseContract = async () => {
+    if (!user || !opp || !contract) return;
+    setRefusingContract(true);
+    const { data, error } = await supabase.rpc("refuse_contract" as any, { p_contract_id: contract.id });
+    const result: any = typeof data === "string" ? JSON.parse(data) : data;
+
+    if (error || !result?.success) {
+      const errMsg = result?.error === "already_signed"
+        ? "Você já assinou este contrato."
+        : result?.error === "unauthorized"
+        ? "Você não tem permissão para esta ação."
+        : "Erro ao recusar contrato. Tente novamente.";
+      toast.error(errMsg);
+      setRefusingContract(false);
+      setShowRefuseContractModal(false);
+      return;
+    }
+
+    toast("Contrato recusado. O cliente foi notificado.");
+    window.dispatchEvent(new CustomEvent("opportunity_unavailable", { detail: { id: opp.id } }));
+    setRefusingContract(false);
+    setShowRefuseContractModal(false);
+    navigate("/dashboard");
+  };
+
   const handleStartWork = async () => {
     if (!contract) return;
     setStartingWork(true);
