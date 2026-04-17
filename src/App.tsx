@@ -1,52 +1,78 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { routeLoaders, prefetchCriticalRoutesOnIdle } from "@/lib/routePrefetch";
 
 // Eager: rotas de boot (splash + auth) — leves e iniciais
 import Splash from "@/pages/Splash";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
 
-// Lazy: tudo o resto carrega sob demanda
+// Lazy: usa o MESMO loader do routePrefetch (chunk reaproveitado após hover/touchstart).
 const CadastroStep1 = lazy(() => import("@/pages/Cadastro"));
 const CadastroStep2 = lazy(() => import("@/pages/CadastroStep2"));
 const CadastroStep3 = lazy(() => import("@/pages/CadastroStep3"));
-const CategoriasPage = lazy(() => import("@/pages/CategoriasPage"));
-const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
-const OportunidadeDetalhePage = lazy(() => import("@/pages/OportunidadeDetalhePage"));
-const OportunidadesPage = lazy(() => import("@/pages/OportunidadesPage"));
-const PerfilPage = lazy(() => import("@/pages/PerfilPage"));
-const DocumentosPage = lazy(() => import("@/pages/DocumentosPage"));
-const EnderecoPage = lazy(() => import("@/pages/EnderecoPage"));
-const DadosPessoaisPage = lazy(() => import("@/pages/DadosPessoaisPage"));
-const DadosBancariosPage = lazy(() => import("@/pages/DadosBancariosPage"));
-const AjudaPage = lazy(() => import("@/pages/AjudaPage"));
-const TermosPage = lazy(() => import("@/pages/TermosPage"));
-const ContratosPage = lazy(() => import("@/pages/ContratosPage"));
-const SuportePage = lazy(() => import("@/pages/SuportePage"));
 const ConfirmarEmailPage = lazy(() => import("@/pages/ConfirmarEmailPage"));
-const MensagensPage = lazy(() => import("@/pages/MensagensPage"));
+const OportunidadeDetalhePage = lazy(() => import("@/pages/OportunidadeDetalhePage"));
 const ChatClientePage = lazy(() => import("@/pages/ChatClientePage"));
-const GanhosPage = lazy(() => import("@/pages/GanhosPage"));
-const MeusServicosPage = lazy(() => import("@/pages/MeusServicosPage"));
-const EquipamentosPage = lazy(() => import("@/pages/EquipamentosPage"));
-const MenuPage = lazy(() => import("@/pages/MenuPage"));
-const PerfilPublicoPage = lazy(() => import("@/pages/PerfilPublicoPage"));
 const PerfilClientePage = lazy(() => import("@/pages/PerfilClientePage"));
-const AgendaPage = lazy(() => import("@/pages/AgendaPage"));
-const MapaPage = lazy(() => import("@/pages/MapaPage"));
 
-const queryClient = new QueryClient();
+// Helper para tipar lazy() a partir do mapa de loaders.
+const lazyFromMap = (path: string) =>
+  lazy(routeLoaders[path] as () => Promise<{ default: React.ComponentType }>);
 
-const PageFallback = () => (
-  <div className="min-h-screen bg-black flex items-center justify-center">
-    <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-  </div>
-);
+const CategoriasPage = lazyFromMap("/categorias");
+const DashboardPage = lazyFromMap("/dashboard");
+const OportunidadesPage = lazyFromMap("/oportunidades");
+const PerfilPage = lazyFromMap("/perfil");
+const DocumentosPage = lazyFromMap("/documentos");
+const EnderecoPage = lazyFromMap("/endereco");
+const DadosPessoaisPage = lazyFromMap("/dados-pessoais");
+const DadosBancariosPage = lazyFromMap("/dados-bancarios");
+const AjudaPage = lazyFromMap("/ajuda");
+const TermosPage = lazyFromMap("/termos");
+const ContratosPage = lazyFromMap("/contratos");
+const SuportePage = lazyFromMap("/suporte");
+const MensagensPage = lazyFromMap("/mensagens");
+const GanhosPage = lazyFromMap("/ganhos");
+const MeusServicosPage = lazyFromMap("/meus-servicos");
+const EquipamentosPage = lazyFromMap("/equipamentos");
+const MenuPage = lazyFromMap("/menu");
+const PerfilPublicoPage = lazyFromMap("/perfil-publico");
+const AgendaPage = lazyFromMap("/agenda");
+const MapaPage = lazyFromMap("/mapa");
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000, // 30s — dados ficam "frescos" e evitam refetch ao trocar de tela
+      gcTime: 5 * 60_000, // 5min de cache em memória
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+/** Pré-carrega rotas críticas no idle assim que o usuário entra em qualquer tela protegida. */
+const RoutePrefetcher = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (pathname === "/" || pathname === "/login") return;
+    prefetchCriticalRoutesOnIdle([
+      "/dashboard",
+      "/oportunidades",
+      "/menu",
+      "/mapa",
+      "/mensagens",
+    ]);
+  }, [pathname]);
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -54,7 +80,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Suspense fallback={<PageFallback />}>
+        <RoutePrefetcher />
+        <Suspense fallback={<PageSkeleton />}>
           <Routes>
             {/* Rotas públicas */}
             <Route path="/" element={<Splash />} />
