@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { getPlatformFeeRate, getFeePercentLabel } from "@/lib/feeUtils";
+import ContractAddendums from "@/components/ContractAddendums";
 
 interface OppDetail {
   id: string;
@@ -576,7 +577,20 @@ const OportunidadeDetalhePage = () => {
             })()}
             <p className="mt-1 text-xs leading-relaxed" style={{ color: "#4CAF50" }}>
               Este valor será liberado para você após a conclusão confirmada pelo cliente.
-            </p>
+          </p>
+          </div>
+        )}
+
+        {/* Aditivos do contrato */}
+        {contract?.id && contract.status !== "cancelled" && contract.status !== "completed" && opp?.accepted_by === user?.id && (
+          <div className="mb-4">
+            <ContractAddendums
+              contractId={contract.id}
+              contractStatus={contract.status}
+              userRole="professional"
+              professionalId={user?.id ?? null}
+              onChange={loadOpp}
+            />
           </div>
         )}
 
