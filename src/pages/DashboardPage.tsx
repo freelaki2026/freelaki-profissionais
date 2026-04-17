@@ -682,16 +682,25 @@ const DashboardPage = () => {
 
   useEffect(() => { loadEarnings(); }, [loadEarnings]);
 
-  // Realtime for earnings
+  // Realtime for earnings — DEBOUNCED 300ms para agrupar múltiplos eventos
+  // (ex: 3 earnings inseridas no mesmo segundo viram 1 reload).
+  const earningsDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!user) return;
     const channel = supabase
       .channel('earnings-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'earnings', filter: `profile_id=eq.${user.id}` }, () => {
-        loadEarnings();
+        if (earningsDebounceRef.current) clearTimeout(earningsDebounceRef.current);
+        earningsDebounceRef.current = setTimeout(() => {
+          loadEarnings();
+          earningsDebounceRef.current = null;
+        }, 300);
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+      if (earningsDebounceRef.current) clearTimeout(earningsDebounceRef.current);
+    };
   }, [user, loadEarnings]);
 
   const toggleOnline = async () => {
