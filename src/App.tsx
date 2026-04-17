@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { routeLoaders, prefetchCriticalRoutesOnIdle } from "@/lib/routePrefetch";
+import { ViewTransitionsBridge } from "@/lib/viewTransitions";
 
 // Eager: rotas de boot (splash + auth) — leves e iniciais
 import Splash from "@/pages/Splash";
@@ -81,6 +82,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <RoutePrefetcher />
+        <ViewTransitionsBridge />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             {/* Rotas públicas */}

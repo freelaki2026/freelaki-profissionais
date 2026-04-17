@@ -73,3 +73,21 @@
 *::-webkit-scrollbar {
   display: none;
 }
+
+/* Virtualização nativa do browser para listas longas:
+   só renderiza/pinta items quando estão próximos da viewport.
+   Ganho real em /oportunidades, /mensagens, /contratos, /ganhos. */
+.virt-row {
+  content-visibility: auto;
+  contain-intrinsic-size: 120px;
+}
+
+/* View Transitions API: cross-fade suave de 180ms entre rotas.
+   No-op em browsers sem suporte. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 180ms;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+}

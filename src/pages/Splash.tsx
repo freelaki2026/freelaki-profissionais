@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
 // Splash inteligente: dura mais para visitantes (impacto da marca)
@@ -75,11 +74,9 @@ const Splash = () => {
         <div className="absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#276EF1]/8 blur-[120px]" />
       </div>
 
-      <motion.div
+      <div
         className="relative z-10 flex flex-col items-center"
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
+        style={{ animation: "splashLogoIn 450ms ease-out both" }}
       >
         <h1 className="font-bold" style={{ fontSize: 42, letterSpacing: -1.5, lineHeight: 1 }}>
           <span className="text-white">Freela</span>
@@ -91,13 +88,14 @@ const Splash = () => {
         >
           profissionais
         </p>
-      </motion.div>
+      </div>
 
-      <motion.div
+      <div
         className="relative z-10 mt-10 text-center px-10"
-        initial={{ opacity: 0, y: 8 }}
-        animate={showTagline ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.45, ease: "easeOut" }}
+        style={{
+          animation: showTagline ? "splashTaglineIn 450ms ease-out both" : undefined,
+          opacity: showTagline ? undefined : 0,
+        }}
       >
         <p className="text-[18px] font-semibold text-white/90 leading-snug">
           100% do que você ganha <span style={{ color: "#276EF1" }}>é seu.</span>
@@ -105,7 +103,7 @@ const Splash = () => {
         <p className="mt-2 text-[13px] text-white/30 font-light">
           Grátis pra sempre. Sem taxa escondida.
         </p>
-      </motion.div>
+      </div>
 
       <div
         className="fixed flex flex-col items-center"
@@ -134,6 +132,14 @@ const Splash = () => {
         @keyframes progress-fill {
           from { width: 0%; }
           to { width: 100%; }
+        }
+        @keyframes splashLogoIn {
+          from { opacity: 0; transform: scale(0.96); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @keyframes splashTaglineIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>
