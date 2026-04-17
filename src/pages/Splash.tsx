@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 
-const MIN_SPLASH_DURATION = 1800;
+// Splash inteligente: dura mais para visitantes (impacto da marca)
+// e bem menos quando o usuário já está autenticado (UX rápida estilo big tech).
+const SPLASH_DURATION_GUEST = 1800;
+const SPLASH_DURATION_LOGGED = 900;
 const TAGLINE_DELAY = 250;
 
 const Splash = () => {
@@ -20,15 +23,19 @@ const Splash = () => {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        return { path: "/login", state: undefined };
+        return { path: "/login", state: undefined, logged: false };
       }
 
       if (!session.user.email_confirmed_at) {
         return {
           path: "/confirmar-email",
           state: { email: session.user.email },
+          logged: true,
         };
       }
+
+      // Pré-aquece o chunk do dashboard em paralelo à query.
+      void import("@/pages/DashboardPage");
 
       const { count } = await supabase
         .from("professional_categories")
@@ -38,17 +45,17 @@ const Splash = () => {
       return {
         path: (count ?? 0) === 0 ? "/categorias" : "/dashboard",
         state: undefined,
+        logged: true,
       };
     };
 
     const run = async () => {
-      const [{ path, state }] = await Promise.all([
-        resolveNextPath(),
-        new Promise((resolve) => setTimeout(resolve, MIN_SPLASH_DURATION)),
-      ]);
+      const resolved = await resolveNextPath();
+      const minDuration = resolved.logged ? SPLASH_DURATION_LOGGED : SPLASH_DURATION_GUEST;
+      await new Promise((resolve) => setTimeout(resolve, minDuration));
 
       if (!isActive) return;
-      navigate(path, { replace: true, state });
+      navigate(resolved.path, { replace: true, state: resolved.state });
     };
 
     run();
@@ -117,7 +124,7 @@ const Splash = () => {
             style={{
               height: "100%",
               background: "#276EF1",
-              animation: `progress-fill ${MIN_SPLASH_DURATION}ms linear forwards`,
+              animation: `progress-fill ${SPLASH_DURATION_GUEST}ms linear forwards`,
             }}
           />
         </div>
