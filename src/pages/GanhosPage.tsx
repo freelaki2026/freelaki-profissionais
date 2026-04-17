@@ -325,6 +325,27 @@ const GanhosPage = () => {
             </button>
           </div>
 
+          {/* Previsão de ganhos: disponível + reservado */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%)",
+              borderRadius: 20,
+              padding: 16,
+              border: "1px solid #C8E6C9",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles size={14} color="#2E7D32" />
+              <p style={{ fontSize: 12, fontWeight: 600, color: "#2E7D32" }}>Previsão de ganhos</p>
+            </div>
+            <p style={{ fontSize: 24, fontWeight: 800, color: "#1B5E20", marginTop: 4 }}>
+              {formatCurrency(summary.available + reservedFromContracts)}
+            </p>
+            <p style={{ fontSize: 11, fontWeight: 400, color: "#2E7D32", marginTop: 2 }}>
+              Total estimado considerando contratos pagos aguardando conclusão
+            </p>
+          </div>
+
           <div className="grid grid-cols-2 gap-[10px]">
             {/* Reserved */}
             <div style={{ background: "#FFF", borderRadius: 20, padding: 16, border: "1px solid #E5E5E5" }}>
@@ -336,7 +357,7 @@ const GanhosPage = () => {
                 <Clock size={14} color="#F59E0B" />
               </div>
               <p style={{ fontSize: 11, fontWeight: 400, color: "#767676", marginTop: 2 }}>
-                Liberado após conclusão
+                Liberado quando o cliente concluir
               </p>
             </div>
 
