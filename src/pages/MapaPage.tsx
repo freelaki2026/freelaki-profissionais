@@ -1,6 +1,9 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Zap, Loader2, Crosshair } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { FloatingNav } from "@/components/FloatingNav";
@@ -28,6 +31,38 @@ const distKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a));
 };
 
+// Ícones customizados via divIcon (sem assets externos)
+const userIcon = L.divIcon({
+  className: "",
+  html: `<div style="position:relative;width:18px;height:18px;">
+    <div style="position:absolute;inset:0;background:#3b82f6;opacity:.45;border-radius:9999px;animation:pulse 1.6s infinite;"></div>
+    <div style="position:absolute;inset:3px;background:#3b82f6;border:2px solid white;border-radius:9999px;box-shadow:0 0 0 1px rgba(0,0,0,.4);"></div>
+  </div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+});
+
+const oppIcon = L.divIcon({
+  className: "",
+  html: `<div style="position:relative;width:30px;height:30px;">
+    <div style="position:absolute;inset:0;background:#facc15;opacity:.35;border-radius:9999px;animation:pulse 1.8s infinite;"></div>
+    <div style="position:absolute;inset:3px;background:#facc15;border:2px solid #18181b;border-radius:9999px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(250,204,21,.4);">
+      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    </div>
+  </div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
+});
+
+// Recentralizar quando coords carregarem
+function Recenter({ coords }: { coords: { lat: number; lng: number } | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (coords) map.setView([coords.lat, coords.lng], 13, { animate: true });
+  }, [coords, map]);
+  return null;
+}
+
 export default function MapaPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -35,26 +70,26 @@ export default function MapaPage() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [opps, setOpps] = useState<MapOpp[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<MapOpp | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   // Geolocalização
   useEffect(() => {
     if (!navigator.geolocation) {
       setGeoError("Geolocalização não suportada neste dispositivo.");
+      setCoords({ lat: -23.5505, lng: -46.6333 });
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       () => {
-        setGeoError("Permissão de localização negada. Mostrando oportunidades sem distância.");
-        setCoords({ lat: -23.5505, lng: -46.6333 }); // fallback São Paulo
+        setGeoError("Permissão de localização negada. Mostrando São Paulo como referência.");
+        setCoords({ lat: -23.5505, lng: -46.6333 });
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
 
-  // Buscar categorias do profissional + oportunidades abertas + realtime
+  // Buscar oportunidades + realtime
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
@@ -86,12 +121,8 @@ export default function MapaPage() {
     fetchOpps();
 
     channelRef.current = supabase
-      .channel("map-opps")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "opportunities" },
-        () => fetchOpps()
-      )
+      .channel("map-opps-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "opportunities" }, () => fetchOpps())
       .subscribe();
 
     return () => {
@@ -118,27 +149,23 @@ export default function MapaPage() {
       });
   }, [opps, coords]);
 
-  // Cálculo de posição relativa no "mapa" (canvas SVG simples)
-  const mapPoints = useMemo(() => {
-    if (!coords) return [];
-    const radiusKm = 25; // janela de 25km
-    return oppsWithDist
-      .filter((o) => o.location_lat != null && o.location_lng != null && (o._dist ?? Infinity) < radiusKm)
-      .map((o) => {
-        const dx = (o.location_lng! - coords.lng) * Math.cos((coords.lat * Math.PI) / 180);
-        const dy = coords.lat - o.location_lat!;
-        const scale = 50 / (radiusKm / 111); // 111 km por grau
-        return {
-          opp: o,
-          x: 50 + dx * scale,
-          y: 50 + dy * scale,
-        };
-      })
-      .filter((p) => p.x > 5 && p.x < 95 && p.y > 5 && p.y < 95);
-  }, [oppsWithDist, coords]);
+  const mappable = oppsWithDist.filter(
+    (o) => o.location_lat != null && o.location_lng != null
+  );
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden pb-32">
+      <style>{`
+        @keyframes pulse { 0%,100% { transform: scale(1); opacity:.4 } 50% { transform: scale(1.6); opacity:0 } }
+        .leaflet-container { background:#0a0a0a; font-family: inherit; }
+        .leaflet-popup-content-wrapper { background:#18181b; color:#fafafa; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.5); }
+        .leaflet-popup-tip { background:#18181b; }
+        .leaflet-popup-content { margin: 10px 12px; font-size: 12px; }
+        .leaflet-control-zoom a { background:#18181b !important; color:#fafafa !important; border-color:#27272a !important; }
+        .leaflet-control-attribution { background: rgba(0,0,0,.5) !important; color:#71717a !important; }
+        .leaflet-control-attribution a { color:#a1a1aa !important; }
+      `}</style>
+
       {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-10 pb-4">
         <button
@@ -152,82 +179,68 @@ export default function MapaPage() {
           <h1 className="text-lg font-medium tracking-tight">Mapa de oportunidades</h1>
           <p className="text-[11px] text-zinc-500">Em tempo real perto de você</p>
         </div>
+        <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-full px-2.5 py-1">
+          <Crosshair size={11} className="text-blue-400" />
+          <span className="text-[10px] text-zinc-300">{mappable.length}</span>
+        </div>
       </div>
 
-      {/* Mapa visual (canvas radar) */}
+      {/* Mapa real */}
       <div className="px-5 mb-5">
-        <div
-          className="relative w-full aspect-square rounded-3xl border border-zinc-800 overflow-hidden"
-          style={{
-            background:
-              "radial-gradient(circle at center, #0d1b38 0%, #0a1229 60%, #050816 100%)",
-          }}
-        >
-          {/* Grades concêntricas */}
-          {[20, 40, 60, 80].map((r) => (
-            <div
-              key={r}
-              className="absolute rounded-full border border-blue-500/10"
-              style={{
-                width: `${r}%`,
-                height: `${r}%`,
-                top: `${(100 - r) / 2}%`,
-                left: `${(100 - r) / 2}%`,
-              }}
-            />
-          ))}
-          {/* Cruz central */}
-          <div className="absolute inset-x-0 top-1/2 h-px bg-blue-500/10" />
-          <div className="absolute inset-y-0 left-1/2 w-px bg-blue-500/10" />
-
-          {/* Você (centro) */}
-          {coords && (
-            <div
-              className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
-              style={{ left: "50%", top: "50%" }}
+        <div className="relative w-full aspect-square rounded-3xl border border-zinc-800 overflow-hidden">
+          {coords ? (
+            <MapContainer
+              center={[coords.lat, coords.lng]}
+              zoom={13}
+              style={{ height: "100%", width: "100%" }}
+              scrollWheelZoom
             >
-              <div className="relative">
-                <div className="absolute inset-0 w-4 h-4 rounded-full bg-blue-400 animate-ping opacity-60" />
-                <div className="w-4 h-4 rounded-full bg-blue-500 border-2 border-white relative" />
-              </div>
-            </div>
-          )}
-
-          {/* Pontos das oportunidades */}
-          {mapPoints.map(({ opp, x, y }) => (
-            <button
-              type="button"
-              key={opp.id}
-              onClick={() => setSelected(opp)}
-              className="absolute -translate-x-1/2 -translate-y-1/2 outline-none active:scale-90 transition-transform z-20"
-              style={{ left: `${x}%`, top: `${y}%` }}
-            >
-              <div className="relative">
-                <div className="absolute inset-0 w-7 h-7 rounded-full bg-yellow-400/40 animate-pulse" />
-                <div className="w-7 h-7 rounded-full bg-yellow-400 flex items-center justify-center relative shadow-lg shadow-yellow-500/40">
-                  <Zap size={13} className="text-black" strokeWidth={2.5} />
-                </div>
-              </div>
-            </button>
-          ))}
-
-          {/* Estado vazio */}
-          {!coords && !geoError && (
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              />
+              <Recenter coords={coords} />
+              <Circle
+                center={[coords.lat, coords.lng]}
+                radius={5000}
+                pathOptions={{ color: "#3b82f6", fillColor: "#3b82f6", fillOpacity: 0.06, weight: 1 }}
+              />
+              <Marker position={[coords.lat, coords.lng]} icon={userIcon}>
+                <Popup>Você está aqui</Popup>
+              </Marker>
+              {mappable.map((o) => (
+                <Marker
+                  key={o.id}
+                  position={[o.location_lat!, o.location_lng!]}
+                  icon={oppIcon}
+                >
+                  <Popup>
+                    <div className="space-y-1.5 min-w-[180px]">
+                      <p className="font-medium text-[13px] text-white">{o.title}</p>
+                      {o.location_address && (
+                        <p className="text-[11px] text-zinc-400 truncate">{o.location_address}</p>
+                      )}
+                      <p className="text-[13px] font-medium text-yellow-400">
+                        R$ {Number(o.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/oportunidade/${o.id}`)}
+                        className="mt-1 w-full bg-white text-black rounded-full py-1.5 text-[11px] font-medium"
+                      >
+                        Ver detalhes
+                      </button>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-500">
               <Loader2 size={20} className="animate-spin mb-2" />
               <p className="text-xs">Localizando você…</p>
             </div>
           )}
-          {coords && mapPoints.length === 0 && !loading && (
-            <div className="absolute inset-x-4 bottom-4 bg-black/60 backdrop-blur rounded-xl px-3 py-2 text-center">
-              <p className="text-[11px] text-zinc-400">Nenhuma oportunidade em 25 km</p>
-            </div>
-          )}
-          {/* Badge canto */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur rounded-full px-2.5 py-1">
-            <Crosshair size={11} className="text-blue-400" />
-            <span className="text-[10px] text-zinc-300">Raio 25 km</span>
-          </div>
         </div>
         {geoError && (
           <p className="mt-2 text-[11px] text-yellow-500/80 text-center">{geoError}</p>
@@ -278,44 +291,6 @@ export default function MapaPage() {
           ))}
         </div>
       </div>
-
-      {/* Modal simples ao clicar no pino */}
-      {selected && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-3 mb-3">
-              <div className="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
-                <Zap size={16} className="text-black" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-base font-medium">{selected.title}</p>
-                <p className="text-[11px] text-zinc-500 truncate">
-                  {selected.location_address ?? "Sem endereço"}
-                </p>
-              </div>
-              <p className="text-base font-medium text-white">
-                R$ {Number(selected.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
-              </p>
-            </div>
-            {selected.description && (
-              <p className="text-xs text-zinc-400 mb-4 line-clamp-3">{selected.description}</p>
-            )}
-            <button
-              type="button"
-              onClick={() => navigate(`/oportunidade/${selected.id}`)}
-              className="w-full bg-white text-black rounded-full py-3 text-sm font-medium outline-none active:scale-[0.98] transition-transform"
-            >
-              Ver detalhes
-            </button>
-          </div>
-        </div>
-      )}
 
       <FloatingNav />
     </div>
