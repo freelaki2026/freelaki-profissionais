@@ -791,6 +791,7 @@ export type Database = {
           end_time: string | null
           id: string
           is_private: boolean | null
+          is_remote: boolean
           location_address: string | null
           location_lat: number | null
           location_lng: number | null
@@ -821,6 +822,7 @@ export type Database = {
           end_time?: string | null
           id?: string
           is_private?: boolean | null
+          is_remote?: boolean
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null
@@ -851,6 +853,7 @@ export type Database = {
           end_time?: string | null
           id?: string
           is_private?: boolean | null
+          is_remote?: boolean
           location_address?: string | null
           location_lat?: number | null
           location_lng?: number | null

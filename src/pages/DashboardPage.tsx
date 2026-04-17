@@ -55,6 +55,7 @@ interface Opp {
   category_icon?: string;
   application_count?: number;
   is_private?: boolean;
+  is_remote?: boolean;
 }
 
 const formatSchedule = (scheduledAt: string | null | undefined): string => {
