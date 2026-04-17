@@ -167,9 +167,41 @@ const GanhosPage = () => {
 
     if (withdrawalsRes.data) setWithdrawals(withdrawalsRes.data);
     setLoading(false);
-  };
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  // Realtime: re-carrega quando contracts/earnings/withdrawals mudarem para o profissional logado
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled || !session?.user) return;
+      const uid = session.user.id;
+
+      channel = supabase
+        .channel(`ganhos-${uid}`)
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "contracts", filter: `professional_id=eq.${uid}` },
+          () => loadData())
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "earnings", filter: `profile_id=eq.${uid}` },
+          () => loadData())
+        .on("postgres_changes",
+          { event: "*", schema: "public", table: "withdrawals", filter: `profile_id=eq.${uid}` },
+          () => loadData())
+        .subscribe();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [loadData]);
 
   const handleWithdrawClick = async () => {
     const { data: { session } } = await supabase.auth.getSession();
