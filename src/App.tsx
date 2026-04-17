@@ -21,6 +21,7 @@ const CadastroStep3 = lazy(() => import("@/pages/CadastroStep3"));
 const ConfirmarEmailPage = lazy(() => import("@/pages/ConfirmarEmailPage"));
 const OportunidadeDetalhePage = lazy(() => import("@/pages/OportunidadeDetalhePage"));
 const ChatClientePage = lazy(() => import("@/pages/ChatClientePage"));
+const ChatClienteUnificadoPage = lazy(() => import("@/pages/ChatClienteUnificadoPage"));
 const PerfilClientePage = lazy(() => import("@/pages/PerfilClientePage"));
 
 // Helper para tipar lazy() a partir do mapa de loaders.
@@ -111,6 +112,7 @@ const App = () => (
             <Route path="/meus-servicos" element={<ProtectedRoute><MeusServicosPage /></ProtectedRoute>} />
             <Route path="/equipamentos" element={<ProtectedRoute><EquipamentosPage /></ProtectedRoute>} />
             <Route path="/mensagens" element={<ProtectedRoute><MensagensPage /></ProtectedRoute>} />
+            <Route path="/mensagens/cliente/:clientId" element={<ProtectedRoute><ChatClienteUnificadoPage /></ProtectedRoute>} />
             <Route path="/mensagens/:id" element={<ProtectedRoute><ChatClientePage /></ProtectedRoute>} />
             <Route path="/menu" element={<ProtectedRoute><MenuPage /></ProtectedRoute>} />
             <Route path="/perfil-publico" element={<ProtectedRoute><PerfilPublicoPage /></ProtectedRoute>} />
