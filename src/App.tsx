@@ -82,6 +82,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <RoutePrefetcher />
+        <ViewTransitionsBridge />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             {/* Rotas públicas */}
