@@ -230,7 +230,7 @@ export function ContractCompletionOverlay() {
               )}
             </motion.div>
 
-            {/* CTAs */}
+            {/* CTA único — avaliar é obrigatório */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -242,14 +242,11 @@ export function ContractCompletionOverlay() {
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-white transition active:scale-[0.98]"
                 style={{ background: "#276EF1" }}
               >
-                <Star className="h-4 w-4" fill="currentColor" /> Avaliar cliente
+                <Star className="h-4 w-4" fill="currentColor" /> Avaliar cliente agora
               </button>
-              <button
-                onClick={dismiss}
-                className="h-11 w-full rounded-xl text-xs font-medium text-white/50 transition hover:text-white/80"
-              >
-                Avaliar depois
-              </button>
+              <p className="mt-1 text-[11px] text-white/40">
+                A avaliação é obrigatória para liberar próximos freelas
+              </p>
             </motion.div>
           </motion.div>
         </motion.div>
