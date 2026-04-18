@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { routeLoaders, prefetchCriticalRoutesOnIdle } from "@/lib/routePrefetch";
 import { ViewTransitionsBridge } from "@/lib/viewTransitions";
+import { ContractCompletionOverlay } from "@/hooks/useContractCompletionCelebration";
 
 // Eager: rotas de boot (splash + auth) — leves e iniciais
 import Splash from "@/pages/Splash";
@@ -49,6 +50,7 @@ const MenuPage = lazyFromMap("/menu");
 const PerfilPublicoPage = lazyFromMap("/perfil-publico");
 const AgendaPage = lazyFromMap("/agenda");
 const MapaPage = lazyFromMap("/mapa");
+const AvaliarClientePage = lazy(() => import("@/pages/AvaliarClientePage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +87,7 @@ const App = () => (
       <BrowserRouter>
         <RoutePrefetcher />
         <ViewTransitionsBridge />
+        <ContractCompletionOverlay />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             {/* Rotas públicas */}
@@ -121,6 +124,7 @@ const App = () => (
             <Route path="/perfil-cliente/:id" element={<ProtectedRoute><PerfilClientePage /></ProtectedRoute>} />
             <Route path="/agenda" element={<ProtectedRoute><AgendaPage /></ProtectedRoute>} />
             <Route path="/mapa" element={<ProtectedRoute><MapaPage /></ProtectedRoute>} />
+            <Route path="/avaliar/:id" element={<ProtectedRoute><AvaliarClientePage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
