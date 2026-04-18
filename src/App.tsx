@@ -89,6 +89,7 @@ const App = () => (
         <RoutePrefetcher />
         <ViewTransitionsBridge />
         <ContractCompletionOverlay />
+        <PendingReviewEnforcer />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             {/* Rotas públicas */}
