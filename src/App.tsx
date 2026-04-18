@@ -9,6 +9,7 @@ import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { routeLoaders, prefetchCriticalRoutesOnIdle } from "@/lib/routePrefetch";
 import { ViewTransitionsBridge } from "@/lib/viewTransitions";
 import { ContractCompletionOverlay } from "@/hooks/useContractCompletionCelebration";
+import { PendingReviewEnforcer } from "@/hooks/usePendingReviewEnforcer";
 
 // Eager: rotas de boot (splash + auth) — leves e iniciais
 import Splash from "@/pages/Splash";
