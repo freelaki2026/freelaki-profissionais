@@ -428,6 +428,17 @@ const DashboardPage = () => {
 
   useEffect(() => { loadOpportunities(); }, [loadOpportunities]);
 
+  // Recarrega ao voltar para a aba/dashboard (ex: após avaliar cliente)
+  useEffect(() => {
+    const onFocus = () => loadOpportunities();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }, [loadOpportunities]);
+
   // Realtime for opportunities when online
   useEffect(() => {
     if (!isOnline || !user) return;
