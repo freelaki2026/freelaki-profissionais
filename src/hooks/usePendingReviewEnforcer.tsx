@@ -54,11 +54,11 @@ export function PendingReviewEnforcer() {
           .map((c) => c.opportunity_id)
           .filter((x): x is string => !!x);
 
-        // Busca reviews que o profissional já fez (como client_id = quem avalia)
+        // Reviews que o profissional já enviou
         const { data: reviews } = await supabase
           .from("reviews")
           .select("opportunity_id")
-          .eq("client_id", user.id)
+          .eq("professional_id", user.id)
           .in("opportunity_id", oppIds);
 
         const reviewed = new Set((reviews ?? []).map((r) => r.opportunity_id));
