@@ -333,6 +333,90 @@ export type Database = {
           },
         ]
       }
+      contract_disputes: {
+        Row: {
+          contract_id: string
+          created_at: string
+          description: string
+          evidence_urls: Json | null
+          id: string
+          opened_by: string
+          opened_by_role: string
+          opportunity_id: string | null
+          pay_professional_percent: number | null
+          reason: string
+          refund_percent: number | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          responded_at: string | null
+          response_deadline: string
+          response_evidence_urls: Json | null
+          response_text: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          description: string
+          evidence_urls?: Json | null
+          id?: string
+          opened_by: string
+          opened_by_role: string
+          opportunity_id?: string | null
+          pay_professional_percent?: number | null
+          reason: string
+          refund_percent?: number | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          responded_at?: string | null
+          response_deadline?: string
+          response_evidence_urls?: Json | null
+          response_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          description?: string
+          evidence_urls?: Json | null
+          id?: string
+          opened_by?: string
+          opened_by_role?: string
+          opportunity_id?: string | null
+          pay_professional_percent?: number | null
+          reason?: string
+          refund_percent?: number | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          responded_at?: string | null
+          response_deadline?: string
+          response_evidence_urls?: Json | null
+          response_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_disputes_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_disputes_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           asaas_payment_id: string | null
@@ -1801,6 +1885,15 @@ export type Database = {
         Returns: number
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      open_contract_dispute: {
+        Args: {
+          p_contract_id: string
+          p_description: string
+          p_evidence_urls?: Json
+          p_reason: string
+        }
+        Returns: Json
+      }
       propose_contract_addendum: {
         Args: {
           p_contract_id: string
@@ -1823,6 +1916,14 @@ export type Database = {
           p_ip?: string
           p_rejection_reason?: string
           p_user_agent?: string
+        }
+        Returns: Json
+      }
+      respond_contract_dispute: {
+        Args: {
+          p_dispute_id: string
+          p_evidence_urls?: Json
+          p_response_text: string
         }
         Returns: Json
       }
