@@ -254,16 +254,27 @@ const GanhosPage = () => {
       }
 
       // 2. DEPOIS: chamar Edge Function para processar no Asaas
-      const response = await supabase.functions.invoke("asaas-process-withdrawal", {
-        body: {
-          withdrawal_id: withdrawal.id,
-          amount: available,
-          profile_id: userId,
-        },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/asaas-process-withdrawal`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            withdrawal_id: withdrawal.id,
+            amount: available,
+            profile_id: userId,
+          }),
+        }
+      );
 
-      if (response.error) {
-        toast.error("Erro ao processar saque: " + response.error.message);
+      const result = await response.json();
+
+      if (!response.ok || result.error) {
+        toast.error("Erro ao processar saque: " + (result.error || "Tente novamente"));
         setWithdrawing(false);
         return;
       }
