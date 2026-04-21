@@ -94,6 +94,53 @@ export type Database = {
         }
         Relationships: []
       }
+      asaas_withdrawals: {
+        Row: {
+          amount: number
+          asaas_transfer_id: string | null
+          error_message: string | null
+          id: string
+          pix_key: string | null
+          pix_key_type: string | null
+          processed_at: string | null
+          profile_id: string | null
+          requested_at: string | null
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          asaas_transfer_id?: string | null
+          error_message?: string | null
+          id?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
+          processed_at?: string | null
+          profile_id?: string | null
+          requested_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          asaas_transfer_id?: string | null
+          error_message?: string | null
+          id?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
+          processed_at?: string | null
+          profile_id?: string | null
+          requested_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asaas_withdrawals_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bank_accounts: {
         Row: {
           account_digit: string | null
