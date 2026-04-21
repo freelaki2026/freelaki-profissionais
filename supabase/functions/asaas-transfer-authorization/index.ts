@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         .in("status", ["processing", "pending"])
         .gte("requested_at", since)
         .order("requested_at", { ascending: false })
-        .limit: 20 as any; // tolera shape inesperado
+        .limit(20);
 
       const list = Array.isArray(candidates) ? candidates : [];
       withdrawal =
