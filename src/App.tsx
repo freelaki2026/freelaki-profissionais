@@ -10,6 +10,7 @@ import { routeLoaders, prefetchCriticalRoutesOnIdle } from "@/lib/routePrefetch"
 import { ViewTransitionsBridge } from "@/lib/viewTransitions";
 import { ContractCompletionOverlay } from "@/hooks/useContractCompletionCelebration";
 import { PendingReviewEnforcer } from "@/hooks/usePendingReviewEnforcer";
+import { useCapacitorBootstrap } from "@/hooks/useCapacitorBootstrap";
 
 // Eager: rotas de boot (splash + auth) — leves e iniciais
 import Splash from "@/pages/Splash";
@@ -80,7 +81,9 @@ const RoutePrefetcher = () => {
   return null;
 };
 
-const App = () => (
+const App = () => {
+  useCapacitorBootstrap();
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -134,6 +137,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
