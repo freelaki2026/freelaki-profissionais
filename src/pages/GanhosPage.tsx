@@ -193,7 +193,7 @@ const GanhosPage = () => {
           { event: "*", schema: "public", table: "earnings", filter: `profile_id=eq.${uid}` },
           () => loadData())
         .on("postgres_changes",
-          { event: "*", schema: "public", table: "withdrawals", filter: `profile_id=eq.${uid}` },
+          { event: "*", schema: "public", table: "asaas_withdrawals", filter: `profile_id=eq.${uid}` },
           () => loadData())
         .subscribe();
     })();
