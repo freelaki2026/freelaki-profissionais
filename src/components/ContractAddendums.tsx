@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, FileSignature, Check, X, Loader2, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, FileSignature, Check, X, Loader2, Clock, ChevronDown, ChevronUp, Camera, AlertTriangle, Image as ImageIcon, Trash2 } from "lucide-react";
 
 interface AddendumItem {
   type: "hour" | "service";
