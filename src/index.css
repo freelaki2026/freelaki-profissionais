@@ -54,6 +54,12 @@
     @apply bg-background text-foreground font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Capacitor iOS: respeita notch e home-indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    /* Evita "bounce" branco ao puxar conteúdo no iOS dentro do WebView */
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
