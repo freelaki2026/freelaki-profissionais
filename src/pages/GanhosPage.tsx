@@ -33,8 +33,9 @@ interface Withdrawal {
   id: string;
   amount: number;
   status: string;
-  created_at: string;
-  bank_account_id: string | null;
+  created_at?: string;
+  requested_at?: string;
+  bank_account_id?: string | null;
 }
 
 interface BankAccount {
