@@ -27,16 +27,8 @@ export default defineConfig(({ mode }) => ({
     target: "es2020",
     cssCodeSplit: true,
     sourcemap: false,
-    rollupOptions: {
-      output: {
-        // Mantém vendor chunks estáveis para cache do navegador.
-        manualChunks: {
-          react: ["react", "react-dom", "react-router-dom"],
-          query: ["@tanstack/react-query"],
-          ui: ["framer-motion", "lucide-react"],
-          supabase: ["@supabase/supabase-js"],
-        },
-      },
-    },
+    // Sem manualChunks: deixa o Vite decidir splitting automático para evitar
+    // conflitos de resolução com query-core / dedupe.
+    chunkSizeWarningLimit: 800,
   },
 }));
