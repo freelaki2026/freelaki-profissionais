@@ -225,20 +225,54 @@ const GanhosPage = () => {
     setWithdrawing(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("process-pix-withdrawal");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        setWithdrawing(false);
+        return;
+      }
+      const userId = session.user.id;
+      const available = summary.available;
 
-      if (error || !data?.success) {
-        const msg = data?.message || "Erro ao processar saque PIX. Tente novamente.";
-        toast.error(msg);
+      // 1. PRIMEIRO: registrar saque no banco
+      const { data: withdrawal, error: insertError } = await supabase
+        .from("asaas_withdrawals")
+        .insert({
+          profile_id: userId,
+          amount: available,
+          pix_key: bankAccount.pix_key || bankAccount.account_number,
+          pix_key_type: bankAccount.pix_key_type || "conta",
+          status: "pending",
+        })
+        .select()
+        .single();
+
+      if (insertError || !withdrawal) {
+        toast.error("Erro ao registrar saque. Tente novamente.");
         setWithdrawing(false);
         return;
       }
 
-      toast.success("⚡ PIX enviado! Transferência instantânea realizada.");
+      // 2. DEPOIS: chamar Edge Function para processar no Asaas
+      const response = await supabase.functions.invoke("asaas-process-withdrawal", {
+        body: {
+          withdrawal_id: withdrawal.id,
+          amount: available,
+          profile_id: userId,
+        },
+      });
+
+      if (response.error) {
+        toast.error("Erro ao processar saque: " + response.error.message);
+        setWithdrawing(false);
+        return;
+      }
+
+      toast.success("Saque solicitado! ✓ Pix em até 1 hora útil.");
       setShowSheet(false);
       setWithdrawing(false);
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       toast.error("Erro ao processar saque. Tente novamente.");
       setWithdrawing(false);
     }
