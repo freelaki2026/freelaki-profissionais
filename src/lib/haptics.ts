@@ -24,9 +24,10 @@ const tryCapacitor = async (style: Style) => {
       Capacitor?: { isNativePlatform?: () => boolean };
     };
     if (!w.Capacitor?.isNativePlatform?.()) return false;
-    const mod = await import(/* @vite-ignore */ "@capacitor/haptics").catch(
-      () => null,
-    );
+    // Resolvido apenas no runtime nativo. Em web/build, o módulo não existe
+    // e o catch cobre — por isso usamos string dinâmica para escapar do TS.
+    const modName = "@capacitor/haptics";
+    const mod = await import(/* @vite-ignore */ modName).catch(() => null);
     if (!mod) return false;
     const { Haptics, ImpactStyle, NotificationType } = mod as any;
     if (style === "success" || style === "warning" || style === "error") {
