@@ -279,9 +279,11 @@ export type Database = {
         Row: {
           addendum_hash: string | null
           addendum_text: string | null
+          addendum_type: string
           addendum_version: string | null
           asaas_payment_id: string | null
           asaas_payment_status: string | null
+          chat_message_id: string | null
           contract_id: string
           created_at: string
           id: string
@@ -290,6 +292,9 @@ export type Database = {
           opportunity_id: string | null
           paid_at: string | null
           payment_method: string | null
+          proof_photo_taken_at: string | null
+          proof_photo_url: string | null
+          proof_source: string | null
           proposed_at: string
           proposed_by: string
           proposed_by_role: string
@@ -308,9 +313,11 @@ export type Database = {
         Insert: {
           addendum_hash?: string | null
           addendum_text?: string | null
+          addendum_type?: string
           addendum_version?: string | null
           asaas_payment_id?: string | null
           asaas_payment_status?: string | null
+          chat_message_id?: string | null
           contract_id: string
           created_at?: string
           id?: string
@@ -319,6 +326,9 @@ export type Database = {
           opportunity_id?: string | null
           paid_at?: string | null
           payment_method?: string | null
+          proof_photo_taken_at?: string | null
+          proof_photo_url?: string | null
+          proof_source?: string | null
           proposed_at?: string
           proposed_by: string
           proposed_by_role: string
@@ -337,9 +347,11 @@ export type Database = {
         Update: {
           addendum_hash?: string | null
           addendum_text?: string | null
+          addendum_type?: string
           addendum_version?: string | null
           asaas_payment_id?: string | null
           asaas_payment_status?: string | null
+          chat_message_id?: string | null
           contract_id?: string
           created_at?: string
           id?: string
@@ -348,6 +360,9 @@ export type Database = {
           opportunity_id?: string | null
           paid_at?: string | null
           payment_method?: string | null
+          proof_photo_taken_at?: string | null
+          proof_photo_url?: string | null
+          proof_source?: string | null
           proposed_at?: string
           proposed_by?: string
           proposed_by_role?: string
@@ -1913,6 +1928,10 @@ export type Database = {
       check_cpf_cnpj_exists: { Args: { p_cpf_cnpj: string }; Returns: boolean }
       check_email_exists: { Args: { p_email: string }; Returns: boolean }
       check_phone_exists: { Args: { p_phone: string }; Returns: boolean }
+      client_has_pending_addendum_debt: {
+        Args: { p_client_id: string }
+        Returns: boolean
+      }
       decline_private_opportunity: {
         Args: { p_opportunity_id: string }
         Returns: undefined
@@ -1941,16 +1960,31 @@ export type Database = {
         }
         Returns: Json
       }
-      propose_contract_addendum: {
-        Args: {
-          p_contract_id: string
-          p_ip?: string
-          p_items: Json
-          p_reason: string
-          p_user_agent?: string
-        }
-        Returns: Json
-      }
+      propose_contract_addendum:
+        | {
+            Args: {
+              p_contract_id: string
+              p_ip?: string
+              p_items: Json
+              p_reason: string
+              p_user_agent?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_addendum_type?: string
+              p_chat_message_id?: string
+              p_contract_id: string
+              p_ip?: string
+              p_items: Json
+              p_proof_photo_url?: string
+              p_proof_source?: string
+              p_reason: string
+              p_user_agent?: string
+            }
+            Returns: Json
+          }
       refuse_contract: { Args: { p_contract_id: string }; Returns: Json }
       reject_document: {
         Args: { p_document_id: string; p_reason: string }
