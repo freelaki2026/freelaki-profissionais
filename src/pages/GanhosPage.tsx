@@ -260,9 +260,6 @@ const GanhosPage = () => {
         Authorization: `Bearer ${session.access_token}`,
         apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       };
-      console.log("[confirmWithdraw] fetch URL:", fetchUrl);
-      console.log("[confirmWithdraw] fetch headers:", fetchHeaders);
-
       const response = await fetch(fetchUrl, {
         method: "POST",
         headers: fetchHeaders,
