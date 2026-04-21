@@ -144,10 +144,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 3. Determinar chave PIX e tipo
-    const pixKey = withdrawal.pix_key;
+    // 3. Determinar chave PIX e tipo (normalizando para formato aceito pelo Asaas)
+    const rawPixKey = withdrawal.pix_key || "";
     const rawKeyType = String(withdrawal.pix_key_type || "").toUpperCase();
     const asaasKeyType = KEY_TYPE_MAP[rawKeyType] || "EVP";
+
+    // Normalização da chave conforme tipo
+    let pixKey = rawPixKey.trim();
+    if (asaasKeyType === "PHONE") {
+      // Apenas dígitos; garante prefixo +55
+      const digits = pixKey.replace(/\D/g, "");
+      const withCountry = digits.startsWith("55") ? digits : `55${digits}`;
+      pixKey = `+${withCountry}`;
+    } else if (asaasKeyType === "CPF" || asaasKeyType === "CNPJ") {
+      pixKey = pixKey.replace(/\D/g, "");
+    } else if (asaasKeyType === "EMAIL") {
+      pixKey = pixKey.toLowerCase();
+    }
+
+    console.log("[asaas-process-withdrawal] PIX normalizado:", {
+      original: rawPixKey,
+      normalized: pixKey,
+      type: asaasKeyType,
+    });
 
     if (!pixKey) {
       await supabaseAdmin
