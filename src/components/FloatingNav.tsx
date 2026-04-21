@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, ScrollText, MessageCircle, Menu as MenuIcon } from "lucide-react";
 import { prefetchRoute } from "@/lib/routePrefetch";
+import { haptics } from "@/lib/haptics";
 
 const NAV_ITEMS = [
   { label: "Home",      icon: Home,          path: "/dashboard" },
@@ -27,9 +28,12 @@ export function FloatingNav() {
               onMouseEnter={prefetch}
               onTouchStart={prefetch}
               onFocus={prefetch}
-              onClick={() => navigate(path)}
+              onClick={() => {
+                if (!isActive) haptics.selection();
+                navigate(path);
+              }}
               className={[
-                "flex items-center rounded-full h-10 transition-all duration-300 ease-in-out outline-none",
+                "flex items-center rounded-full h-10 transition-all duration-300 ease-in-out outline-none active:scale-95",
                 isActive
                   ? "bg-white text-black px-4 gap-2 font-medium"
                   : "text-zinc-500 hover:text-zinc-300 w-10 justify-center",
