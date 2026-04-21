@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
+import { haptics } from "@/lib/haptics";
 
 interface FinancialSummary {
   reserved: number;
@@ -273,16 +275,19 @@ const GanhosPage = () => {
       const result = await response.json();
 
       if (!response.ok || result.error) {
+        haptics.error();
         toast.error("Erro ao processar saque: " + (result.error || "Tente novamente"));
         setWithdrawing(false);
         return;
       }
 
+      haptics.success();
       toast.success("Saque solicitado! ✓ Pix em até 1 hora útil.");
       setShowSheet(false);
       setWithdrawing(false);
       loadData();
     } catch (err: any) {
+      haptics.error();
       toast.error("Erro ao processar saque. Tente novamente.");
       setWithdrawing(false);
     }
@@ -347,7 +352,7 @@ const GanhosPage = () => {
           <div style={{ background: "#000", borderRadius: 20, padding: 16 }}>
             <p style={{ fontSize: 12, fontWeight: 500, color: "#767676" }}>Disponível</p>
             <p style={{ fontSize: 28, fontWeight: 800, color: "#FFF", marginTop: 4 }}>
-              {formatCurrency(summary.available)}
+              <AnimatedCounter value={summary.available} prefix="R$ " />
             </p>
             <button
               onClick={handleWithdrawClick}
@@ -384,7 +389,7 @@ const GanhosPage = () => {
               <p style={{ fontSize: 12, fontWeight: 600, color: "#2E7D32" }}>Previsão de ganhos</p>
             </div>
             <p style={{ fontSize: 24, fontWeight: 800, color: "#1B5E20", marginTop: 4 }}>
-              {formatCurrency(summary.available + reservedFromContracts)}
+              <AnimatedCounter value={summary.available + reservedFromContracts} prefix="R$ " />
             </p>
             <p style={{ fontSize: 11, fontWeight: 400, color: "#2E7D32", marginTop: 2 }}>
               Total estimado considerando contratos pagos aguardando conclusão
