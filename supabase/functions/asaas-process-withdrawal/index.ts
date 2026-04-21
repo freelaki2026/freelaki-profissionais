@@ -113,20 +113,21 @@ Deno.serve(async (req) => {
       0
     );
 
+    // Considera reservado apenas o que está efetivamente sendo processado ou já pago.
+    // Saques "pending" são apenas registros aguardando esta função processar — não devem
+    // ser contados como reserva (senão tentativas anteriores órfãs bloqueiam novos saques).
     const { data: prevWithdrawals } = await supabaseAdmin
       .from("asaas_withdrawals")
       .select("amount, status")
       .eq("profile_id", uid)
-      .in("status", ["pending", "processing", "completed"]);
+      .in("status", ["processing", "completed"]);
 
-    // Subtrai todos os saques que não foram explicitamente "failed" (incluindo o atual ainda "pending")
     const totalReservedOrPaid = (prevWithdrawals || []).reduce(
       (sum, w: any) => sum + Number(w.amount || 0),
       0
     );
 
-    // Saldo disponível considerando que o saque atual já está "pending" no total
-    const availableBeforeThis = totalEarned - (totalReservedOrPaid - Number(withdrawal.amount));
+    const availableBeforeThis = totalEarned - totalReservedOrPaid;
 
     if (value > availableBeforeThis) {
       await supabaseAdmin
