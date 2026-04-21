@@ -77,10 +77,10 @@ const GanhosPage = () => {
         .eq("profile_id", uid)
         .order("created_at", { ascending: false }),
       supabase
-        .from("withdrawals")
+        .from("asaas_withdrawals")
         .select("*")
         .eq("profile_id", uid)
-        .order("created_at", { ascending: false }),
+        .order("requested_at", { ascending: false }),
       // Contratos com pagamento confirmado mas serviço ainda não concluído.
       // O valor fica RESERVADO até o cliente apertar "Concluir".
       supabase
@@ -97,9 +97,9 @@ const GanhosPage = () => {
       ?.filter((e: any) => e.status === "available")
       .reduce((sum: number, e: any) => sum + Number(e.net_amount), 0) || 0;
 
-    // Withdrawn = sum withdrawals completed
+    // Withdrawn = sum asaas_withdrawals with status 'done'
     const withdrawnTotal = withdrawalsRes.data
-      ?.filter((w: any) => w.status === "completed")
+      ?.filter((w: any) => w.status === "done")
       .reduce((sum: number, w: any) => sum + Number(w.amount), 0) || 0;
 
     // Total = sum all earnings
