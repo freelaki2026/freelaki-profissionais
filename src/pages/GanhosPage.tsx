@@ -275,16 +275,19 @@ const GanhosPage = () => {
       const result = await response.json();
 
       if (!response.ok || result.error) {
+        haptics.error();
         toast.error("Erro ao processar saque: " + (result.error || "Tente novamente"));
         setWithdrawing(false);
         return;
       }
 
+      haptics.success();
       toast.success("Saque solicitado! ✓ Pix em até 1 hora útil.");
       setShowSheet(false);
       setWithdrawing(false);
       loadData();
     } catch (err: any) {
+      haptics.error();
       toast.error("Erro ao processar saque. Tente novamente.");
       setWithdrawing(false);
     }
