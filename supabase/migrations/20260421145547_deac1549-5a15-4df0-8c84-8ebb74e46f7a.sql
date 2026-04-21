@@ -1,0 +1,1 @@
+UPDATE public.asaas_withdrawals SET status='failed', error_message=COALESCE(error_message,'Tentativa órfã - sem processamento Asaas') WHERE status='pending' AND asaas_transfer_id IS NULL AND requested_at < NOW() - INTERVAL '1 minute';
