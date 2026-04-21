@@ -254,22 +254,24 @@ const GanhosPage = () => {
       }
 
       // 2. DEPOIS: chamar Edge Function para processar no Asaas
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/asaas-process-withdrawal`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({
-            withdrawal_id: withdrawal.id,
-            amount: available,
-            profile_id: userId,
-          }),
-        }
-      );
+      const fetchUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/asaas-process-withdrawal`;
+      const fetchHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      };
+      console.log("[confirmWithdraw] fetch URL:", fetchUrl);
+      console.log("[confirmWithdraw] fetch headers:", fetchHeaders);
+
+      const response = await fetch(fetchUrl, {
+        method: "POST",
+        headers: fetchHeaders,
+        body: JSON.stringify({
+          withdrawal_id: withdrawal.id,
+          amount: available,
+          profile_id: userId,
+        }),
+      });
 
       const result = await response.json();
 
