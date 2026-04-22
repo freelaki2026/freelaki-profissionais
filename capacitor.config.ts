@@ -7,8 +7,8 @@ import type { CapacitorConfig } from "@capacitor/cli";
  *   (em build de loja, comente esse bloco para empacotar os assets locais)
  */
 const config: CapacitorConfig = {
-  appId: "app.lovable.4a55004644ab4369a35cf4f70d1ee3b1",
-  appName: "freelaki-profissionais",
+  appId: "app.freelaki.profissionais",
+  appName: "Freelaki Profissionais",
   webDir: "dist",
   server: {
     url: "https://4a550046-44ab-4369-a35c-f4f70d1ee3b1.lovableproject.com?forceHideBadge=true",
