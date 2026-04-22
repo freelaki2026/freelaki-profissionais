@@ -214,6 +214,8 @@ const UnderReviewState = () => (
 
 /* ───── Online/Offline Card ───── */
 const OnlineOfflineCard = ({
+/* ───── Online/Offline Card ───── */
+const OnlineOfflineCard = ({
   isOnline,
   loading,
   onToggle,
@@ -227,46 +229,35 @@ const OnlineOfflineCard = ({
     initial={{ scale: 1 }}
     animate={{ scale: [1, 1.02, 1] }}
     transition={{ duration: 0.3 }}
-    className="mx-5 mt-4 rounded-[20px] p-4"
+    className="mx-5 mt-4 rounded-[20px] p-5 flex items-center gap-4"
     style={{
       border: isOnline ? "1.5px solid #00C853" : "1.5px solid #333333",
       background: isOnline ? "rgba(0,200,83,0.06)" : "#111111",
       transition: "all 400ms ease",
     }}
   >
-    <div className="flex items-center gap-2">
-      <span
-        className="inline-block h-2 w-2 rounded-full"
-        style={{
-          background: isOnline ? "#00C853" : "#E53935",
-          animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
-        }}
-      />
-      <span className="text-[15px] font-semibold" style={{ color: isOnline ? "#00C853" : "#FFFFFF" }}>
-        {isOnline ? "Você está online" : "Você está offline"}
-      </span>
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2">
+        <span
+          className="inline-block h-2 w-2 rounded-full"
+          style={{
+            background: isOnline ? "#00C853" : "#E53935",
+            animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
+          }}
+        />
+        <span
+          className="text-[15px] font-semibold"
+          style={{ color: isOnline ? "#00C853" : "#FFFFFF" }}
+        >
+          {isOnline ? "Você está online" : "Você está offline"}
+        </span>
+      </div>
+      <p className="mt-1 text-[13px] text-[#767676]">
+        {isOnline ? "Aguardando oportunidades..." : "Toque pra receber oportunidades"}
+      </p>
     </div>
-    <p className="mt-1 text-[13px] text-[#767676]">
-      {isOnline ? "Aguardando oportunidades..." : "Fique online para receber oportunidades"}
-    </p>
-    <button
-      disabled={loading}
-      onClick={onToggle}
-      className="mt-3 flex h-[44px] w-full items-center justify-center rounded-[12px] text-[14px] font-semibold disabled:opacity-50"
-      style={
-        isOnline
-          ? { background: "#1A1A1A", color: "#767676" }
-          : { background: "#276EF1", color: "#FFFFFF" }
-      }
-    >
-      {loading ? (
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-      ) : isOnline ? (
-        "Ficar Offline"
-      ) : (
-        "Ficar Online →"
-      )}
-    </button>
+
+    <OnlineToggle isOnline={isOnline} loading={loading} onToggle={onToggle} />
   </motion.div>
 );
 
