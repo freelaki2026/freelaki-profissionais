@@ -720,8 +720,10 @@ const DashboardPage = () => {
     }
     setIsOnline(newVal);
 
-    // Sound feedback — called in click handler for browser autoplay policy
+    // Sound + haptic feedback (autoplay-safe: dispara dentro do click handler)
     playSound(newVal ? SOUND_ONLINE : SOUND_OFFLINE);
+    if (newVal) haptics.success();
+    else haptics.warning();
 
     if (newVal) {
       // OFFLINE → ONLINE transition
