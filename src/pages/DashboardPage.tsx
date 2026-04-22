@@ -214,8 +214,6 @@ const UnderReviewState = () => (
 
 /* ───── Online/Offline Card ───── */
 const OnlineOfflineCard = ({
-/* ───── Online/Offline Card ───── */
-const OnlineOfflineCard = ({
   isOnline,
   loading,
   onToggle,
