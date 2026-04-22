@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNotifications } from "@/hooks/useNotifications";
 import { FloatingNav } from "@/components/FloatingNav";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
+import OnlineToggle from "@/components/ui/OnlineToggle";
+import { haptics } from "@/lib/haptics";
 
 const SOUND_ONLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.mp3';
 const SOUND_OFFLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.mp3';
