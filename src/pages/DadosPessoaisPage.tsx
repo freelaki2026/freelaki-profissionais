@@ -71,6 +71,7 @@ export default function DadosPessoaisPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [cpfCnpj, setCpfCnpj] = useState("");
   const [cpfCnpjType, setCpfCnpjType] = useState<"cpf" | "cnpj">("cpf");
   const [cpfCnpjLocked, setCpfCnpjLocked] = useState(false);
