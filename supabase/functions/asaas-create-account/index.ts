@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     // 1. Buscar profile + endereço
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, email, cpf_cnpj, phone, asaas_account_id")
+      .select("id, full_name, email, cpf_cnpj, phone, birth_date, asaas_account_id")
       .eq("id", uid)
       .maybeSingle();
 
@@ -64,8 +64,9 @@ Deno.serve(async (req) => {
     // Validações mínimas
     const cpfCnpj = onlyDigits(profile.cpf_cnpj);
     const mobilePhone = onlyDigits(profile.phone);
-    if (!profile.full_name || !profile.email || !cpfCnpj || !mobilePhone) {
-      const msg = "Dados incompletos para criar subconta (nome, email, CPF/CNPJ e telefone obrigatórios).";
+    const birthDate = (profile as any).birth_date as string | null;
+    if (!profile.full_name || !profile.email || !cpfCnpj || !mobilePhone || !birthDate) {
+      const msg = "Dados incompletos para criar subconta (nome, email, CPF/CNPJ, telefone e data de nascimento obrigatórios).";
       await supabaseAdmin.from("profiles").update({ asaas_error: msg }).eq("id", uid);
       return new Response(JSON.stringify({ error: "incomplete_profile", message: msg }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -94,6 +95,7 @@ Deno.serve(async (req) => {
       cpfCnpj,
       mobilePhone,
       postalCode,
+      birthDate, // formato YYYY-MM-DD (DATE do Postgres serializa assim)
     };
 
     const asaasRes = await fetch(`${ASAAS_BASE_URL}/accounts`, {

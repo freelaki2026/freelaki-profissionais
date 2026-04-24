@@ -21,7 +21,7 @@ export function useAsaasOnboarding() {
       try {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("asaas_account_id, full_name, cpf_cnpj, phone")
+          .select("asaas_account_id, full_name, cpf_cnpj, phone, birth_date")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -29,7 +29,7 @@ export function useAsaasOnboarding() {
         if (profile?.asaas_account_id) return;
 
         // Sem dados mínimos — esperar usuário completar dados pessoais
-        if (!profile?.full_name || !profile?.cpf_cnpj || !profile?.phone) return;
+        if (!profile?.full_name || !profile?.cpf_cnpj || !profile?.phone || !(profile as any)?.birth_date) return;
 
         const { error } = await supabase.functions.invoke("asaas-create-account", { body: {} });
         if (error) {

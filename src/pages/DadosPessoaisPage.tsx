@@ -71,6 +71,7 @@ export default function DadosPessoaisPage() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [cpfCnpj, setCpfCnpj] = useState("");
   const [cpfCnpjType, setCpfCnpjType] = useState<"cpf" | "cnpj">("cpf");
   const [cpfCnpjLocked, setCpfCnpjLocked] = useState(false);
@@ -88,6 +89,7 @@ export default function DadosPessoaisPage() {
           setFullName(data.full_name || "");
           setPhone(data.phone ? maskPhone(data.phone) : "");
           setEmail(data.email || "");
+          setBirthDate((data as any).birth_date || "");
           setCpfCnpj(data.cpf_cnpj || "");
           setCpfCnpjType((data.cpf_cnpj_type as "cpf" | "cnpj") || "cpf");
           setCpfCnpjLocked(data.cpf_cnpj_locked || false);
@@ -114,9 +116,10 @@ export default function DadosPessoaisPage() {
     if (!user) return;
     if (!cpfCnpjLocked && cpfCnpj && !validateDoc()) return;
     setSaving(true);
-    const updates: { full_name: string; phone: string; cpf_cnpj?: string; cpf_cnpj_type?: string; cpf_cnpj_locked?: boolean } = {
+    const updates: { full_name: string; phone: string; birth_date?: string | null; cpf_cnpj?: string; cpf_cnpj_type?: string; cpf_cnpj_locked?: boolean } = {
       full_name: fullName.trim(),
       phone: phone.replace(/\D/g, ""),
+      birth_date: birthDate || null,
     };
     if (!cpfCnpjLocked && cpfCnpj) {
       updates.cpf_cnpj = cpfCnpj.replace(/\D/g, "");
@@ -184,6 +187,21 @@ export default function DadosPessoaisPage() {
               placeholder="(11) 99999-9999"
               inputMode="tel"
             />
+          </div>
+
+          {/* Data de nascimento */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Data de nascimento</label>
+            <input
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              className="mt-1.5 flex h-[52px] w-full rounded-xl border border-[#E5E5E5] bg-white px-4 text-base text-foreground focus:border-2 focus:border-[#276EF1] focus:outline-none"
+            />
+            <p className="mt-1 text-xs" style={{ color: "#767676" }}>
+              Necessária para validação financeira (Asaas)
+            </p>
           </div>
 
           {/* Email */}
