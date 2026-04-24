@@ -116,9 +116,10 @@ export default function DadosPessoaisPage() {
     if (!user) return;
     if (!cpfCnpjLocked && cpfCnpj && !validateDoc()) return;
     setSaving(true);
-    const updates: { full_name: string; phone: string; cpf_cnpj?: string; cpf_cnpj_type?: string; cpf_cnpj_locked?: boolean } = {
+    const updates: { full_name: string; phone: string; birth_date?: string | null; cpf_cnpj?: string; cpf_cnpj_type?: string; cpf_cnpj_locked?: boolean } = {
       full_name: fullName.trim(),
       phone: phone.replace(/\D/g, ""),
+      birth_date: birthDate || null,
     };
     if (!cpfCnpjLocked && cpfCnpj) {
       updates.cpf_cnpj = cpfCnpj.replace(/\D/g, "");
