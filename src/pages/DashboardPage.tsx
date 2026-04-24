@@ -870,7 +870,7 @@ const DashboardPage = () => {
             <button
               type="button"
               onClick={toggleOnline}
-              disabled={togglingOnline}
+              disabled={togglingOnline || !canAcceptWork}
               className="flex items-center gap-1.5 bg-zinc-900 rounded-full px-3 py-1 mb-4 outline-none disabled:opacity-50"
             >
               <div
@@ -881,7 +881,13 @@ const DashboardPage = () => {
                 }}
               />
               <span className="text-xs text-zinc-400">
-                {togglingOnline ? "..." : isOnline ? "Online • Carteira BRL" : "Offline • Toque para ativar"}
+                {togglingOnline
+                  ? "..."
+                  : !canAcceptWork
+                  ? "Complete seu cadastro para ficar online"
+                  : isOnline
+                  ? "Online • Carteira BRL"
+                  : "Offline • Toque para ativar"}
               </span>
             </button>
             <p className="text-xs text-zinc-600 uppercase tracking-widest mb-1">Saldo disponível</p>
