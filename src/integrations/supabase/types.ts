@@ -78,6 +78,48 @@ export type Database = {
           },
         ]
       }
+      app_tips: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          emoji: string | null
+          end_at: string | null
+          id: string
+          is_active: boolean
+          priority: number
+          start_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category: string
+          created_at?: string
+          emoji?: string | null
+          end_at?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          start_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          emoji?: string | null
+          end_at?: string | null
+          id?: string
+          is_active?: boolean
+          priority?: number
+          start_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       asaas_webhooks: {
         Row: {
           created_at: string | null
