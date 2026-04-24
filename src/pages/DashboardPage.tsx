@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Zap, Bell, MapPin, FileText, Clock,
+  Zap, Bell, MapPin,
   Eye, EyeOff, ArrowUp, ArrowDown, Plus, CheckCircle, Map, MessageCircle,
 } from "lucide-react";
 
