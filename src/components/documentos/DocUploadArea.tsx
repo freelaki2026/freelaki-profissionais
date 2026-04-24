@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { Upload } from "lucide-react";
+import { pickNativeImage, isNativePlatform } from "@/lib/nativeCamera";
 
 interface DocRecord {
   id: string;
@@ -37,12 +38,23 @@ const DocUploadArea = ({
     e.target.value = "";
   };
 
+  // No nativo: usa Capacitor Camera (dispara prompt de permissão do iOS/Android).
+  // No web: cai no <input type="file"> tradicional.
+  const handlePick = async () => {
+    if (isNativePlatform()) {
+      const file = await pickNativeImage();
+      if (file) onUpload(docType, file);
+      return;
+    }
+    fileRef.current?.click();
+  };
+
   // Not uploaded yet
   if (!doc || !doc.status) {
     return (
       <div style={{ marginTop: 12 }}>
         <div
-          onClick={() => fileRef.current?.click()}
+          onClick={handlePick}
           style={{
             border: "2px dashed #E5E5E5",
             borderRadius: 12,
@@ -150,7 +162,7 @@ const DocUploadArea = ({
           </div>
         </div>
         <button
-          onClick={() => fileRef.current?.click()}
+          onClick={handlePick}
           style={{
             marginTop: 8,
             color: "#276EF1",
@@ -199,7 +211,7 @@ const DocUploadArea = ({
             Em análise ⏳
           </span>
           <button
-            onClick={() => fileRef.current?.click()}
+            onClick={handlePick}
             style={{
               display: "block",
               marginTop: 4,
