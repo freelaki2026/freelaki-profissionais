@@ -403,8 +403,16 @@ const PerfilPage = () => {
         className="flex-1 rounded-t-3xl bg-[#F7F7F7] px-5 pb-12 pt-6"
         style={{ marginTop: -8 }}
       >
-        {/* SOBRE VOCÊ */}
+        {/* CHECKLIST DE CADASTRO */}
         <span className="text-[10px] font-semibold tracking-[2px] text-[hsl(var(--muted-foreground))]">
+          PROGRESSO
+        </span>
+        <div className="mt-2.5">
+          <OnboardingChecklistFull />
+        </div>
+
+        {/* SOBRE VOCÊ */}
+        <span className="mt-5 block text-[10px] font-semibold tracking-[2px] text-[hsl(var(--muted-foreground))]">
           SOBRE VOCÊ
         </span>
         <div className="mt-2.5 rounded-2xl bg-white p-4">
