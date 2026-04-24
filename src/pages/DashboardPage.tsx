@@ -781,7 +781,7 @@ const DashboardPage = () => {
   const hasActivePresencial = !!activePresencial;
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+    <div className={`min-h-screen overflow-x-hidden ${isApproved ? "bg-[#F7F7F7] text-foreground" : "bg-black text-white"}`}>
       {!isApproved ? (
         <>
           <div className="flex items-center justify-between px-6 pt-[52px] pb-5">
