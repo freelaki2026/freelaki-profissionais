@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { Upload } from "lucide-react";
+import { pickNativeImage, isNativePlatform } from "@/lib/nativeCamera";
 
 interface DocRecord {
   id: string;
