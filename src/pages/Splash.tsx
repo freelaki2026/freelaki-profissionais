@@ -80,7 +80,7 @@ const Splash = () => {
       >
         <h1 className="font-bold" style={{ fontSize: 42, letterSpacing: -1.5, lineHeight: 1 }}>
           <span className="text-primary">free</span>
-          <span className="text-primary-foreground" style={{ color: "#276EF1" }}>laki</span>
+          <span className="text-secondary" style={{ color: "#276EF1" }}>laki</span>
         </h1>
         <p
           className="font-light uppercase"
