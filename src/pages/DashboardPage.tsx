@@ -77,50 +77,6 @@ const extractShortAddress = (address: string | null | undefined): string => {
   return parts.length >= 2 ? `${parts[parts.length - 2]}` : parts[0];
 };
 
-/* ───── Pulsing circles animation ───── */
-const PulsingCircles = ({
-  color,
-  icon,
-}: {
-  color: string;
-  icon: React.ReactNode;
-}) => (
-  <div className="relative flex items-center justify-center" style={{ width: 140, height: 140 }}>
-    {/* Outer */}
-    <div
-      className="absolute inset-0 rounded-full"
-      style={{
-        border: `2px solid ${color}`,
-        opacity: 0.2,
-        animation: "dashPulseOuter 2s ease-in-out infinite",
-      }}
-    />
-    {/* Middle */}
-    <div
-      className="absolute rounded-full"
-      style={{
-        width: 100,
-        height: 100,
-        border: `2px solid ${color}`,
-        opacity: 0.4,
-        animation: "dashPulseMiddle 2s ease-in-out infinite 0.3s",
-      }}
-    />
-    {/* Inner */}
-    <div
-      className="flex items-center justify-center rounded-full"
-      style={{
-        width: 70,
-        height: 70,
-        background: `${color}1A`,
-        border: `2px solid ${color}`,
-      }}
-    >
-      {icon}
-    </div>
-  </div>
-);
-
 /* ───── Carousel Card (memoized: só re-renderiza se a oportunidade mudar) ───── */
 const CarouselOppCard = memo(({ opp, onApply }: { opp: Opp; onApply: () => void }) => {
   const navigate = useNavigate();
@@ -177,43 +133,6 @@ const CarouselOppCard = memo(({ opp, onApply }: { opp: Opp; onApply: () => void 
   );
 });
 CarouselOppCard.displayName = "CarouselOppCard";
-
-/* ───── State 1: Documents Pending ───── */
-const DocumentsPendingState = () => {
-  const navigate = useNavigate();
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center px-8" style={{ minHeight: "60vh" }}>
-      <PulsingCircles color="#276EF1" icon={<FileText size={28} color="#276EF1" />} />
-      <h2 className="mt-8 text-center text-[22px] font-bold text-white">Ative sua conta</h2>
-      <p className="mt-2 text-center text-[14px] text-[#767676]" style={{ lineHeight: 1.6 }}>
-        Envie seus documentos para começar a receber oportunidades.
-      </p>
-      <button
-        onClick={() => navigate("/documentos")}
-        className="mt-7 flex h-[52px] w-full max-w-[280px] items-center justify-center rounded-[16px] bg-[#276EF1] text-[16px] font-bold text-white"
-      >
-        Enviar documentos →
-      </button>
-    </div>
-  );
-};
-
-/* ───── State 2: Under Review ───── */
-const UnderReviewState = () => (
-  <div className="flex flex-1 flex-col items-center justify-center px-8" style={{ minHeight: "60vh" }}>
-    <PulsingCircles color="#F59E0B" icon={<Clock size={28} color="#B45309" />} />
-    <h2 className="mt-8 text-center text-[22px] font-bold text-white">Documentos em análise</h2>
-    <p className="mt-2 text-center text-[14px] text-[#767676]" style={{ lineHeight: 1.6 }}>
-      Nossa equipe está analisando seus documentos. Prazo de até 3 dias úteis.
-    </p>
-    <span
-      className="mt-4 inline-flex items-center rounded-full px-4 py-2 text-[13px] font-medium"
-      style={{ background: "rgba(245,158,11,0.15)", color: "#F59E0B" }}
-    >
-      Notificaremos você por email ✉️
-    </span>
-  </div>
-);
 
 /* ───── Online/Offline Card ───── */
 const OnlineOfflineCard = ({
