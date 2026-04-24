@@ -54,7 +54,7 @@ const DocUploadArea = ({
     return (
       <div style={{ marginTop: 12 }}>
         <div
-          onClick={() => fileRef.current?.click()}
+          onClick={handlePick}
           style={{
             border: "2px dashed #E5E5E5",
             borderRadius: 12,
@@ -162,7 +162,7 @@ const DocUploadArea = ({
           </div>
         </div>
         <button
-          onClick={() => fileRef.current?.click()}
+          onClick={handlePick}
           style={{
             marginTop: 8,
             color: "#276EF1",
@@ -211,7 +211,7 @@ const DocUploadArea = ({
             Em análise ⏳
           </span>
           <button
-            onClick={() => fileRef.current?.click()}
+            onClick={handlePick}
             style={{
               display: "block",
               marginTop: 4,
