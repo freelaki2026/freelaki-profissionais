@@ -195,6 +195,20 @@ const PerfilPage = () => {
 
   const handleSave = async () => {
     if (!user) return;
+
+    // Validações de obrigatoriedade
+    const trimmedName = fullName.trim();
+    const nameParts = trimmedName.split(/\s+/).filter((p) => p.length >= 2);
+    if (nameParts.length < 2) {
+      toast.error("Informe seu nome e sobrenome (mínimo 2 letras cada).");
+      return;
+    }
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 11) {
+      toast.error("Telefone inválido. Use DDD + 9 dígitos. Ex: (11) 99999-9999");
+      return;
+    }
+
     setSaving(true);
 
     let newAvatarUrl = profile?.avatar_url || null;
