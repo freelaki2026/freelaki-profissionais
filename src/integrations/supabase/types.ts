@@ -1847,6 +1847,7 @@ export type Database = {
           avatar_url: string | null
           behance: string | null
           bio: string | null
+          birth_date: string | null
           cpf_cnpj: string | null
           cpf_cnpj_locked: boolean | null
           cpf_cnpj_type: string | null
@@ -1885,6 +1886,7 @@ export type Database = {
           avatar_url?: string | null
           behance?: string | null
           bio?: string | null
+          birth_date?: string | null
           cpf_cnpj?: string | null
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
@@ -1923,6 +1925,7 @@ export type Database = {
           avatar_url?: string | null
           behance?: string | null
           bio?: string | null
+          birth_date?: string | null
           cpf_cnpj?: string | null
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
