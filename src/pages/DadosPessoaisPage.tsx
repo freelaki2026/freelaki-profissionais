@@ -189,6 +189,21 @@ export default function DadosPessoaisPage() {
             />
           </div>
 
+          {/* Data de nascimento */}
+          <div>
+            <label className="text-sm font-medium text-foreground">Data de nascimento</label>
+            <input
+              type="date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              className="mt-1.5 flex h-[52px] w-full rounded-xl border border-[#E5E5E5] bg-white px-4 text-base text-foreground focus:border-2 focus:border-[#276EF1] focus:outline-none"
+            />
+            <p className="mt-1 text-xs" style={{ color: "#767676" }}>
+              Necessária para validação financeira (Asaas)
+            </p>
+          </div>
+
           {/* Email */}
           <div>
             <label className="text-sm font-medium text-foreground">Email</label>
