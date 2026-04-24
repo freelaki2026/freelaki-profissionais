@@ -398,7 +398,7 @@ const PerfilPage = () => {
             <input
               value={fullName}
               onChange={(e) => { setFullName(e.target.value); setIsDirty(true); }}
-              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground"
               placeholder="Seu nome"
             />
           </div>
@@ -408,7 +408,7 @@ const PerfilPage = () => {
             <input
               value={phone}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground"
               placeholder="(11) 99999-9999"
               inputMode="tel"
             />
@@ -419,7 +419,7 @@ const PerfilPage = () => {
             <textarea
               value={bio}
               onChange={(e) => { if (e.target.value.length <= 200) { setBio(e.target.value); setIsDirty(true); } }}
-              className="mt-1 w-full resize-none text-sm text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+              className="mt-1 w-full resize-none text-sm text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground"
               style={{ minHeight: 80 }}
               placeholder="Conte um pouco sobre você e sua experiência..."
             />
