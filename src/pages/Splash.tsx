@@ -79,7 +79,7 @@ const Splash = () => {
         style={{ animation: "splashLogoIn 450ms ease-out both" }}
       >
         <h1 className="font-bold" style={{ fontSize: 42, letterSpacing: -1.5, lineHeight: 1 }}>
-          <span className="text-white">free</span>
+          <span className="text-primary">free</span>
           <span className="text-primary-foreground" style={{ color: "#276EF1" }}>laki</span>
         </h1>
         <p
