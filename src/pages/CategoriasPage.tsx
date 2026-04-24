@@ -179,6 +179,17 @@ const CategoriasPage = () => {
                   </motion.button>
                 );
               })}
+
+              {/* Tile estático "Em breve" — não selecionável */}
+              <div
+                aria-disabled="true"
+                className="relative flex aspect-square cursor-not-allowed flex-col items-center justify-center rounded-2xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] p-2"
+              >
+                <span className="text-[28px] opacity-50">✨</span>
+                <span className="mt-1.5 text-center text-[10px] font-medium leading-tight text-[hsl(var(--muted-foreground))]">
+                  Em breve mais categorias
+                </span>
+              </div>
             </div>
           )}
         </div>
