@@ -17,6 +17,7 @@ import { FloatingNav } from "@/components/FloatingNav";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
 import OnlineToggle from "@/components/ui/OnlineToggle";
 import { OnboardingChecklistBanner } from "@/components/dashboard/OnboardingChecklistBanner";
+import { TipsBanner } from "@/components/dashboard/TipsBanner";
 import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { haptics } from "@/lib/haptics";
 
