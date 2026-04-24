@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     // 1. Buscar profile + endereço
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("id, full_name, email, cpf_cnpj, phone, asaas_account_id")
+      .select("id, full_name, email, cpf_cnpj, phone, birth_date, asaas_account_id")
       .eq("id", uid)
       .maybeSingle();
 
