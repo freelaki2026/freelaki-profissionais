@@ -11,7 +11,7 @@ const config: CapacitorConfig = {
   appName: "Freelaki Profissionais",
   webDir: "dist",
   server: {
-    url: "https://4a550046-44ab-4369-a35c-f4f70d1ee3b1.lovableproject.com?forceHideBadge=true",
+    url: "https://freelaki-profissionais.lovable.app",
     cleartext: true,
   },
   ios: {
