@@ -38,6 +38,17 @@ const DocUploadArea = ({
     e.target.value = "";
   };
 
+  // No nativo: usa Capacitor Camera (dispara prompt de permissão do iOS/Android).
+  // No web: cai no <input type="file"> tradicional.
+  const handlePick = async () => {
+    if (isNativePlatform()) {
+      const file = await pickNativeImage();
+      if (file) onUpload(docType, file);
+      return;
+    }
+    fileRef.current?.click();
+  };
+
   // Not uploaded yet
   if (!doc || !doc.status) {
     return (
