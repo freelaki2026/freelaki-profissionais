@@ -701,9 +701,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F7F7F7] text-foreground">
-      {(
-
-        <main className="pb-28">
+      <main className="pb-28">
           {/* 1. Top bar — header escuro arredondado para contrastar com fundo claro */}
           <div
             className="px-5 pt-12 pb-6 rounded-b-[28px]"
@@ -1038,7 +1036,6 @@ const DashboardPage = () => {
             )}
           </div>
         </main>
-      )}
 
       {/* FLOATING NAV */}
       <FloatingNav />
