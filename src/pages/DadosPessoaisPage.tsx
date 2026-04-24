@@ -89,6 +89,7 @@ export default function DadosPessoaisPage() {
           setFullName(data.full_name || "");
           setPhone(data.phone ? maskPhone(data.phone) : "");
           setEmail(data.email || "");
+          setBirthDate((data as any).birth_date || "");
           setCpfCnpj(data.cpf_cnpj || "");
           setCpfCnpjType((data.cpf_cnpj_type as "cpf" | "cnpj") || "cpf");
           setCpfCnpjLocked(data.cpf_cnpj_locked || false);
