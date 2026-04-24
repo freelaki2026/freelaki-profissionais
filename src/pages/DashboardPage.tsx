@@ -781,36 +781,9 @@ const DashboardPage = () => {
   const hasActivePresencial = !!activePresencial;
 
   return (
-    <div className={`min-h-screen overflow-x-hidden ${isApproved ? "bg-[#F7F7F7] text-foreground" : "bg-black text-white"}`}>
-      {!isApproved ? (
-        <>
-          <div className="flex items-center justify-between px-6 pt-[52px] pb-5">
-            <div className="w-[22px]" />
-            <div className="flex items-center" style={{ gap: 10 }}>
-              <Zap size={24} fill="#276EF1" color="#276EF1" />
-              <span className="font-bold text-white" style={{ fontSize: 22, letterSpacing: "-0.5px" }}>freelaki</span>
-            </div>
-            <button type="button" onClick={() => setNotifOpen(true)} className="relative outline-none"
-              style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}>
-              <Bell className="h-[22px] w-[22px]" style={{ color: unreadCount > 0 ? "#F59E0B" : "#FFFFFF", transition: "color 300ms ease" }} />
-              <AnimatePresence>
-                {unreadCount > 0 && (
-                  <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold"
-                    style={{ background: "#F59E0B", color: "#000" }}>
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-          </div>
-          {approvalStatus === "pending" ? <UnderReviewState /> : <DocumentsPendingState />}
-        </>
-      ) : (
+    <div className="min-h-screen overflow-x-hidden bg-[#F7F7F7] text-foreground">
+      {(
+
         <main className="pb-28">
           {/* 1. Top bar — header escuro arredondado para contrastar com fundo claro */}
           <div
