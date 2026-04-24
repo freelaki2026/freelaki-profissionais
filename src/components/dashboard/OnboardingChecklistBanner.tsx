@@ -10,12 +10,11 @@ import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
  */
 export function OnboardingChecklistBanner() {
   const navigate = useNavigate();
-  const { loading, pending, isApproved, canAcceptWork } = useOnboardingChecklist();
+  const { loading, pending, canAcceptWork } = useOnboardingChecklist();
 
   if (loading) return null;
-  // Só mostra se profissional já está aprovado mas tem dados faltando.
-  // Quando ainda não aprovado, o Dashboard já exibe os states de documentos.
-  if (!isApproved) return null;
+  // Mostra sempre que houver pendências (incluindo documentos não aprovados),
+  // independentemente do status de aprovação. Some quando tudo está completo.
   if (canAcceptWork) return null;
   if (pending.length === 0) return null;
 
