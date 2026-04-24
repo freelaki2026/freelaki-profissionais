@@ -771,12 +771,6 @@ const DashboardPage = () => {
   const profileInitials = profile?.full_name
     ? profile.full_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
     : "?";
-  const maskedCpf = (() => {
-    const raw = (profile?.cpf_cnpj || "").replace(/\D/g, "");
-    if (!raw) return "CPF não informado";
-    const last3 = raw.slice(-3);
-    return `CPF •••.${last3}`;
-  })();
   const saldoDisponivel = financialSummary.available;
   const acceptedOpportunities = accepted;
 
@@ -818,15 +812,7 @@ const DashboardPage = () => {
       ) : (
         <main className="pb-28">
           {/* 3a. Top bar */}
-          <div className="flex justify-between items-center px-5 pt-10 pb-2">
-            <div className="flex items-center gap-2 bg-zinc-900 rounded-full px-3 py-1.5">
-              <div className="flex">
-                <div className="w-4 h-4 rounded-full bg-blue-500" />
-                <div className="w-4 h-4 rounded-full bg-violet-400 -ml-1" />
-              </div>
-              <span className="text-xs text-zinc-400">{maskedCpf}</span>
-            </div>
-
+          <div className="flex justify-end items-center gap-3 px-5 pt-10 pb-2">
             <button
               type="button"
               onClick={() => setNotifOpen(true)}
