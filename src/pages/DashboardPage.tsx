@@ -865,6 +865,9 @@ const DashboardPage = () => {
             </button>
           </div>
 
+          {/* Onboarding checklist banner — só aparece se faltam itens */}
+          <OnboardingChecklistBanner />
+
           {/* 3b. Saldo disponível */}
           <div className="flex flex-col items-center py-5 px-5">
             <button
