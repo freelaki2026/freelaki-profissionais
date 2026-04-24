@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { OnboardingChecklistFull } from "@/components/dashboard/OnboardingChecklistBanner";
 
 interface ProfileData {
   full_name: string | null;
@@ -195,6 +196,20 @@ const PerfilPage = () => {
 
   const handleSave = async () => {
     if (!user) return;
+
+    // Validações de obrigatoriedade
+    const trimmedName = fullName.trim();
+    const nameParts = trimmedName.split(/\s+/).filter((p) => p.length >= 2);
+    if (nameParts.length < 2) {
+      toast.error("Informe seu nome e sobrenome (mínimo 2 letras cada).");
+      return;
+    }
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 11) {
+      toast.error("Telefone inválido. Use DDD + 9 dígitos. Ex: (11) 99999-9999");
+      return;
+    }
+
     setSaving(true);
 
     let newAvatarUrl = profile?.avatar_url || null;
@@ -388,8 +403,16 @@ const PerfilPage = () => {
         className="flex-1 rounded-t-3xl bg-[#F7F7F7] px-5 pb-12 pt-6"
         style={{ marginTop: -8 }}
       >
-        {/* SOBRE VOCÊ */}
+        {/* CHECKLIST DE CADASTRO */}
         <span className="text-[10px] font-semibold tracking-[2px] text-[hsl(var(--muted-foreground))]">
+          PROGRESSO
+        </span>
+        <div className="mt-2.5">
+          <OnboardingChecklistFull />
+        </div>
+
+        {/* SOBRE VOCÊ */}
+        <span className="mt-5 block text-[10px] font-semibold tracking-[2px] text-[hsl(var(--muted-foreground))]">
           SOBRE VOCÊ
         </span>
         <div className="mt-2.5 rounded-2xl bg-white p-4">
