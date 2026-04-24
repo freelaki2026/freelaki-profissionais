@@ -16,6 +16,8 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { FloatingNav } from "@/components/FloatingNav";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
 import OnlineToggle from "@/components/ui/OnlineToggle";
+import { OnboardingChecklistBanner } from "@/components/dashboard/OnboardingChecklistBanner";
+import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { haptics } from "@/lib/haptics";
 
 const SOUND_ONLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.mp3';
@@ -266,6 +268,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const oppRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
+  const { canAcceptWork, pending: pendingChecklist, isApproved: checklistApproved } = useOnboardingChecklist();
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [bellShake, setBellShake] = useState(false);
@@ -710,8 +713,22 @@ const DashboardPage = () => {
 
   const toggleOnline = async () => {
     if (!user || transitionPhase !== "idle") return;
-    setTogglingOnline(true);
     const newVal = !isOnline;
+    // Bloqueia ficar online se checklist não estiver completo
+    if (newVal && !canAcceptWork) {
+      const firstPending = pendingChecklist[0];
+      toast({
+        title: "Complete seu cadastro primeiro",
+        description: firstPending
+          ? `Faltando: ${firstPending.label}`
+          : "Verifique os itens pendentes no banner do dashboard.",
+        variant: "destructive",
+      });
+      haptics.warning();
+      if (firstPending) navigate(firstPending.route);
+      return;
+    }
+    setTogglingOnline(true);
     const { error } = await supabase.from("profiles").update({ is_online: newVal }).eq("id", user.id);
     if (error) {
       toast({ title: "Erro ao alterar status.", variant: "destructive" });
