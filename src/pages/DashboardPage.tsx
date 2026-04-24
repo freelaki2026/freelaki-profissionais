@@ -17,6 +17,7 @@ import { FloatingNav } from "@/components/FloatingNav";
 import NotificationPanel from "@/components/dashboard/NotificationPanel";
 import OnlineToggle from "@/components/ui/OnlineToggle";
 import { OnboardingChecklistBanner } from "@/components/dashboard/OnboardingChecklistBanner";
+import { TipsBanner } from "@/components/dashboard/TipsBanner";
 import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { haptics } from "@/lib/haptics";
 
@@ -780,7 +781,7 @@ const DashboardPage = () => {
   const hasActivePresencial = !!activePresencial;
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+    <div className={`min-h-screen overflow-x-hidden ${isApproved ? "bg-[#F7F7F7] text-foreground" : "bg-black text-white"}`}>
       {!isApproved ? (
         <>
           <div className="flex items-center justify-between px-6 pt-[52px] pb-5">
@@ -811,144 +812,156 @@ const DashboardPage = () => {
         </>
       ) : (
         <main className="pb-28">
-          {/* 3a. Top bar */}
-          <div className="flex justify-end items-center gap-3 px-5 pt-10 pb-2">
-            <button
-              type="button"
-              onClick={() => setNotifOpen(true)}
-              className="relative outline-none"
-              style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}
-            >
-              <Bell size={18} className="text-zinc-300" />
-              <AnimatePresence>
-                {unreadCount > 0 && (
-                  <motion.span
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute -top-1.5 -right-1.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold"
-                    style={{ background: "#F59E0B", color: "#000" }}>
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/perfil")}
-              className="flex items-center gap-2 bg-zinc-900 rounded-full px-3 py-1.5 outline-none"
-            >
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover" />
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-[9px] font-medium text-white">
-                  {profileInitials}
-                </div>
-              )}
-              <span className="text-xs text-zinc-300">{profileFirstName}</span>
-            </button>
-          </div>
-
-          {/* Onboarding checklist banner — só aparece se faltam itens */}
-          <OnboardingChecklistBanner />
-
-          {/* 3b. Saldo disponível */}
-          <div className="flex flex-col items-center py-5 px-5">
-            <button
-              type="button"
-              onClick={toggleOnline}
-              disabled={togglingOnline || !canAcceptWork}
-              className="flex items-center gap-1.5 bg-zinc-900 rounded-full px-3 py-1 mb-4 outline-none disabled:opacity-50"
-            >
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{
-                  background: isOnline ? "#00C853" : "#E53935",
-                  animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
-                }}
-              />
-              <span className="text-xs text-zinc-400">
-                {togglingOnline
-                  ? "..."
-                  : !canAcceptWork
-                  ? "Complete seu cadastro para ficar online"
-                  : isOnline
-                  ? "Online • Carteira BRL"
-                  : "Offline • Toque para ativar"}
-              </span>
-            </button>
-            <p className="text-xs text-zinc-600 uppercase tracking-widest mb-1">Saldo disponível</p>
-            <div className="flex items-center gap-2">
-              <span className="text-4xl font-medium tracking-tight text-white">
-                {balanceVisible
-                  ? `R$ ${saldoDisponivel.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-                  : "R$ ••••••"}
-              </span>
+          {/* 1. Top bar — header escuro arredondado para contrastar com fundo claro */}
+          <div
+            className="px-5 pt-12 pb-6 rounded-b-[28px]"
+            style={{ background: "linear-gradient(180deg, #0A0A0A 0%, #1A1A1A 100%)" }}
+          >
+            <div className="flex items-center justify-between mb-5">
               <button
                 type="button"
-                onClick={() => setBalanceVisible(!balanceVisible)}
-                className="text-zinc-600 outline-none"
+                onClick={() => navigate("/perfil")}
+                className="flex items-center gap-2.5 outline-none"
               >
-                {balanceVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-white/10" />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-[#276EF1] flex items-center justify-center text-xs font-bold text-white">
+                    {profileInitials}
+                  </div>
+                )}
+                <div className="text-left leading-tight">
+                  <p className="text-[10px] text-zinc-400 uppercase tracking-wider">Olá</p>
+                  <p className="text-[13px] font-semibold text-white">{profileFirstName}</p>
+                </div>
               </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={toggleOnline}
+                  disabled={togglingOnline || !canAcceptWork}
+                  className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 rounded-full px-3 py-1.5 outline-none disabled:opacity-50 transition-colors"
+                >
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      background: isOnline ? "#00C853" : "#E53935",
+                      animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
+                    }}
+                  />
+                  <span className="text-[11px] font-medium text-zinc-200">
+                    {togglingOnline ? "..." : isOnline ? "Online" : "Offline"}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setNotifOpen(true)}
+                  className="relative outline-none w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                  style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}
+                >
+                  <Bell size={16} className="text-zinc-200" />
+                  <AnimatePresence>
+                    {unreadCount > 0 && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="absolute -top-0.5 -right-0.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold"
+                        style={{ background: "#F59E0B", color: "#000" }}>
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
+              </div>
             </div>
-            {financialSummary.reserved > 0 && (
-              <p className="mt-2 text-[11px] text-zinc-500">
-                + R$ {financialSummary.reserved.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} reservado
-              </p>
-            )}
+
+            {/* Saldo destacado dentro do header escuro */}
+            <div className="text-center">
+              <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1.5">Saldo disponível</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-[36px] font-bold tracking-tight text-white leading-none">
+                  {balanceVisible
+                    ? `R$ ${saldoDisponivel.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                    : "R$ ••••••"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setBalanceVisible(!balanceVisible)}
+                  className="text-zinc-500 outline-none"
+                >
+                  {balanceVisible ? <Eye size={15} /> : <EyeOff size={15} />}
+                </button>
+              </div>
+              {financialSummary.reserved > 0 && (
+                <p className="mt-1.5 text-[11px] text-zinc-500">
+                  + R$ {financialSummary.reserved.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} reservado
+                </p>
+              )}
+              {!canAcceptWork && (
+                <p className="mt-2 text-[10px] text-amber-400/90">
+                  Complete seu cadastro para ficar online
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* 3c. Botões de ação */}
-          <div className="flex gap-3 px-5 mb-5">
+          {/* 2. Onboarding checklist banner — só aparece se faltam itens */}
+          <div className="-mt-2">
+            <OnboardingChecklistBanner />
+          </div>
+
+          {/* 3. Tips banner roxo (carrossel automático leve) */}
+          <div className="mt-4">
+            <TipsBanner />
+          </div>
+
+          {/* 4. Botões de ação rápida em cards brancos */}
+          <div className="grid grid-cols-3 gap-3 px-5 mb-5">
             {[
-              { icon: <ArrowUp size={18} />, label: "Sacar", onClick: () => navigate("/ganhos") },
-              { icon: <Map size={18} />, label: "Mapa", onClick: () => navigate("/mapa") },
-              { icon: <MessageCircle size={18} />, label: "Mensagens", onClick: () => navigate("/mensagens") },
+              { icon: <ArrowUp size={18} className="text-[#276EF1]" />, label: "Sacar", onClick: () => navigate("/ganhos") },
+              { icon: <Map size={18} className="text-[#276EF1]" />, label: "Mapa", onClick: () => navigate("/mapa") },
+              { icon: <MessageCircle size={18} className="text-[#276EF1]" />, label: "Mensagens", onClick: () => navigate("/mensagens") },
             ].map((btn) => (
               <button
                 key={btn.label}
                 type="button"
                 onClick={btn.onClick}
-                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl py-4 flex flex-col items-center gap-1.5 active:scale-95 transition-transform outline-none"
+                className="bg-white border border-[#E8E8E8] rounded-2xl py-4 flex flex-col items-center gap-1.5 active:scale-95 transition-transform outline-none shadow-sm"
               >
-                <span className="text-zinc-300">{btn.icon}</span>
-                <span className="text-[11px] text-zinc-400">{btn.label}</span>
+                {btn.icon}
+                <span className="text-[11px] font-medium text-foreground">{btn.label}</span>
               </button>
             ))}
           </div>
 
-          {/* 🔒 Modo Exclusivo: contrato presencial ativo */}
+          {/* 5. 🔒 Modo Exclusivo: contrato presencial ativo */}
           {hasActivePresencial ? (
             <div className="px-5 mb-5">
               <div className="flex justify-between items-center mb-2.5">
-                <span className="text-[11px] text-amber-500 uppercase tracking-widest font-semibold">
+                <span className="text-[11px] text-amber-600 uppercase tracking-widest font-semibold">
                   ⚡ Freela em andamento
                 </span>
-                <span className="text-[10px] text-zinc-500">Presencial</span>
+                <span className="text-[10px] text-[#767676]">Presencial</span>
               </div>
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="rounded-3xl p-5 border border-amber-500/30"
-                style={{
-                  background:
-                    "linear-gradient(145deg, #2a1f0d 0%, #1a1408 60%, #0f0a04 100%)",
-                  boxShadow: "0 8px 24px rgba(245,158,11,0.08)",
-                }}
+                className="rounded-3xl p-5 border border-amber-200 bg-white shadow-sm"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-amber-500/15 flex items-center justify-center flex-shrink-0">
-                    <Zap size={16} className="text-amber-400" />
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <Zap size={16} className="text-amber-600" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] text-amber-500/80 uppercase tracking-wider mb-0.5">
+                    <p className="text-[10px] text-amber-600 uppercase tracking-wider mb-0.5">
                       {activePresencial?.category_icon} {activePresencial?.category_name || "Freela"}
                     </p>
-                    <p className="text-[15px] font-semibold text-white leading-tight truncate">
+                    <p className="text-[15px] font-semibold text-foreground leading-tight truncate">
                       {activePresencial?.title}
                     </p>
                   </div>
@@ -956,24 +969,24 @@ const DashboardPage = () => {
 
                 {activePresencial?.location_address && (
                   <div className="flex items-start gap-2 mb-2">
-                    <MapPin size={13} className="text-zinc-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-[12px] text-zinc-400 leading-snug">
+                    <MapPin size={13} className="text-[#767676] mt-0.5 flex-shrink-0" />
+                    <p className="text-[12px] text-[#767676] leading-snug">
                       {extractShortAddress(activePresencial.location_address)}
                     </p>
                   </div>
                 )}
                 {activePresencial?.scheduled_at && (
                   <div className="flex items-center gap-2 mb-3">
-                    <Clock size={13} className="text-zinc-500 flex-shrink-0" />
-                    <p className="text-[12px] text-zinc-400">
+                    <Clock size={13} className="text-[#767676] flex-shrink-0" />
+                    <p className="text-[12px] text-[#767676]">
                       {formatSchedule(activePresencial.scheduled_at)}
                     </p>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-white/5 mb-3">
-                  <span className="text-[11px] text-zinc-500 uppercase tracking-wider">Valor</span>
-                  <span className="text-[18px] font-bold text-white">
+                <div className="flex items-center justify-between pt-3 border-t border-[#E8E8E8] mb-3">
+                  <span className="text-[11px] text-[#767676] uppercase tracking-wider">Valor</span>
+                  <span className="text-[18px] font-bold text-foreground">
                     R$ {Number(activePresencial?.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
@@ -987,63 +1000,60 @@ const DashboardPage = () => {
                 </button>
               </motion.div>
 
-              <p className="mt-3 text-center text-[11px] text-zinc-600 leading-relaxed px-4">
+              <p className="mt-3 text-center text-[11px] text-[#767676] leading-relaxed px-4">
                 Você está em um freela presencial. Conclua para liberar novas oportunidades.
               </p>
             </div>
           ) : (
             <>
-              {/* 3d. Card "Meus Jobs" (modo normal) */}
+              {/* 6. Card "Meus Freelas" */}
               <div className="px-5 mb-5">
                 <div className="flex justify-between items-center mb-2.5">
-                  <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Meus Freelas</span>
+                  <span className="text-[11px] text-[#767676] uppercase tracking-widest font-semibold">Meus Freelas</span>
                   {acceptedOpportunities.length > 0 && (
                     <button
                       type="button"
                       onClick={() => navigate("/contratos")}
-                      className="text-[11px] text-zinc-500 outline-none"
+                      className="text-[11px] text-[#276EF1] font-medium outline-none"
                     >
                       Ver todos →
                     </button>
                   )}
                 </div>
-                <div
-                  className="rounded-2xl p-4 border border-blue-900/40"
-                  style={{ background: "linear-gradient(145deg, #1a2744 0%, #0d1b38 60%, #0a1229 100%)" }}
-                >
+                <div className="rounded-2xl bg-white border border-[#E8E8E8] p-4 shadow-sm">
                   {loadingOpps ? (
                     <div className="flex justify-center py-4">
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
                     </div>
                   ) : acceptedOpportunities.length === 0 ? (
-                    <p className="text-xs text-zinc-500 text-center py-4">Nenhum job ativo no momento.</p>
+                    <p className="text-xs text-[#767676] text-center py-4">Nenhum job ativo no momento.</p>
                   ) : (
                     acceptedOpportunities.map((job, i) => (
                       <div
                         key={job.id}
                         className={`flex items-center justify-between py-3 ${
-                          i < acceptedOpportunities.length - 1 ? "border-b border-white/5" : ""
+                          i < acceptedOpportunities.length - 1 ? "border-b border-[#E8E8E8]" : ""
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                          <div className="w-8 h-8 rounded-full bg-blue-900/60 flex items-center justify-center flex-shrink-0">
-                            <Zap size={13} className="text-blue-400" />
+                          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                            <Zap size={13} className="text-[#276EF1]" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-zinc-200 leading-none mb-0.5 truncate">{job.title}</p>
-                            <p className="text-[10px] text-zinc-500 truncate">
+                            <p className="text-sm font-medium text-foreground leading-none mb-0.5 truncate">{job.title}</p>
+                            <p className="text-[10px] text-[#767676] truncate">
                               {job.is_remote ? "🏠 Home office" : job.description ? `${job.description.slice(0, 30)}${job.description.length > 30 ? "..." : ""}` : "Sem descrição"}
                             </p>
                           </div>
                         </div>
                         <div className="text-right flex-shrink-0 ml-2">
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-semibold text-foreground">
                             R$ {Number(job.budget ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                           </p>
                           <button
                             type="button"
                             onClick={() => navigate(`/oportunidade/${job.id}`)}
-                            className="text-[10px] text-blue-400 outline-none"
+                            className="text-[10px] text-[#276EF1] font-medium outline-none"
                           >
                             Ver detalhes →
                           </button>
@@ -1058,8 +1068,8 @@ const DashboardPage = () => {
               {isOnline && available.length > 0 && (
                 <div className="px-5 mb-5" ref={oppRef}>
                   <div className="flex justify-between items-center mb-2.5">
-                    <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Disponíveis</span>
-                    <span className="text-[11px] text-zinc-500">{available.length}</span>
+                    <span className="text-[11px] text-[#767676] uppercase tracking-widest font-semibold">Disponíveis</span>
+                    <span className="text-[11px] text-[#276EF1] font-medium">{available.length}</span>
                   </div>
                   <div
                     className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2"
@@ -1076,20 +1086,20 @@ const DashboardPage = () => {
               {applications.length > 0 && (
                 <div className="px-5 mb-5">
                   <div className="flex justify-between items-center mb-2.5">
-                    <span className="text-[11px] text-zinc-600 uppercase tracking-widest">Em Análise</span>
-                    <span className="text-[11px] text-amber-500">{applications.length}</span>
+                    <span className="text-[11px] text-[#767676] uppercase tracking-widest font-semibold">Em Análise</span>
+                    <span className="text-[11px] text-amber-600 font-medium">{applications.length}</span>
                   </div>
                   {applications.map((app) => (
                     <div
                       key={app.id}
-                      className="mb-2 rounded-2xl border border-zinc-800 bg-zinc-900 p-3.5"
+                      className="mb-2 rounded-2xl border border-[#E8E8E8] bg-white p-3.5 shadow-sm"
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-base">{app.opportunity.category_icon || "📦"}</span>
-                        <span className="text-[11px] text-zinc-400">{app.opportunity.category_name || "Geral"}</span>
-                        <span className="ml-auto text-[10px] text-amber-500">Aguardando ⏳</span>
+                        <span className="text-[11px] text-[#767676]">{app.opportunity.category_name || "Geral"}</span>
+                        <span className="ml-auto text-[10px] text-amber-600 font-medium">Aguardando ⏳</span>
                       </div>
-                      <p className="mt-1.5 text-sm font-medium text-zinc-200">{app.opportunity.title}</p>
+                      <p className="mt-1.5 text-sm font-medium text-foreground">{app.opportunity.title}</p>
                     </div>
                   ))}
                 </div>
@@ -1097,38 +1107,42 @@ const DashboardPage = () => {
             </>
           )}
 
-          {/* 3e. Histórico */}
+          {/* 7. Histórico */}
           <div className="px-5 pb-4">
-            <p className="text-[11px] text-zinc-600 uppercase tracking-widest mb-3">Histórico</p>
+            <p className="text-[11px] text-[#767676] uppercase tracking-widest mb-3 font-semibold">Histórico</p>
             {recentEarnings.length === 0 ? (
-              <p className="text-xs text-zinc-500">Nenhum pagamento registrado ainda.</p>
+              <div className="rounded-2xl bg-white border border-[#E8E8E8] p-4 shadow-sm">
+                <p className="text-xs text-[#767676] text-center">Nenhum pagamento registrado ainda.</p>
+              </div>
             ) : (
-              recentEarnings.map((tx, i) => (
-                <div
-                  key={tx.id}
-                  className={`flex items-center gap-3 py-3 ${
-                    i < recentEarnings.length - 1 ? "border-b border-zinc-900" : ""
-                  }`}
-                >
-                  <div className="w-9 h-9 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle size={15} className="text-green-500" />
+              <div className="rounded-2xl bg-white border border-[#E8E8E8] px-4 shadow-sm">
+                {recentEarnings.map((tx, i) => (
+                  <div
+                    key={tx.id}
+                    className={`flex items-center gap-3 py-3 ${
+                      i < recentEarnings.length - 1 ? "border-b border-[#E8E8E8]" : ""
+                    }`}
+                  >
+                    <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle size={15} className="text-green-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground font-medium leading-none mb-0.5 truncate">
+                        {tx.description ?? "Pagamento recebido"}
+                      </p>
+                      <p className="text-[11px] text-[#767676]">Pago via Pix</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-semibold text-green-600">
+                        + R$ {Number(tx.amount ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </p>
+                      <p className="text-[10px] text-[#767676]">
+                        {new Date(tx.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-200 font-medium leading-none mb-0.5 truncate">
-                      {tx.description ?? "Pagamento recebido"}
-                    </p>
-                    <p className="text-[11px] text-zinc-600">Pago via Pix</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-medium text-green-400">
-                      + R$ {Number(tx.amount ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </p>
-                    <p className="text-[10px] text-zinc-600">
-                      {new Date(tx.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                    </p>
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </main>
