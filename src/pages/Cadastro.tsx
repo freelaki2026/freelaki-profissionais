@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, Eye, EyeOff, Check } from "lucide-react";
+import { Zap, Eye, EyeOff, Check, AlertTriangle } from "lucide-react";
 import FreelakiInput from "@/components/ui/FreelakiInput";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 
@@ -10,6 +10,46 @@ function maskPhone(v: string) {
   if (d.length <= 2) return d.length ? `(${d}` : "";
   if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+/* ───── birth date mask DD/MM/YYYY ───── */
+function maskBirthDate(v: string) {
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
+
+/** Returns age in years if the date is valid + complete, otherwise null */
+function ageFromBR(value: string): number | null {
+  const m = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10);
+  const month = parseInt(m[2], 10);
+  const year = parseInt(m[3], 10);
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > 31) return null;
+  if (year < 1900 || year > new Date().getFullYear()) return null;
+  const dob = new Date(year, month - 1, day);
+  if (
+    dob.getFullYear() !== year ||
+    dob.getMonth() !== month - 1 ||
+    dob.getDate() !== day
+  ) {
+    return null;
+  }
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m2 = today.getMonth() - dob.getMonth();
+  if (m2 < 0 || (m2 === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+/** Convert DD/MM/YYYY to ISO YYYY-MM-DD */
+function brToISO(value: string): string | null {
+  const m = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  return `${m[3]}-${m[2]}-${m[1]}`;
 }
 
 /* ───── step indicator ───── */
@@ -60,11 +100,13 @@ const CadastroStep1 = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [terms, setTerms] = useState(false);
+  const [age18, setAge18] = useState(false);
 
   const pw8 = password.length >= 8;
   const pwMatch = confirm.length > 0 && password === confirm;
@@ -72,19 +114,26 @@ const CadastroStep1 = () => {
   const nameParts = name.trim().split(/\s+/).filter((p) => p.length >= 2);
   const fullNameValid = nameParts.length >= 2;
 
+  const computedAge = ageFromBR(birthDate);
+  const birthComplete = birthDate.length === 10;
+  const ageValid = computedAge !== null && computedAge >= 18;
+  const ageInvalid = birthComplete && (computedAge === null || computedAge < 18);
+
   const valid =
     fullNameValid &&
     email.trim().length > 0 &&
     phoneDigits.length === 11 &&
+    ageValid &&
     pw8 &&
     pwMatch &&
-    terms;
+    terms &&
+    age18;
 
   const handleContinue = () => {
-    // Save to sessionStorage so step 2 can read it
+    const iso = brToISO(birthDate);
     sessionStorage.setItem(
       "cadastro_step1",
-      JSON.stringify({ name, email, phone, password })
+      JSON.stringify({ name, email, phone, password, birth_date: iso })
     );
     navigate("/cadastro/etapa2");
   };
@@ -158,6 +207,47 @@ const CadastroStep1 = () => {
             onChange={(e) => setPhone(maskPhone(e.target.value))}
           />
 
+          {/* Birth date */}
+          <div>
+            <FreelakiInput
+              label="Data de nascimento"
+              type="tel"
+              inputMode="numeric"
+              placeholder="DD/MM/AAAA"
+              value={birthDate}
+              onChange={(e) => setBirthDate(maskBirthDate(e.target.value))}
+              className={
+                ageInvalid
+                  ? "border-[#E53935] focus:border-[#E53935]"
+                  : ageValid
+                  ? "border-[#2E7D32] focus:border-[#2E7D32]"
+                  : undefined
+              }
+              icon={
+                ageValid ? (
+                  <Check size={20} color="#2E7D32" strokeWidth={3} />
+                ) : ageInvalid ? (
+                  <AlertTriangle size={18} color="#E53935" />
+                ) : undefined
+              }
+            />
+            {ageInvalid && (
+              <p
+                className="mt-1 flex items-center gap-1"
+                style={{ fontSize: 12, color: "#E53935" }}
+              >
+                {computedAge !== null && computedAge < 18
+                  ? "Você precisa ter 18 anos ou mais para se cadastrar"
+                  : "Data inválida"}
+              </p>
+            )}
+            {!ageInvalid && (
+              <p className="mt-1" style={{ fontSize: 11, color: "#767676" }}>
+                Idade mínima: 18 anos. Será verificada com seu documento.
+              </p>
+            )}
+          </div>
+
           {/* Password */}
           <div>
             <FreelakiInput
@@ -227,8 +317,36 @@ const CadastroStep1 = () => {
           </div>
         </div>
 
+        {/* Age 18+ declaration checkbox */}
+        <label className="mt-5 flex cursor-pointer items-start gap-3">
+          <div
+            className="flex shrink-0 items-center justify-center transition-colors"
+            style={{
+              width: 20,
+              height: 20,
+              borderRadius: 6,
+              marginTop: 1,
+              ...(age18
+                ? { background: "#276EF1" }
+                : { border: "1.5px solid #E5E5E5", background: "transparent" }),
+            }}
+          >
+            {age18 && <Check size={14} color="#fff" strokeWidth={3} />}
+          </div>
+          <input
+            type="checkbox"
+            className="sr-only"
+            checked={age18}
+            onChange={() => setAge18(!age18)}
+          />
+          <span style={{ fontSize: 13, color: "#767676", lineHeight: 1.4 }}>
+            Declaro ter <strong style={{ color: "#000" }}>18 anos ou mais</strong> e
+            possuir capacidade civil para contratar.
+          </span>
+        </label>
+
         {/* Terms checkbox */}
-        <label className="mt-4 flex cursor-pointer items-start gap-3">
+        <label className="mt-3 flex cursor-pointer items-start gap-3">
           <div
             className="flex shrink-0 items-center justify-center transition-colors"
             style={{

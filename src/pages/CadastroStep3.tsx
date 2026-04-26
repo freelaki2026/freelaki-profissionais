@@ -63,7 +63,7 @@ const CadastroStep3 = () => {
   const [error, setError] = useState<{ code: string; message: string; hint?: string } | null>(null);
   const [errorType, setErrorType] = useState<"cpf" | "email" | "phone" | "generic" | null>(null);
 
-  const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string } | null>(null);
+  const [step1, setStep1] = useState<{ name: string; email: string; phone: string; password: string; birth_date?: string | null } | null>(null);
   const [step2, setStep2] = useState<{ cpf_cnpj: string; cpf_cnpj_type: string } | null>(null);
 
   useEffect(() => {
@@ -85,10 +85,18 @@ const CadastroStep3 = () => {
       ? maskCPFDisplay(step2.cpf_cnpj)
       : maskCNPJDisplay(step2.cpf_cnpj);
 
+  const birthDisplay = step1.birth_date
+    ? (() => {
+        const [y, m, d] = step1.birth_date!.split("-");
+        return `${d}/${m}/${y}`;
+      })()
+    : "—";
+
   const rows = [
     { icon: "👤", label: "Nome", value: step1.name },
     { icon: "📧", label: "Email", value: step1.email },
     { icon: "📱", label: "Telefone", value: formatPhone(phoneDigits) },
+    { icon: "🎂", label: "Nascimento", value: birthDisplay },
     { icon: "🪪", label: step2.cpf_cnpj_type === "cpf" ? "CPF" : "CNPJ", value: docDisplay },
   ];
 
@@ -191,11 +199,12 @@ const CadastroStep3 = () => {
       }
 
       // 2. Update profile
-      await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({
           full_name: step1.name,
           phone: phoneDigits,
+          birth_date: step1.birth_date ?? null,
           cpf_cnpj: step2.cpf_cnpj,
           cpf_cnpj_type: step2.cpf_cnpj_type,
           cpf_cnpj_locked: true,
@@ -204,6 +213,18 @@ const CadastroStep3 = () => {
           terms_accepted_at: new Date().toISOString(),
         })
         .eq("id", userId);
+
+      if (profileError) {
+        // Trigger 18+ violation or other constraint
+        if (profileError.message?.includes("18 anos")) {
+          setError({ code: "CAD-018", message: "Você precisa ter 18 anos ou mais para usar o Freelaki.", hint: "Volte à etapa 1 e corrija a data de nascimento." });
+          setErrorType("generic");
+        } else {
+          setError(parseError(profileError));
+          setErrorType("generic");
+        }
+        return;
+      }
 
       // 3. Get active terms
       const { data: termsData } = await supabase

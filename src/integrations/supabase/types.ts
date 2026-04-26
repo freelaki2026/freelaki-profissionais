@@ -1848,6 +1848,7 @@ export type Database = {
           behance: string | null
           bio: string | null
           birth_date: string | null
+          birth_date_verified: boolean | null
           cpf_cnpj: string | null
           cpf_cnpj_locked: boolean | null
           cpf_cnpj_type: string | null
@@ -1887,6 +1888,7 @@ export type Database = {
           behance?: string | null
           bio?: string | null
           birth_date?: string | null
+          birth_date_verified?: boolean | null
           cpf_cnpj?: string | null
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
@@ -1926,6 +1928,7 @@ export type Database = {
           behance?: string | null
           bio?: string | null
           birth_date?: string | null
+          birth_date_verified?: boolean | null
           cpf_cnpj?: string | null
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
@@ -2488,6 +2491,7 @@ export type Database = {
         Returns: number
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_user_18_plus: { Args: { _birth_date: string }; Returns: boolean }
       open_contract_dispute: {
         Args: {
           p_contract_id: string
