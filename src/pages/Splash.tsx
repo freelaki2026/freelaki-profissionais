@@ -80,11 +80,13 @@ const Splash = () => {
       >
         <h1 className="font-bold" style={{ fontSize: 42, letterSpacing: -1.5, lineHeight: 1 }}>
           <span className="text-primary">free</span>
-          <span className="text-secondary" style={{ color: "#276EF1" }}>laki</span>
+          <span className="text-secondary" style={{ color: "#276EF1" }}>
+            laki
+          </span>
         </h1>
         <p
           className="font-light uppercase text-primary-foreground"
-          style={{ fontSize: 11, letterSpacing: 6, marginTop: 6 }}
+          style={{ fontSize: 11, letterSpacing: 4, marginTop: 6 }}
         >
           profissionais
         </p>
@@ -100,9 +102,7 @@ const Splash = () => {
         <p className="text-[18px] font-semibold text-white/90 leading-snug">
           100% do que você ganha <span style={{ color: "#276EF1" }}>é seu.</span>
         </p>
-        <p className="mt-2 text-[13px] text-white/30 font-light">
-          Grátis pra sempre. Sem taxa escondida.
-        </p>
+        <p className="mt-2 text-[13px] text-white/30 font-light">Grátis pra sempre.</p>
       </div>
 
       <div
@@ -147,4 +147,3 @@ const Splash = () => {
 };
 
 export default Splash;
-
