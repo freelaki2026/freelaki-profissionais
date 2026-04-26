@@ -83,8 +83,8 @@ const Splash = () => {
           <span className="text-secondary" style={{ color: "#276EF1" }}>laki</span>
         </h1>
         <p
-          className="font-light uppercase"
-          style={{ fontSize: 11, color: "#555", letterSpacing: 6, marginTop: 6 }}
+          className="font-light uppercase text-primary-foreground"
+          style={{ fontSize: 11, letterSpacing: 6, marginTop: 6 }}
         >
           profissionais
         </p>
