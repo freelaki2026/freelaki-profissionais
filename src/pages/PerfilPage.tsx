@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { OnboardingChecklistFull } from "@/components/dashboard/OnboardingChecklistBanner";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 interface ProfileData {
   full_name: string | null;
