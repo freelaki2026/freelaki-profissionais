@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle, XCircle, Shield, Play, Square } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
