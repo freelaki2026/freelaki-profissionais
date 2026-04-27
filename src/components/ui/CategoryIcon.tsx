@@ -1,38 +1,35 @@
 import {
-  Camera,
-  Smartphone,
+  Video,
   Clapperboard,
-  Megaphone,
   Sparkles,
+  Megaphone,
+  Smartphone,
   Palette,
-  PenLine,
-  Mic,
-  Mic2,
-  Ticket,
-  Lightbulb,
-  SlidersHorizontal,
+  Scissors,
+  Wand2,
   Package,
   type LucideIcon,
 } from "lucide-react";
 
 /**
  * Mapeamento centralizado: slug da categoria -> ícone Lucide.
+ *
  * Use este componente em qualquer lugar que precise renderizar a categoria
  * de forma consistente entre o app do Profissional e o app do Cliente.
+ *
+ * Os 8 slugs abaixo refletem exatamente as categorias ativas na tabela
+ * `categories` do Supabase. Se uma categoria desconhecida chegar (ex.: dado
+ * legado), o componente renderiza o ícone fallback `Package`, evitando crashes.
  */
 export const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
-  fotografo: Camera,
-  "videomaker-mobile": Smartphone,
+  videomaker: Video,
   filmmaker: Clapperboard,
-  "social-media": Megaphone,
   storymaker: Sparkles,
+  "social-media": Megaphone,
+  "videomaker-mobile": Smartphone,
   designer: Palette,
-  roteirista: PenLine,
-  entrevistador: Mic,
-  "mestre-de-cerimonia": Mic2,
-  "recepcionista-eventos": Ticket,
-  "operador-de-luz": Lightbulb,
-  "operador-de-som": SlidersHorizontal,
+  "editor-de-video": Scissors,
+  "editor-de-video-ia": Wand2,
 };
 
 interface CategoryIconProps {
@@ -56,6 +53,9 @@ export function getCategoryIcon(slug?: string | null, name?: string | null): Luc
   if (name) {
     const key = normalize(name);
     if (CATEGORY_ICON_MAP[key]) return CATEGORY_ICON_MAP[key];
+    // Heurística simples para variantes textuais comuns
+    if (key.includes("ia") && key.includes("editor")) return Wand2;
+    if (key.includes("editor")) return Scissors;
   }
   return Package;
 }
