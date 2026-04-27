@@ -20,6 +20,7 @@ interface Opp {
   location_address?: string | null;
   category_name?: string;
   category_icon?: string;
+  category_slug?: string;
   is_private?: boolean;
 }
 
@@ -132,7 +133,7 @@ const OportunidadesPage = () => {
           id: o.id, title: o.title, description: o.description,
           budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
           location_address: o.location_address, is_private: o.is_private,
-          category_name: o.categories?.name, category_icon: o.categories?.icon,
+          category_name: o.categories?.name, category_icon: o.categories?.icon, category_slug: o.categories?.slug,
         }))
     );
 
@@ -162,6 +163,7 @@ const OportunidadesPage = () => {
               location_address: a.opportunities.location_address,
               category_name: a.opportunities.categories?.name,
               category_icon: a.opportunities.categories?.icon,
+              category_slug: a.opportunities.categories?.slug,
             },
           }))
       );
@@ -181,7 +183,7 @@ const OportunidadesPage = () => {
           id: o.id, title: o.title, description: o.description,
           budget: o.budget, status: o.status, scheduled_at: o.scheduled_at,
           location_address: o.location_address,
-          category_name: o.categories?.name, category_icon: o.categories?.icon,
+          category_name: o.categories?.name, category_icon: o.categories?.icon, category_slug: o.categories?.slug,
         }))
       );
     }
@@ -328,7 +330,7 @@ const OportunidadesPage = () => {
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold"
           style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}>
-          <span className="text-[16px] leading-none">{opp.category_icon || "📦"}</span>
+          <CategoryIcon slug={opp.category_slug} name={opp.category_name} size={14} strokeWidth={2.25} />
           {opp.category_name || "Geral"}
         </span>
         {variant === "available" && opp.budget != null && (
