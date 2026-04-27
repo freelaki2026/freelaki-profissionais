@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Detalhe Oportunidade</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>body { margin:0; font-family:'Inter',sans-serif; background:#F5F6F8; }</style>
+</head>
+<body>
+<div class="min-h-screen pb-32">
+  <!-- Status bar -->
+  <div class="flex justify-between items-center px-6 pt-3 pb-1 text-[13px] font-semibold text-black">
+    <span>9:41</span>
+    <div class="flex items-center gap-1.5">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="black"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="black" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="black"/></svg>
+    </div>
+  </div>
+
+  <!-- Map hero -->
+  <div class="relative h-56 mx-6 mt-3 rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,#dbeafe,#e0e7ff);">
+    <svg viewBox="0 0 400 220" class="absolute inset-0 w-full h-full">
+      <path d="M0 80 Q 100 60, 180 90 T 400 70" stroke="#94a3b8" stroke-width="3" fill="none" opacity=".4"/>
+      <path d="M0 140 Q 120 120, 220 150 T 400 130" stroke="#94a3b8" stroke-width="3" fill="none" opacity=".4"/>
+      <path d="M50 0 L 70 220" stroke="#94a3b8" stroke-width="2" fill="none" opacity=".3"/>
+      <path d="M280 0 L 310 220" stroke="#94a3b8" stroke-width="2" fill="none" opacity=".3"/>
+      <path d="M50 100 Q 200 70 310 130" stroke="#276EF1" stroke-width="4" fill="none" stroke-dasharray="8 4"/>
+    </svg>
+    <div class="absolute left-12 top-20">
+      <div class="w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-lg"></div>
+      <span class="absolute top-5 left-5 text-[10px] font-bold text-black bg-white px-1.5 py-0.5 rounded shadow">Você</span>
+    </div>
+    <div class="absolute right-16 bottom-16">
+      <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#276EF1; box-shadow:0 8px 20px -4px rgba(39,110,241,0.5);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3" fill="#276EF1"/></svg>
+      </div>
+    </div>
+    <button class="absolute top-4 left-4 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="absolute bottom-3 right-3 bg-white rounded-full px-3 py-1.5 shadow text-[11px] font-bold text-black flex items-center gap-1">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#276EF1" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      18 min
+    </div>
+  </div>
+
+  <!-- Sheet -->
+  <div class="px-6 mt-4">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-orange-100 text-orange-700 uppercase tracking-wide">Urgente · Hoje</span>
+      <span class="px-2.5 py-1 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700 uppercase tracking-wide">Verificado</span>
+    </div>
+    <h1 class="text-[22px] font-extrabold tracking-tight text-black leading-tight">Cobertura fotográfica — Casamento na Vila Madá</h1>
+    <div class="flex items-center gap-2 mt-3">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-[13px]">M</div>
+      <div>
+        <p class="text-[13px] font-semibold text-black">Maria Helena S.</p>
+        <p class="text-[11px] text-gray-500 flex items-center gap-1">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          4.9 · 23 contratações
+        </p>
+      </div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="mt-4 rounded-2xl bg-white border border-gray-100 divide-y divide-gray-100">
+      <div class="flex items-center gap-3 p-4">
+        <div class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#276EF1" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Quando</p>
+          <p class="text-[13px] font-bold text-black">Sáb, 02 mai · 14h às 22h</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 p-4">
+        <div class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#276EF1" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Onde</p>
+          <p class="text-[13px] font-bold text-black">Vila Madalena, SP · 1,2 km</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 p-4">
+        <div class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#276EF1" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+        </div>
+        <div>
+          <p class="text-[10px] uppercase text-gray-400 font-semibold tracking-wider">Convidados</p>
+          <p class="text-[13px] font-bold text-black">~120 pessoas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="mt-4 rounded-2xl bg-white p-4 border border-gray-100">
+      <p class="text-[12px] font-bold text-black mb-2">Sobre o trabalho</p>
+      <p class="text-[12.5px] text-gray-600 leading-relaxed">Casamento intimista em casa de festas charmosa. Buscamos fotógrafo com equipamento próprio e portfólio em eventos similares. Entrega de 250+ fotos editadas em até 15 dias.</p>
+    </div>
+  </div>
+</div>
+
+<!-- CTA fixo -->
+<div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 pt-3 pb-6">
+  <div class="flex items-center justify-between mb-3">
+    <div>
+      <p class="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Você recebe</p>
+      <p class="text-[26px] font-extrabold text-black leading-none">R$ 1.450,00</p>
+      <p class="text-[10px] text-gray-400 mt-0.5">Taxa Freelaki já descontada</p>
+    </div>
+    <button class="px-7 py-3.5 rounded-2xl text-[14px] font-bold text-white" style="background:#276EF1; box-shadow:0 12px 25px -8px rgba(39,110,241,0.6);">Aceitar agora</button>
+  </div>
+</div>
+</body>
+</html>

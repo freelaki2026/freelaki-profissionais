@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Ganhos</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style> body { margin:0; font-family:'Inter',sans-serif; background:#0B0B0F; }</style>
+</head>
+<body>
+<div class="min-h-screen text-white pb-28">
+  <!-- Status bar -->
+  <div class="flex justify-between items-center px-6 pt-3 pb-1 text-[13px] font-semibold">
+    <span>9:41</span>
+    <div class="flex items-center gap-1.5">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="white"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="white" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="white"/></svg>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="px-6 pt-4">
+    <div class="flex items-center gap-2 text-white/60 text-[13px] font-medium">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      <span>Ganhos</span>
+    </div>
+    <h1 class="text-[28px] font-extrabold tracking-tight mt-2">Seu desempenho<br/>este mês 📈</h1>
+  </div>
+
+  <!-- Hero balance -->
+  <div class="mx-6 mt-6 rounded-3xl p-6 relative overflow-hidden" style="background:linear-gradient(135deg,#276EF1 0%,#1a4cb8 100%); box-shadow:0 20px 50px -10px rgba(39,110,241,0.5);">
+    <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full" style="background:rgba(255,255,255,0.08);"></div>
+    <div class="absolute -right-16 -bottom-12 w-48 h-48 rounded-full" style="background:rgba(255,255,255,0.05);"></div>
+    <div class="relative">
+      <p class="text-[11px] uppercase tracking-[2px] text-white/70 font-semibold">Saldo disponível</p>
+      <div class="flex items-baseline gap-1 mt-1">
+        <span class="text-[18px] font-bold text-white/80">R$</span>
+        <span class="text-[44px] font-extrabold leading-none tracking-tight">8.420</span>
+        <span class="text-[20px] font-bold text-white/80">,50</span>
+      </div>
+      <button class="mt-4 bg-white text-[#276EF1] font-bold text-[13px] px-5 py-2.5 rounded-full flex items-center gap-2">
+        Sacar via PIX
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="px-6 mt-5 grid grid-cols-2 gap-3">
+    <div class="rounded-2xl p-4" style="background:#15151c;">
+      <div class="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m18 15-6-6-6 6"/></svg>
+        +24%
+      </div>
+      <p class="text-[10px] uppercase tracking-wider text-white/40 mt-1 font-semibold">Total no mês</p>
+      <p class="text-[20px] font-extrabold mt-1">R$ 12.840</p>
+    </div>
+    <div class="rounded-2xl p-4" style="background:#15151c;">
+      <div class="flex items-center gap-1.5 text-amber-400 text-[10px] font-bold">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        em 2 dias
+      </div>
+      <p class="text-[10px] uppercase tracking-wider text-white/40 mt-1 font-semibold">A receber</p>
+      <p class="text-[20px] font-extrabold mt-1">R$ 3.200</p>
+    </div>
+    <div class="rounded-2xl p-4" style="background:#15151c;">
+      <div class="flex items-center gap-1.5 text-blue-400 text-[10px] font-bold">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        100%
+      </div>
+      <p class="text-[10px] uppercase tracking-wider text-white/40 mt-1 font-semibold">Freelas concluídos</p>
+      <p class="text-[20px] font-extrabold mt-1">28</p>
+    </div>
+    <div class="rounded-2xl p-4" style="background:#15151c;">
+      <div class="flex items-center gap-1.5 text-yellow-400 text-[10px] font-bold">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        média
+      </div>
+      <p class="text-[10px] uppercase tracking-wider text-white/40 mt-1 font-semibold">Avaliação</p>
+      <p class="text-[20px] font-extrabold mt-1">4.9 <span class="text-[12px] text-white/40">/5</span></p>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="mx-6 mt-5 rounded-2xl p-5" style="background:#15151c;">
+    <div class="flex items-center justify-between mb-4">
+      <p class="text-[13px] font-semibold text-white">Últimos 7 dias</p>
+      <span class="text-[11px] text-white/40">R$ 4.280 total</span>
+    </div>
+    <div class="flex items-end justify-between gap-2 h-28">
+      <div class="flex flex-col items-center gap-1.5 flex-1">
+        <div class="w-full rounded-t-md" style="height:35%; background:linear-gradient(180deg,#276EF1,#1a4cb8);"></div>
+        <span class="text-[9px] text-white/40 font-medium">S</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 flex-1">
+        <div class="w-full rounded-t-md" style="height:55%; background:linear-gradient(180deg,#276EF1,#1a4cb8);"></div>
+        <span class="text-[9px] text-white/40 font-medium">T</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 flex-1">
+        <div class="w-full rounded-t-md" style="height:42%; background:linear-gradient(180deg,#276EF1,#1a4cb8);"></div>
+        <span class="text-[9px] text-white/40 font-medium">Q</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 flex-1">
+        <div class="w-full rounded-t-md" style="height:78%; background:linear-gradient(180deg,#276EF1,#1a4cb8);"></div>
+        <span class="text-[9px] text-white/40 font-medium">Q</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 flex-1">
+        <div class="w-full rounded-t-md" style="height:65%; background:linear-gradient(180deg,#276EF1,#1a4cb8);"></div>
+        <span class="text-[9px] text-white/40 font-medium">S</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 flex-1">
+        <div class="w-full rounded-t-md" style="height:95%; background:linear-gradient(180deg,#22c55e,#15803d);"></div>
+        <span class="text-[9px] text-emerald-400 font-bold">S</span>
+      </div>
+      <div class="flex flex-col items-center gap-1.5 flex-1">
+        <div class="w-full rounded-t-md" style="height:48%; background:linear-gradient(180deg,#276EF1,#1a4cb8);"></div>
+        <span class="text-[9px] text-white/40 font-medium">D</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
