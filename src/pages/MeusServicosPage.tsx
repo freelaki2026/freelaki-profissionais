@@ -192,7 +192,7 @@ const MeusServicosPage = () => {
               value={pricing.hourly_rate || ""}
               onChange={e => setPricing(p => ({ ...p, hourly_rate: parseFloat(e.target.value) || 0 }))}
               placeholder="0,00"
-              style={{ width: 120, border: "1px solid #E5E5E5", borderRadius: 10, height: 44, padding: "0 12px", fontWeight: 700, fontSize: 18, color: "#000", textAlign: "right", outline: "none" }}
+              style={{ width: 120, border: "1px solid #E5E5E5", borderRadius: 10, height: 44, padding: "0 12px", fontWeight: 700, fontSize: 18, color: "#000", background: "#FFFFFF", textAlign: "right", outline: "none" }}
             />
           </div>
 
@@ -205,7 +205,7 @@ const MeusServicosPage = () => {
               value={pricing.daily_rate || ""}
               onChange={e => setPricing(p => ({ ...p, daily_rate: parseFloat(e.target.value) || 0 }))}
               placeholder="0,00"
-              style={{ width: 120, border: "1px solid #E5E5E5", borderRadius: 10, height: 44, padding: "0 12px", fontWeight: 700, fontSize: 18, color: "#000", textAlign: "right", outline: "none" }}
+              style={{ width: 120, border: "1px solid #E5E5E5", borderRadius: 10, height: 44, padding: "0 12px", fontWeight: 700, fontSize: 18, color: "#000", background: "#FFFFFF", textAlign: "right", outline: "none" }}
             />
           </div>
 

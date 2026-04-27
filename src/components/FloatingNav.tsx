@@ -15,7 +15,7 @@ export function FloatingNav() {
   const navigate = useNavigate();
 
   return (
-    <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50 px-4 pointer-events-none">
+    <div className="fixed bottom-10 left-0 right-0 flex justify-center z-50 px-4 pointer-events-none">
       <nav className="flex items-center gap-1 bg-[#111111] rounded-full px-2 py-2 shadow-2xl pointer-events-auto">
         {NAV_ITEMS.map(({ label, icon: Icon, path }) => {
           const isActive = location.pathname === path || location.pathname.startsWith(path + "/");
