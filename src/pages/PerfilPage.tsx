@@ -421,7 +421,7 @@ const PerfilPage = () => {
             <input
               value={fullName}
               onChange={(e) => { setFullName(e.target.value); setIsDirty(true); }}
-              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground border-secondary-foreground border-2 border-double rounded-2xl"
+              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground border-secondary-foreground border-2 border-double text-center rounded-sm"
               placeholder="Seu nome"
             />
           </div>
@@ -431,7 +431,7 @@ const PerfilPage = () => {
             <input
               value={phone}
               onChange={(e) => handlePhoneChange(e.target.value)}
-              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground border-2 border-secondary-foreground border-double rounded-2xl"
+              className="mt-1 w-full text-sm font-semibold text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground border-2 border-secondary-foreground border-double text-center rounded-sm"
               placeholder="(11) 99999-9999"
               inputMode="tel"
             />
