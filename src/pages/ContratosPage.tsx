@@ -90,8 +90,8 @@ const buildMockContract = (userName: string): ContractItem => {
     client_name: "Marina Souza",
     client_avatar: null,
     pro_name: userName,
-    category_name: "Fotógrafo",
-    category_icon: "📷",
+    category_name: "Filmmaker",
+    category_icon: "🎬",
     isMock: true,
   };
 };
