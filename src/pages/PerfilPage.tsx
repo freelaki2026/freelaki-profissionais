@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { OnboardingChecklistFull } from "@/components/dashboard/OnboardingChecklistBanner";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 interface ProfileData {
   full_name: string | null;
@@ -41,6 +42,7 @@ interface ProfileData {
 interface CategoryChip {
   name: string;
   icon: string | null;
+  slug: string | null;
 }
 
 type SocialKey = "instagram" | "tiktok" | "youtube" | "linkedin" | "behance" | "dribbble" | "figma" | "github" | "vimeo" | "twitter" | "pinterest" | "website";
@@ -143,7 +145,7 @@ const PerfilPage = () => {
         .single(),
       supabase
         .from("professional_categories")
-        .select("category_id, categories(name, icon)")
+        .select("category_id, categories(name, icon, slug)")
         .eq("profile_id", user.id),
     ]);
 
@@ -169,6 +171,7 @@ const PerfilPage = () => {
         (cats as any[]).map((c) => ({
           name: c.categories?.name || "Geral",
           icon: c.categories?.icon || "📦",
+          slug: c.categories?.slug || null,
         }))
       );
     }
@@ -546,10 +549,10 @@ const PerfilPage = () => {
               categories.map((c, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-medium"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium"
                   style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}
                 >
-                  <span className="text-sm">{c.icon}</span>
+                  <CategoryIcon slug={c.slug} name={c.name} size={14} strokeWidth={2.25} />
                   {c.name}
                 </span>
               ))

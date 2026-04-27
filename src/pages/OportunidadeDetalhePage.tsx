@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, MapPin, DollarSign, Calendar, Tag, Star, AlertCircle, Zap, CheckCircle, XCircle, Shield, Play, Square } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,7 @@ interface OppDetail {
   location_address: string | null;
   category_name: string;
   category_icon: string;
+  category_slug: string;
   category_description: string | null;
   client_name: string | null;
   client_avatar: string | null;
@@ -118,7 +120,7 @@ const OportunidadeDetalhePage = () => {
     const { data, error } = await supabase
       .from("opportunities")
       .select(
-        "id, title, description, budget, total_amount, status, scheduled_at, location_address, is_private, target_professional_id, accepted_by, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
+        "id, title, description, budget, total_amount, status, scheduled_at, location_address, is_private, target_professional_id, accepted_by, category_id, categories(name, icon, description, slug), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
       )
       .eq("id", id)
       .single();
@@ -131,6 +133,7 @@ const OportunidadeDetalhePage = () => {
         budget: data.budget, total_amount: (data as any).total_amount, status: data.status, scheduled_at: data.scheduled_at,
         location_address: data.location_address,
         category_name: cat?.name || "Geral", category_icon: cat?.icon || "📦",
+        category_slug: (cat as any)?.slug || "",
         category_description: cat?.description || null,
         client_name: prof?.full_name || null, client_avatar: prof?.avatar_url || null,
         client_id: data.client_id || null,
@@ -596,7 +599,9 @@ const OportunidadeDetalhePage = () => {
 
         {/* Category */}
         <div className="flex items-center gap-2">
-          <span className="text-[28px] leading-none">{opp.category_icon}</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full" style={{ background: "rgba(39,110,241,0.12)" }}>
+            <CategoryIcon slug={opp.category_slug} name={opp.category_name} size={20} className="text-[#276EF1]" strokeWidth={2.25} />
+          </span>
           <span className="rounded-full px-3 py-1 text-[13px] font-semibold" style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}>
             {opp.category_name}
           </span>

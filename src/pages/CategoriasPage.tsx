@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import FreelakiButton from "@/components/ui/FreelakiButton";
-import { ChevronLeft, Check, Zap } from "lucide-react";
+import { ChevronLeft, Check, Zap, Sparkles } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 interface Category {
   id: string;
@@ -166,7 +167,13 @@ const CategoriasPage = () => {
                         <Check className="h-[10px] w-[10px] text-white" />
                       </motion.div>
                     )}
-                    <span className="text-[28px]">{cat.icon || "📦"}</span>
+                    <CategoryIcon
+                      slug={cat.slug}
+                      name={cat.name}
+                      size={28}
+                      strokeWidth={2}
+                      className={isSelected ? "text-[hsl(var(--primary))]" : "text-foreground"}
+                    />
                     <span
                       className={`mt-1.5 text-center text-[11px] leading-tight ${
                         isSelected
@@ -185,7 +192,7 @@ const CategoriasPage = () => {
                 aria-disabled="true"
                 className="relative flex aspect-square cursor-not-allowed flex-col items-center justify-center rounded-2xl border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted)/0.4)] p-2"
               >
-                <span className="text-[28px] opacity-50">✨</span>
+                <Sparkles className="h-7 w-7 text-[hsl(var(--muted-foreground))] opacity-50" />
                 <span className="mt-1.5 text-center text-[10px] font-medium leading-tight text-[hsl(var(--muted-foreground))]">
                   Em breve mais categorias
                 </span>
