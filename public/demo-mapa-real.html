@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Mapa</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; font-family:'Inter',sans-serif; background:#000; color:#fff; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity:.4 } 50% { transform: scale(1.6); opacity:0 } }
+  .leaflet-container { background:#0a0a0a; font-family: inherit; }
+  .leaflet-popup-content-wrapper { background:#18181b; color:#fafafa; border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.5); }
+  .leaflet-popup-tip { background:#18181b; }
+  .leaflet-popup-content { margin: 10px 12px; font-size: 12px; }
+  .leaflet-control-zoom { margin-top: 90px !important; margin-right: 14px !important; border: none !important; }
+  .leaflet-control-zoom a { background:#18181b !important; color:#fafafa !important; border-color:#27272a !important; }
+  .leaflet-control-attribution { background: rgba(0,0,0,.5) !important; color:#71717a !important; font-size:9px !important; }
+  .leaflet-control-attribution a { color:#a1a1aa !important; }
+  .scroll-hide::-webkit-scrollbar { display:none; }
+</style>
+</head>
+<body>
+<div class="fixed inset-0 bg-black text-white overflow-hidden" style="width:390px; height:844px;">
+
+  <!-- Mapa fullscreen -->
+  <div id="map" class="absolute inset-0"></div>
+
+  <!-- Header flutuante -->
+  <div class="absolute top-0 left-0 right-0 pt-10 px-4 pb-3 pointer-events-none" style="z-index:1000; background:linear-gradient(180deg,rgba(0,0,0,0.8),rgba(0,0,0,0.4),transparent);">
+    <div class="flex items-center gap-3 pointer-events-auto">
+      <button class="w-10 h-10 rounded-full bg-zinc-900/90 backdrop-blur border border-zinc-800 flex items-center justify-center shadow-lg">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="flex-1 bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-full px-4 py-2 shadow-lg">
+        <p class="text-[13px] font-medium leading-none">Mapa de oportunidades</p>
+        <p class="text-[10px] text-zinc-500 mt-0.5">Em tempo real perto de você</p>
+      </div>
+      <div class="flex items-center gap-1.5 bg-zinc-900/90 backdrop-blur border border-zinc-800 rounded-full px-3 py-2 shadow-lg">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+        <span class="text-[11px] text-zinc-300 font-medium">14</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom sheet -->
+  <div class="absolute bottom-24 left-0 right-0 px-4 pointer-events-none" style="z-index:1000;">
+    <div class="bg-zinc-950/95 backdrop-blur border border-zinc-800 rounded-3xl p-3 pointer-events-auto shadow-2xl flex flex-col" style="max-height:34vh;">
+      <div class="flex justify-between items-center px-2 pb-2 flex-shrink-0">
+        <p class="text-[10px] text-zinc-500 uppercase tracking-widest">14 oportunidades</p>
+        <span class="text-[10px] text-zinc-600">deslize ↓</span>
+      </div>
+      <div class="overflow-y-auto space-y-1.5 pr-1 scroll-hide" style="scrollbar-width:none;">
+        <!-- Item template repeated -->
+        <button class="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-yellow-400/15 flex items-center justify-center flex-shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] font-medium text-zinc-100 truncate leading-tight">Cobertura fotográfica — Casamento</p>
+            <div class="flex items-center gap-1 mt-0.5">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <p class="text-[10px] text-zinc-500 truncate">Vila Madalena, São Paulo</p>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-[12px] font-medium text-white leading-none">R$ 1.450</p>
+            <p class="text-[9px] text-zinc-600 mt-0.5">820 m</p>
+          </div>
+        </button>
+
+        <button class="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-yellow-400/15 flex items-center justify-center flex-shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] font-medium text-zinc-100 truncate leading-tight">DJ — Festa corporativa</p>
+            <div class="flex items-center gap-1 mt-0.5">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <p class="text-[10px] text-zinc-500 truncate">Pinheiros, São Paulo</p>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-[12px] font-medium text-white leading-none">R$ 2.100</p>
+            <p class="text-[9px] text-zinc-600 mt-0.5">1.4 km</p>
+          </div>
+        </button>
+
+        <button class="w-full text-left bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-yellow-400/15 flex items-center justify-center flex-shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] font-medium text-zinc-100 truncate leading-tight">Garçom — Evento gastronômico</p>
+            <div class="flex items-center gap-1 mt-0.5">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <p class="text-[10px] text-zinc-500 truncate">Itaim Bibi, São Paulo</p>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-[12px] font-medium text-white leading-none">R$ 480</p>
+            <p class="text-[9px] text-zinc-600 mt-0.5">2.1 km</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FloatingNav (réplica do componente real) -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 px-2 py-2 rounded-full" style="z-index:1000; background:rgba(24,24,27,0.95); backdrop-filter:blur(20px); border:1px solid rgba(63,63,70,0.5); box-shadow:0 20px 50px -10px rgba(0,0,0,0.6);">
+    <button class="w-11 h-11 rounded-full flex items-center justify-center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    </button>
+    <button class="w-11 h-11 rounded-full flex items-center justify-center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    </button>
+    <button class="w-11 h-11 rounded-full flex items-center justify-center" style="background:#3b82f6;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    </button>
+    <button class="w-11 h-11 rounded-full flex items-center justify-center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </button>
+    <button class="w-11 h-11 rounded-full flex items-center justify-center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  const center = [-23.5505, -46.6333]; // São Paulo
+  const map = L.map('map', { zoomControl: true, scrollWheelZoom: true, attributionControl: true }).setView(center, 14);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }).addTo(map);
+
+  // User icon (réplica exata do código real)
+  const userIcon = L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:18px;height:18px;">
+      <div style="position:absolute;inset:0;background:#3b82f6;opacity:.45;border-radius:9999px;animation:pulse 1.6s infinite;"></div>
+      <div style="position:absolute;inset:3px;background:#3b82f6;border:2px solid white;border-radius:9999px;box-shadow:0 0 0 1px rgba(0,0,0,.4);"></div>
+    </div>`,
+    iconSize: [18,18], iconAnchor: [9,9]
+  });
+
+  // Opportunity icon (réplica exata)
+  const oppIcon = L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:30px;height:30px;">
+      <div style="position:absolute;inset:0;background:#facc15;opacity:.35;border-radius:9999px;animation:pulse 1.8s infinite;"></div>
+      <div style="position:absolute;inset:3px;background:#facc15;border:2px solid #18181b;border-radius:9999px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(250,204,21,.4);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+    </div>`,
+    iconSize: [30,30], iconAnchor: [15,15]
+  });
+
+  // Círculo de raio (igual ao real)
+  L.circle(center, { radius: 5000, color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.06, weight: 1 }).addTo(map);
+
+  // Marker do usuário
+  L.marker(center, { icon: userIcon }).addTo(map);
+
+  // 14 oportunidades simuladas espalhadas em ~5km
+  const opps = [
+    [-23.5455, -46.6420], [-23.5560, -46.6280], [-23.5430, -46.6150],
+    [-23.5620, -46.6390], [-23.5380, -46.6300], [-23.5680, -46.6450],
+    [-23.5500, -46.6500], [-23.5350, -46.6420], [-23.5590, -46.6180],
+    [-23.5470, -46.6250], [-23.5640, -46.6320], [-23.5410, -46.6380],
+    [-23.5530, -46.6210], [-23.5570, -46.6360]
+  ];
+  opps.forEach(p => L.marker(p, { icon: oppIcon }).addTo(map));
+
+  // Desabilita interações pra ficar parado no screenshot
+  map.dragging.disable();
+  map.touchZoom.disable();
+  map.doubleClickZoom.disable();
+  map.scrollWheelZoom.disable();
+</script>
+</body>
+</html>
