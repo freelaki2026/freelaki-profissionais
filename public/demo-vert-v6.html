@@ -1,111 +1,170 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<title>Vertical</title>
+<meta charset="utf-8"/>
+<title>Mapa — Vertical</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  body { margin:0; font-family:'Inter',sans-serif; background:#000; }
-  .vframe { width:414px; height:896px; position:relative; overflow:hidden; }
-  .scroll-hide::-webkit-scrollbar { display:none; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  @keyframes pulseRing { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.6);opacity:0} }
-  .pulse-dot { animation: pulse 1.6s ease-in-out infinite; }
-  .ph { width:300px; height:600px; border-radius:42px; overflow:hidden; position:relative; box-shadow:0 50px 100px -15px rgba(0,0,0,0.7), 0 0 0 10px #1a1a1f, 0 0 0 12px #2a2a30; }
-  .pin { width:34px; height:34px; border-radius:50% 50% 50% 0; background:#276EF1; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.4); border:2px solid white; }
-  .pin span { transform:rotate(45deg); font-size:13px; }
-  .pin-pulse { position:absolute; inset:-8px; border-radius:50%; background:#276EF1; animation: pulseRing 2s ease-out infinite; z-index:-1; }
-  .leaflet-container { background:#0a0a0f; }
-  .stat-svg svg { fill:currentColor; }
+  html,body{margin:0;padding:0;background:#0b0b10;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .stage{width:1242px;height:2208px;background:radial-gradient(circle at 70% 20%, #1a3a6e 0%, #0b0b10 70%);position:relative;overflow:hidden}
+  .blob{position:absolute;border-radius:9999px;filter:blur(120px);opacity:.55}
+  .device{width:900px;height:1820px;border-radius:88px;background:#000;padding:14px;box-shadow:0 80px 160px rgba(0,0,0,.55), 0 0 0 2px rgba(255,255,255,.06)}
+  .screen{width:100%;height:100%;border-radius:74px;overflow:hidden;background:#000;position:relative}
+  .notch{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:240px;height:34px;background:#000;border-radius:20px;z-index:1100}
+  .status{position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;color:#fff;font-weight:600;font-size:22px;z-index:1090}
+  #map{position:absolute;inset:0;background:#0a0a0a}
+  .leaflet-container{background:#0a0a0a;font-family:inherit}
+  @keyframes pulse {0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.7);opacity:0}}
 </style>
 </head>
 <body>
-<!-- Each section is 414x896, body lays them vertically -->
+<div class="stage">
+  <div class="blob" style="width:700px;height:700px;background:#3b82f6;top:-160px;right:-180px"></div>
+  <div class="blob" style="width:600px;height:600px;background:#facc15;bottom:-140px;left:-160px;opacity:.3"></div>
 
-<!-- 1) OPORTUNIDADES -->
-<section class="vframe" id="v6" style="background:linear-gradient(180deg,#000 0%,#0a0e1a 50%,#000 100%);">
-  <div class="absolute -top-32 -right-32 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(250,204,21,0.22),transparent 70%);"></div>
-  <div class="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(59,130,246,0.3),transparent 70%);"></div>
-  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
-    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold text-white" style="background:rgba(250,204,21,0.2); border:1px solid rgba(250,204,21,0.5);">
-      📍 RAIO DE 5 KM
-    </span>
-    <h1 class="text-white font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Veja todos<br/>os freelas<br/><span style="background:linear-gradient(90deg,#facc15,#60a5fa); -webkit-background-clip:text; background-clip:text; color:transparent;">ao seu redor.</span></h1>
+  <!-- Headline -->
+  <div style="position:absolute;top:90px;left:0;right:0;text-align:center;padding:0 80px;z-index:10">
+    <p style="color:#facc15;font-size:30px;font-weight:600;letter-spacing:8px;text-transform:uppercase;margin:0 0 18px">Mapa em tempo real</p>
+    <h1 style="color:#fff;font-size:84px;font-weight:800;line-height:1.05;letter-spacing:-2px;margin:0">
+      Veja todos os freelas<br/>ao seu redor.
+    </h1>
   </div>
-  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#000;">
-    <div class="absolute top-0 left-0 right-0 flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-white" style="background:linear-gradient(180deg,rgba(0,0,0,0.5),transparent); z-index:1100;">
-      <span>9:41</span>
-      <div class="flex items-center gap-1.5">
-        <svg width="14" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
-        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="white" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="white"/></svg>
-      </div>
-    </div>
-    <div id="map" style="width:100%;height:100%;"></div>
-    <div class="absolute top-9 left-3 right-3" style="z-index:1000;">
-      <div class="rounded-2xl p-2.5 flex items-center gap-2" style="background:rgba(11,11,15,0.85); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.08);">
-        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base" style="background:rgba(39,110,241,0.2);">📍</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-white text-[12px] font-bold leading-tight">Vila Madalena, SP</p>
-          <p class="text-white/50 text-[9px]">12 oportunidades em 3 km</p>
-        </div>
-        <div class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1" style="background:rgba(34,197,94,0.2); color:#4ade80;">
-          <span class="w-1 h-1 rounded-full bg-emerald-400"></span> AO VIVO
+
+  <!-- Device -->
+  <div class="device" style="position:absolute;left:50%;transform:translateX(-50%);bottom:-40px">
+    <div class="screen">
+      <div class="notch"></div>
+      <div class="status">
+        <span>9:41</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <svg width="22" height="14" viewBox="0 0 22 14" fill="none"><path d="M1 12a10 10 0 0 1 20 0" stroke="#fff" stroke-width="1.5"/><path d="M5 12a6 6 0 0 1 12 0" stroke="#fff" stroke-width="1.5"/><circle cx="11" cy="12" r="1.5" fill="#fff"/></svg>
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="#fff"><path d="M9 14L0 5a12.7 12.7 0 0 1 18 0L9 14z"/></svg>
+          <div style="width:34px;height:16px;border:2px solid #fff;border-radius:4px;position:relative"><div style="position:absolute;inset:2px;background:#fff;border-radius:2px;width:78%"></div></div>
         </div>
       </div>
-    </div>
-    <div class="absolute bottom-0 left-0 right-0 rounded-t-3xl p-3.5" style="z-index:1000; background:#0B0B0F; border-top:1px solid rgba(255,255,255,0.08);">
-      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto mb-2"></div>
-      <div class="flex items-center gap-2 mb-2">
-        <span class="px-2 py-0.5 rounded-md text-[8px] font-bold uppercase" style="background:rgba(245,158,11,0.2); color:#fbbf24;">⚡ Mais próximo</span>
-        <span class="text-white/40 text-[9px]">há 2 min</span>
-      </div>
-      <h3 class="text-white text-[13px] font-extrabold leading-tight">Ensaio externo · Casal</h3>
-      <p class="text-white/50 text-[10px] mt-0.5">📷 Fotógrafo · 0,8 km · Sáb 16h</p>
-      <div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-white/10">
-        <div>
-          <p class="text-[8px] text-white/40 uppercase font-bold">Você recebe</p>
-          <p class="text-white text-[17px] font-extrabold leading-none">R$ 680</p>
+
+      <!-- Mapa -->
+      <div id="map"></div>
+
+      <!-- Header flutuante (replica MapaPage) -->
+      <div style="position:absolute;top:80px;left:0;right:0;padding:30px 30px 18px;z-index:1080;background:linear-gradient(to bottom, rgba(0,0,0,.85), rgba(0,0,0,.4) 60%, transparent)">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="width:64px;height:64px;border-radius:9999px;background:rgba(24,24,27,.92);border:1px solid #27272a;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          </div>
+          <div style="flex:1;background:rgba(24,24,27,.92);border:1px solid #27272a;border-radius:9999px;padding:14px 24px;backdrop-filter:blur(8px)">
+            <p style="margin:0;color:#fff;font-size:22px;font-weight:600;line-height:1.1">Mapa de oportunidades</p>
+            <p style="margin:4px 0 0;color:#71717a;font-size:18px">Em tempo real perto de você</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(24,24,27,.92);border:1px solid #27272a;border-radius:9999px;padding:14px 20px;backdrop-filter:blur(8px)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+            <span style="color:#d4d4d8;font-size:20px;font-weight:600">7</span>
+          </div>
         </div>
-        <button class="px-4 py-2 rounded-xl text-[11px] font-bold text-white" style="background:#276EF1;">Ver →</button>
       </div>
+
+      <!-- Bottom sheet (replica MapaPage) -->
+      <div style="position:absolute;bottom:160px;left:0;right:0;padding:0 30px;z-index:1080">
+        <div style="background:rgba(9,9,11,.96);border:1px solid #27272a;border-radius:36px;padding:22px;backdrop-filter:blur(8px);box-shadow:0 20px 60px rgba(0,0,0,.6)">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0 8px 14px">
+            <p style="margin:0;color:#71717a;font-size:18px;letter-spacing:3px;font-weight:600;text-transform:uppercase">7 oportunidades</p>
+            <span style="color:#52525b;font-size:18px">deslize ↓</span>
+          </div>
+          <!-- Card 1 -->
+          <div style="background:#18181b;border:1px solid #27272a;border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:16px;margin-bottom:10px">
+            <div style="width:54px;height:54px;border-radius:9999px;background:rgba(250,204,21,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div style="flex:1;min-width:0">
+              <p style="margin:0;color:#f4f4f5;font-size:22px;font-weight:600;line-height:1.2">Casamento Vila Madalena</p>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <p style="margin:0;color:#71717a;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">R. Harmonia, 245 — Vila Madalena</p>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <p style="margin:0;color:#fff;font-size:22px;font-weight:600">R$ 1.800</p>
+              <p style="margin:4px 0 0;color:#52525b;font-size:16px">1.2 km</p>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div style="background:#18181b;border:1px solid #27272a;border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:16px;margin-bottom:10px">
+            <div style="width:54px;height:54px;border-radius:9999px;background:rgba(250,204,21,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div style="flex:1;min-width:0">
+              <p style="margin:0;color:#f4f4f5;font-size:22px;font-weight:600;line-height:1.2">Ensaio produto — e-commerce</p>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <p style="margin:0;color:#71717a;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Av. Paulista, 1230 — Bela Vista</p>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <p style="margin:0;color:#fff;font-size:22px;font-weight:600">R$ 950</p>
+              <p style="margin:4px 0 0;color:#52525b;font-size:16px">2.4 km</p>
+            </div>
+          </div>
+          <!-- Card 3 -->
+          <div style="background:#18181b;border:1px solid #27272a;border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:16px">
+            <div style="width:54px;height:54px;border-radius:9999px;background:rgba(250,204,21,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#facc15" stroke="#facc15" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div style="flex:1;min-width:0">
+              <p style="margin:0;color:#f4f4f5;font-size:22px;font-weight:600;line-height:1.2">Reels para padaria — Pinheiros</p>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52525b" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <p style="margin:0;color:#71717a;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">R. dos Pinheiros, 870 — Pinheiros</p>
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <p style="margin:0;color:#fff;font-size:22px;font-weight:600">R$ 620</p>
+              <p style="margin:4px 0 0;color:#52525b;font-size:16px">3.1 km</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating nav simulada -->
+      <div style="position:absolute;bottom:50px;left:50%;transform:translateX(-50%);z-index:1080;display:flex;gap:10px;background:rgba(24,24,27,.95);border:1px solid #27272a;border-radius:9999px;padding:14px 20px;backdrop-filter:blur(8px)">
+        <div style="width:54px;height:54px;border-radius:9999px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <div style="width:54px;height:54px;border-radius:9999px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div style="width:54px;height:54px;border-radius:9999px;background:#3b82f6;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div style="width:54px;height:54px;border-radius:9999px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div style="width:54px;height:54px;border-radius:9999px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
+      </div>
+
     </div>
   </div>
-</section>
+</div>
 
 <script>
-  // Map initialization for v6
-  setTimeout(() => {
-    const mapDiv = document.getElementById('map');
-    if (!mapDiv) return;
-    const map = L.map('map', { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false }).setView([-23.5475, -46.6925], 14);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 }).addTo(map);
-    const userIcon = L.divIcon({ className:'', html:'<div style="position:relative;width:22px;height:22px;"><div style="position:absolute;inset:0;background:#276EF1;border-radius:50%;border:3px solid white;box-shadow:0 0 0 4px rgba(39,110,241,.3),0 4px 12px rgba(0,0,0,.5);"></div></div>', iconSize:[22,22], iconAnchor:[11,11] });
-    L.marker([-23.5475, -46.6925], {icon:userIcon}).addTo(map);
-    const opps = [
-      { lat:-23.5450, lng:-46.6900, icon:'📷' },
-      { lat:-23.5500, lng:-46.6970, icon:'🎬' },
-      { lat:-23.5430, lng:-46.6960, icon:'📱' },
-      { lat:-23.5510, lng:-46.6880, icon:'📣' },
-      { lat:-23.5460, lng:-46.6850, icon:'✨' },
-      { lat:-23.5520, lng:-46.6920, icon:'🎨' },
-      { lat:-23.5440, lng:-46.6990, icon:'📷' },
-      { lat:-23.5490, lng:-46.6840, icon:'🎬' },
-      { lat:-23.5410, lng:-46.6920, icon:'📷' },
-      { lat:-23.5490, lng:-46.7000, icon:'📣' },
-      { lat:-23.5530, lng:-46.6960, icon:'📱' },
-      { lat:-23.5420, lng:-46.6870, icon:'✨' },
-    ];
-    opps.forEach(o => {
-      const html = `<div style="position:relative;"><div class="pin-pulse"></div><div class="pin"><span>${o.icon}</span></div></div>`;
-      const icon = L.divIcon({ className:'', html, iconSize:[34,40], iconAnchor:[17,40] });
-      L.marker([o.lat,o.lng], {icon}).addTo(map);
-    });
-  }, 200);
+  const center = [-23.5505, -46.6333];
+  const map = L.map('map', { zoomControl:false, attributionControl:false }).setView(center, 13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+  // user
+  const userIcon = L.divIcon({className:'',html:`<div style="position:relative;width:26px;height:26px;"><div style="position:absolute;inset:0;background:#3b82f6;opacity:.45;border-radius:9999px;animation:pulse 1.6s infinite;"></div><div style="position:absolute;inset:5px;background:#3b82f6;border:3px solid white;border-radius:9999px;"></div></div>`,iconSize:[26,26],iconAnchor:[13,13]});
+  L.marker(center, {icon:userIcon}).addTo(map);
+  L.circle(center,{radius:5000,color:'#3b82f6',fillColor:'#3b82f6',fillOpacity:.06,weight:1}).addTo(map);
+
+  // opportunities (realistas em SP)
+  const oppIcon = L.divIcon({className:'',html:`<div style="position:relative;width:46px;height:46px;"><div style="position:absolute;inset:0;background:#facc15;opacity:.35;border-radius:9999px;animation:pulse 1.8s infinite;"></div><div style="position:absolute;inset:5px;background:#facc15;border:3px solid #18181b;border-radius:9999px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(250,204,21,.4);"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="black" stroke="black" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div></div>`,iconSize:[46,46],iconAnchor:[23,23]});
+
+  const opps = [
+    [-23.5440,-46.6916], // Vila Madalena
+    [-23.5613,-46.6565], // Bela Vista
+    [-23.5670,-46.6816], // Pinheiros
+    [-23.5350,-46.6240], // Bom Retiro
+    [-23.5800,-46.6350], // Vila Mariana
+    [-23.5450,-46.6450], // República
+    [-23.5290,-46.6620], // Higienópolis
+  ];
+  opps.forEach(p => L.marker(p,{icon:oppIcon}).addTo(map));
+
+  setTimeout(()=>map.invalidateSize(),200);
 </script>
-
-
 </body>
 </html>

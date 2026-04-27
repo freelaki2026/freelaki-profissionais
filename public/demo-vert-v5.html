@@ -1,115 +1,122 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<title>Vertical</title>
+<meta charset="utf-8"/>
+<title>Perfil — Vertical</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  body { margin:0; font-family:'Inter',sans-serif; background:#000; }
-  .vframe { width:414px; height:896px; position:relative; overflow:hidden; }
-  .scroll-hide::-webkit-scrollbar { display:none; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  @keyframes pulseRing { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.6);opacity:0} }
-  .pulse-dot { animation: pulse 1.6s ease-in-out infinite; }
-  .ph { width:300px; height:600px; border-radius:42px; overflow:hidden; position:relative; box-shadow:0 50px 100px -15px rgba(0,0,0,0.7), 0 0 0 10px #1a1a1f, 0 0 0 12px #2a2a30; }
-  .pin { width:34px; height:34px; border-radius:50% 50% 50% 0; background:#276EF1; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.4); border:2px solid white; }
-  .pin span { transform:rotate(45deg); font-size:13px; }
-  .pin-pulse { position:absolute; inset:-8px; border-radius:50%; background:#276EF1; animation: pulseRing 2s ease-out infinite; z-index:-1; }
-  .leaflet-container { background:#0a0a0f; }
-  .stat-svg svg { fill:currentColor; }
+  html,body{margin:0;padding:0;background:#0b0b10;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  .stage{width:1242px;height:2208px;background:radial-gradient(circle at 30% 20%, #2a2150 0%, #0b0b10 70%);position:relative;overflow:hidden}
+  .blob{position:absolute;border-radius:9999px;filter:blur(120px);opacity:.55}
+  .device{width:900px;height:1820px;border-radius:88px;background:#000;padding:14px;box-shadow:0 80px 160px rgba(0,0,0,.55), 0 0 0 2px rgba(255,255,255,.06)}
+  .screen{width:100%;height:100%;border-radius:74px;overflow:hidden;background:#000;position:relative}
+  .notch{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:240px;height:34px;background:#000;border-radius:20px;z-index:50}
+  .status{position:absolute;top:0;left:0;right:0;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;color:#fff;font-weight:600;font-size:22px;z-index:40}
+  .pill{display:inline-flex;align-items:center;gap:6px;border-radius:9999px;padding:7px 14px;font-weight:500}
 </style>
 </head>
 <body>
-<!-- Each section is 414x896, body lays them vertically -->
+<div class="stage">
+  <div class="blob" style="width:700px;height:700px;background:#5b3cff;top:-160px;left:-180px"></div>
+  <div class="blob" style="width:600px;height:600px;background:#0066ff;bottom:-140px;right:-160px"></div>
 
-<!-- 1) OPORTUNIDADES -->
-<section class="vframe" id="v5" style="background:linear-gradient(180deg,#1e1b4b 0%,#312e81 50%,#1e1b4b 100%);">
-  <div class="absolute top-0 left-1/3 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(236,72,153,0.3),transparent 70%);"></div>
-  <div class="absolute -bottom-32 -left-20 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(124,58,237,0.35),transparent 70%);"></div>
-  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
-    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold text-white" style="background:rgba(236,72,153,0.25); border:1px solid rgba(236,72,153,0.5);">
-      ✨ PERFIL VERIFICADO
-    </span>
-    <h1 class="text-white font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Sua marca.<br/>Seu portfólio.<br/><span style="background:linear-gradient(90deg,#ec4899,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent;">Seu próximo job.</span></h1>
+  <!-- Headline -->
+  <div style="position:absolute;top:90px;left:0;right:0;text-align:center;padding:0 80px;z-index:10">
+    <p style="color:#7fa9ff;font-size:30px;font-weight:600;letter-spacing:8px;text-transform:uppercase;margin:0 0 18px">Perfil</p>
+    <h1 style="color:#fff;font-size:84px;font-weight:800;line-height:1.05;letter-spacing:-2px;margin:0">
+      Sua marca.<br/>Seu próximo job.
+    </h1>
   </div>
-  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#F5F6F8;">
-    <div class="flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-black">
-      <span>9:41</span>
-      <div class="flex items-center gap-1.5">
-        <svg width="14" height="10" viewBox="0 0 16 11" fill="black"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
-        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="black" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="black"/></svg>
-      </div>
-    </div>
-    <div class="h-24 mx-5 mt-3 rounded-2xl relative overflow-hidden" style="background:linear-gradient(135deg,#276EF1,#7c3aed,#ec4899);">
-      <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-white/10"></div>
-    </div>
-    <div class="px-5 -mt-8">
-      <div class="flex items-end gap-3">
-        <div class="relative">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl border-4 border-white shadow-xl">L</div>
-          <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-500 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">✓</div>
-        </div>
-        <div class="pb-1">
-          <h1 class="text-[15px] font-extrabold text-black leading-tight">Lucas Andrade</h1>
-          <p class="text-[10px] text-gray-500 font-medium">📷 Fotógrafo · 🎬 Filmmaker</p>
+
+  <!-- Device -->
+  <div class="device" style="position:absolute;left:50%;transform:translateX(-50%);bottom:-40px">
+    <div class="screen">
+      <div class="notch"></div>
+      <!-- Status bar -->
+      <div class="status">
+        <span>9:41</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <svg width="22" height="14" viewBox="0 0 22 14" fill="none"><path d="M1 12a10 10 0 0 1 20 0" stroke="#fff" stroke-width="1.5"/><path d="M5 12a6 6 0 0 1 12 0" stroke="#fff" stroke-width="1.5"/><circle cx="11" cy="12" r="1.5" fill="#fff"/></svg>
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="#fff"><path d="M9 14L0 5a12.7 12.7 0 0 1 18 0L9 14z"/></svg>
+          <div style="width:34px;height:16px;border:2px solid #fff;border-radius:4px;position:relative"><div style="position:absolute;inset:2px;background:#fff;border-radius:2px;width:78%"></div></div>
         </div>
       </div>
-    </div>
-    <div class="mx-5 mt-3 grid grid-cols-3 gap-2 bg-white rounded-2xl p-2.5 border border-gray-100">
-      <div class="text-center">
-        <p class="text-[16px] font-extrabold text-black">4.9</p>
-        <p class="text-[8px] uppercase text-gray-400 font-bold">Avaliação</p>
+
+      <!-- Header -->
+      <div style="position:absolute;top:80px;left:0;right:0;height:80px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:#000;z-index:30">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        <span style="color:#fff;font-size:30px;font-weight:600">Meu Perfil</span>
+        <span style="color:#3b82f6;font-size:28px;font-weight:600">Salvar</span>
       </div>
-      <div class="text-center border-x border-gray-100">
-        <p class="text-[16px] font-extrabold text-black">147</p>
-        <p class="text-[8px] uppercase text-gray-400 font-bold">Freelas</p>
-      </div>
-      <div class="text-center">
-        <p class="text-[16px] font-extrabold text-black">98%</p>
-        <p class="text-[8px] uppercase text-gray-400 font-bold">Conclusão</p>
-      </div>
-    </div>
-    <div class="mx-5 mt-3">
-      <p class="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Especialidades</p>
-      <div class="flex flex-wrap gap-1.5">
-        <span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">📷 Fotógrafo</span>
-        <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">🎬 Filmmaker</span>
-        <span class="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">📱 Videomaker Mobile</span>
-        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">✨ Storymaker</span>
-      </div>
-    </div>
-    <div class="mx-5 mt-3 bg-white rounded-2xl p-2.5 border border-gray-100">
-      <p class="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Tabela de preços</p>
-      <div class="grid grid-cols-2 gap-2">
-        <div class="rounded-xl p-2" style="background:linear-gradient(135deg,#f0f5ff,#e0e7ff);">
-          <p class="text-[9px] text-gray-500 font-semibold">Por hora</p>
-          <p class="text-[14px] font-extrabold text-black">R$ 180</p>
-        </div>
-        <div class="rounded-xl p-2" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
-          <p class="text-[9px] text-gray-500 font-semibold">Por dia</p>
-          <p class="text-[14px] font-extrabold text-black">R$ 1.450</p>
-        </div>
-      </div>
-    </div>
-    <div class="mx-5 mt-3 bg-white rounded-2xl p-2.5 border border-gray-100">
-      <p class="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Últimas avaliações</p>
-      <div class="flex items-start gap-2">
-        <div class="w-6 h-6 rounded-full bg-pink-400 flex items-center justify-center text-white text-[9px] font-bold">M</div>
-        <div class="flex-1">
-          <div class="flex items-center gap-1">
-            <span class="text-[10px] font-bold text-black">Maria H.</span>
-            <span class="text-[9px] text-yellow-500">★★★★★</span>
+
+      <!-- Avatar block -->
+      <div style="position:absolute;top:170px;left:0;right:0;display:flex;justify-content:center;background:#000;padding-bottom:50px;z-index:25">
+        <div style="position:relative">
+          <div style="width:170px;height:170px;border-radius:9999px;background:linear-gradient(135deg,#3b82f6,#5b3cff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:62px;font-weight:800;box-shadow:0 12px 30px rgba(59,130,246,.4)">TK</div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:50px;height:50px;border-radius:9999px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(0,0,0,.3)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
           </div>
-          <p class="text-[9px] text-gray-500 leading-snug">"Profissional impecável, super pontual!"</p>
         </div>
+      </div>
+
+      <!-- Body cream -->
+      <div style="position:absolute;top:430px;left:0;right:0;bottom:0;background:#F7F7F7;border-top-left-radius:48px;border-top-right-radius:48px;padding:42px 36px 40px;overflow:hidden">
+
+        <!-- SOBRE VOCÊ -->
+        <p style="font-size:18px;letter-spacing:4px;font-weight:600;color:#767676;margin:0 0 14px">SOBRE VOCÊ</p>
+        <div style="background:#fff;border-radius:24px;padding:24px">
+          <p style="margin:0;font-size:18px;color:#767676">Nome completo</p>
+          <p style="margin:4px 0 0;font-size:26px;font-weight:700;color:#000">Thiago Kennedy</p>
+          <div style="height:1px;background:#F7F7F7;margin:18px 0"></div>
+          <p style="margin:0;font-size:18px;color:#767676">Telefone</p>
+          <p style="margin:4px 0 0;font-size:26px;font-weight:700;color:#000">(11) 98742-3019</p>
+          <div style="height:1px;background:#F7F7F7;margin:18px 0"></div>
+          <p style="margin:0;font-size:18px;color:#767676">Bio / Apresentação</p>
+          <p style="margin:6px 0 0;font-size:22px;color:#1a1a1a;line-height:1.4">Fotógrafo e videomaker em SP. 7 anos cobrindo eventos, produtos e moda. Entrega rápida e edição com identidade.</p>
+        </div>
+
+        <!-- CATEGORIAS -->
+        <p style="font-size:18px;letter-spacing:4px;font-weight:600;color:#767676;margin:30px 0 14px">CATEGORIAS</p>
+        <div style="background:#fff;border-radius:24px;padding:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:24px;font-weight:700;color:#000">Especialidades</span>
+            <span style="font-size:22px;font-weight:600;color:#276EF1">Editar →</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:18px">
+            <span class="pill" style="background:rgba(39,110,241,.08);color:#276EF1;font-size:22px"><span style="font-size:22px">📷</span>Fotógrafo</span>
+            <span class="pill" style="background:rgba(39,110,241,.08);color:#276EF1;font-size:22px"><span style="font-size:22px">📱</span>Videomaker Mobile</span>
+            <span class="pill" style="background:rgba(39,110,241,.08);color:#276EF1;font-size:22px"><span style="font-size:22px">🎬</span>Filmmaker</span>
+          </div>
+        </div>
+
+        <!-- REDES SOCIAIS -->
+        <p style="font-size:18px;letter-spacing:4px;font-weight:600;color:#767676;margin:30px 0 6px">REDES SOCIAIS</p>
+        <p style="font-size:18px;color:#767676;margin:0 0 14px">Opcional — até 6 redes/portfólios.</p>
+        <div style="background:#fff;border-radius:24px;padding:18px 24px">
+          <!-- Instagram -->
+          <div style="display:flex;align-items:center;gap:18px;padding:14px 0;border-bottom:1px solid #F7F7F7">
+            <div style="width:48px;height:48px;border-radius:9999px;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px">📸</div>
+            <span style="font-size:22px;font-weight:600;color:#000;width:170px">Instagram</span>
+            <span style="flex:1;font-size:22px;color:#767676">@thiagok.foto</span>
+          </div>
+          <!-- LinkedIn -->
+          <div style="display:flex;align-items:center;gap:18px;padding:14px 0;border-bottom:1px solid #F7F7F7">
+            <div style="width:48px;height:48px;border-radius:9999px;background:#0077B5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800">in</div>
+            <span style="font-size:22px;font-weight:600;color:#000;width:170px">LinkedIn</span>
+            <span style="flex:1;font-size:22px;color:#767676">thiago-kennedy</span>
+          </div>
+          <!-- Behance -->
+          <div style="display:flex;align-items:center;gap:18px;padding:14px 0">
+            <div style="width:48px;height:48px;border-radius:9999px;background:#1769FF;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:800">Bē</div>
+            <span style="font-size:22px;font-weight:600;color:#000;width:170px">Behance</span>
+            <span style="flex:1;font-size:22px;color:#767676">thiagok</span>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
-</section>
-
-<!-- 6) MAPA -->
+</div>
 </body>
 </html>
