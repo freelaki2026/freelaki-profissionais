@@ -103,6 +103,7 @@ const App = () => {
             <Route path="/cadastro/etapa2" element={<CadastroStep2 />} />
             <Route path="/cadastro/etapa3" element={<CadastroStep3 />} />
             <Route path="/termos" element={<TermosPage />} />
+            <Route path="/privacidade" element={<PrivacidadePage />} />
             <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
             <Route path="/categorias" element={<ProtectedRoute><CategoriasPage /></ProtectedRoute>} />
 
