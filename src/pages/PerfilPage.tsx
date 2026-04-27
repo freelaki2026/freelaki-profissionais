@@ -442,7 +442,7 @@ const PerfilPage = () => {
             <textarea
               value={bio}
               onChange={(e) => { if (e.target.value.length <= 200) { setBio(e.target.value); setIsDirty(true); } }}
-              className="mt-1 w-full resize-none text-sm text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))]"
+              className="mt-1 w-full resize-none text-sm text-foreground outline-none placeholder:text-[hsl(var(--muted-foreground))] bg-primary-foreground"
               style={{ minHeight: 80 }}
               placeholder="Conte um pouco sobre você e sua experiência..."
             />
