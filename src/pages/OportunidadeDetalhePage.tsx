@@ -118,7 +118,7 @@ const OportunidadeDetalhePage = () => {
     const { data, error } = await supabase
       .from("opportunities")
       .select(
-        "id, title, description, budget, total_amount, status, scheduled_at, location_address, is_private, target_professional_id, accepted_by, category_id, categories(name, icon, description), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
+        "id, title, description, budget, total_amount, status, scheduled_at, location_address, is_private, target_professional_id, accepted_by, category_id, categories(name, icon, description, slug), client_id, profiles!opportunities_client_id_fkey(full_name, avatar_url, is_approved)"
       )
       .eq("id", id)
       .single();

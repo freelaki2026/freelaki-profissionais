@@ -107,7 +107,7 @@ const OportunidadesPage = () => {
     if (catIds.length > 0) {
       const { data } = await supabase
         .from("opportunities")
-        .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+        .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon, slug)")
         .in("status", ["open", "pending_selection"])
         .eq("is_private", false)
         .in("category_id", catIds)
@@ -118,7 +118,7 @@ const OportunidadesPage = () => {
     // Private opportunities targeted directly at me
     const { data: privateAvail } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon)")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, is_private, categories(name, icon, slug)")
       .in("status", ["open", "pending_selection"])
       .eq("is_private", true)
       .eq("target_professional_id", user.id)
@@ -139,7 +139,7 @@ const OportunidadesPage = () => {
     // Applications (Em Análise)
     const { data: apps } = await supabase
       .from("opportunity_applications")
-      .select("id, opportunity_id, status, opportunities(id, title, description, budget, status, scheduled_at, location_address, categories(name, icon))")
+      .select("id, opportunity_id, status, opportunities(id, title, description, budget, status, scheduled_at, location_address, categories(name, icon, slug))")
       .eq("professional_id", user.id)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
@@ -170,7 +170,7 @@ const OportunidadesPage = () => {
     // Accepted
     const { data: acc } = await supabase
       .from("opportunities")
-      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon)")
+      .select("id, title, description, budget, status, scheduled_at, location_address, category_id, categories(name, icon, slug)")
       .eq("accepted_by", user.id)
       .in("status", ["awaiting_signatures", "accepted", "in_progress"])
       .order("created_at", { ascending: false });

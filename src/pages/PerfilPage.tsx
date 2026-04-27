@@ -143,7 +143,7 @@ const PerfilPage = () => {
         .single(),
       supabase
         .from("professional_categories")
-        .select("category_id, categories(name, icon)")
+        .select("category_id, categories(name, icon, slug)")
         .eq("profile_id", user.id),
     ]);
 
