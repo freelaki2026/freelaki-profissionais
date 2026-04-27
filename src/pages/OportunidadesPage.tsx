@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import BottomNav from "@/components/dashboard/BottomNav";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 
 interface Opp {
