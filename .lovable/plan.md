@@ -1,138 +1,104 @@
+## Objetivo
 
+Restringir as categorias do app aos 8 itens abaixo, removendo todas as outras de forma segura (sem quebrar oportunidades, contratos ou perfis existentes), e gerar um único arquivo idêntico para colar no app do **Cliente**, mantendo tudo "linkado em tempo real" via Supabase compartilhado.
 
-# Plano de ajustes pré-aprovação App Store
-
-Vamos dividir em **6 blocos pequenos e independentes**, aplicados um de cada vez para evitar bugs. Você só precisa testar/aprovar entre os blocos — nenhuma ação manual necessária da sua parte.
-
----
-
-## Bloco 1 — Limpeza de Categorias (banco)
-
-Objetivo: deixar APENAS as 6 categorias permitidas no app inteiro.
-
-- Migration SQL para **desativar** (`is_active = false`) as 6 categorias extras: Roteirista, Entrevistador, Mestre de Cerimônia, Recepcionista de Eventos, Operador de Luz, Operador de Som.
-- As 6 que ficam ativas: Fotógrafo, Videomaker Mobile, Filmmaker, Social Media, Storymaker, Designer.
-- Não deletamos para não quebrar oportunidades antigas vinculadas.
-- Adicionar tile estático **"Em breve mais categorias 🚀"** (não selecionável, visual cinza) na grade da `CategoriasPage`, do `CadastroStep3` e em qualquer filtro de categoria.
+### Categorias finais (ordem do grid)
+1. Videomaker
+2. Filmmaker
+3. Storymaker
+4. Social Media
+5. Videomaker Mobile
+6. Designer
+7. Editor de vídeo
+8. Editor de vídeo com IA
 
 ---
 
-## Bloco 2 — Obrigatoriedades de cadastro/perfil
+## Diagnóstico atual
 
-Objetivo: garantir que o profissional só fique online/aprovado se tiver dados mínimos.
+A tabela `categories` no Supabase tem 12 itens. As 6 que precisam sair já estão com `is_active=false` (Roteirista, Entrevistador, Mestre de Cerimônia, Recepcionista de Eventos, Operador de Luz, Operador de Som) e **0 profissionais / 0 oportunidades vinculados** — seguro deletar.
 
-**a) Nome completo no cadastro (Etapa 1)** — já existe validação "nome + sobrenome" (`fullNameValid`). Vou reforçar: cada palavra ≥ 2 letras, mínimo 2 palavras, mensagem clara.
+Itens a tratar:
+- `Fotógrafo` (slug `fotografo`) — está ativo, **0 profissionais e 0 oportunidades**, será **desativado** (não removido, pois aparece hard-coded em `ContratosPage.tsx` como exemplo).
+- Faltam 3 categorias novas: **Videomaker**, **Editor de vídeo**, **Editor de vídeo com IA**.
 
-**b) Endereço-base obrigatório** — adicionar validação no enforcer (gate) que impede o profissional de ficar online sem endereço salvo.
-
-**c) Pelo menos 1 categoria** — já é obrigatório no onboarding, mas vou também travar na `PerfilPage` (não pode salvar com 0).
-
-**d) Pelo menos 1 equipamento e 1 rede social** — adicionar validação no `usePendingReviewEnforcer` para mostrar checklist na tela de perfil:
-  - ✅ Nome completo (2+ palavras)
-  - ✅ Endereço cadastrado
-  - ✅ ≥ 1 categoria
-  - ✅ ≥ 1 equipamento
-  - ✅ ≥ 1 rede social/portfólio
-  - ✅ Documentos enviados
-  - ✅ Dados bancários
-
-Sem todos, o toggle "Ficar Online" fica desabilitado com mensagem explicativa e CTA direto pra aba pendente.
+Como ambos os apps (Profissional e Cliente) leem da mesma tabela `categories` filtrando por `is_active=true`, qualquer mudança via SQL reflete em tempo real nos dois — basta atualizar o componente de ícones em ambos.
 
 ---
 
-## Bloco 3 — Endereço-base no Mapa do cliente
+## Mudanças
 
-Objetivo: profissional aparecer no mapa do cliente usando lat/lng do endereço-base.
+### 1. Migração SQL (Supabase)
 
-- Adicionar colunas `base_lat double precision` e `base_lng double precision` na tabela `addresses` (migration).
-- Na `EnderecoPage`, ao buscar CEP via ViaCEP, fazer geocoding adicional via **Nominatim (OpenStreetMap, grátis e sem chave)** com `street + number + city + state` para preencher lat/lng automaticamente.
-- Fallback: botão "Usar minha localização atual" se geocoding falhar.
-- Salvar `base_lat`/`base_lng` no `addresses`.
-- O app do cliente (fora deste repo) já consegue ler `addresses.base_lat/lng` para plotar no mapa.
+```sql
+-- Desativar Fotógrafo (mantém histórico de referências)
+UPDATE categories SET is_active = false WHERE slug = 'fotografo';
 
-> Nota: este projeto é só o app do **profissional**. O mapa que mostra o cliente já existe (`MapaPage`) e mostra oportunidades. A peça que faltava era persistir lat/lng do endereço-base do profissional — é isso que entregamos aqui.
+-- Remover definitivamente as 6 categorias inativas sem uso
+DELETE FROM categories
+WHERE slug IN (
+  'roteirista','entrevistador','mestre-de-cerimonia',
+  'recepcionista-eventos','operador-de-luz','operador-de-som'
+);
 
----
+-- Reordenar as restantes e inserir as 3 novas
+UPDATE categories SET order_index = 1 WHERE slug = 'filmmaker';        -- já existia
+UPDATE categories SET order_index = 4 WHERE slug = 'social-media';
+UPDATE categories SET order_index = 3 WHERE slug = 'storymaker';
+UPDATE categories SET order_index = 5 WHERE slug = 'videomaker-mobile';
+UPDATE categories SET order_index = 6 WHERE slug = 'designer';
 
-## Bloco 4 — Foto-prova de hora extra (contrato + FAQ)
+INSERT INTO categories (slug, name, is_active, order_index) VALUES
+  ('videomaker',          'Videomaker',             true, 0),
+  ('editor-de-video',     'Editor de vídeo',        true, 7),
+  ('editor-de-video-ia',  'Editor de vídeo com IA', true, 8)
+ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name, is_active=true, order_index=EXCLUDED.order_index;
+```
 
-Objetivo: orientar e exigir foto quando passar do horário combinado.
+Ordem final: Videomaker (0), Filmmaker (1), Storymaker (3), Social Media (4), Videomaker Mobile (5), Designer (6), Editor de vídeo (7), Editor de vídeo com IA (8).
 
-**a) Contrato** — alterar a função `generate_contract` (migration) para incluir uma nova cláusula:
+### 2. `src/components/ui/CategoryIcon.tsx`
 
-> "11. HORAS EXTRAS E PRORROGAÇÃO — Caso o serviço se estenda além do horário pactuado, o profissional deverá registrar via aplicativo um aditivo de horas extras com **foto-prova obrigatória** do local/relógio no momento da prorrogação. O aceite digital do aditivo pelo contratante constitui consentimento expresso para a cobrança adicional."
+Atualizar o mapa para os 8 slugs ativos e remover os obsoletos. Sugestão de ícones Lucide:
+- `videomaker` → `Video`
+- `filmmaker` → `Clapperboard`
+- `storymaker` → `Sparkles`
+- `social-media` → `Megaphone`
+- `videomaker-mobile` → `Smartphone`
+- `designer` → `Palette`
+- `editor-de-video` → `Scissors`
+- `editor-de-video-ia` → `Wand2`
 
-**b) Componente de aditivo** — já obriga foto pra `extra_hours` (vimos no schema). Vou adicionar:
-  - Banner explicativo "Tire a foto do relógio/local no momento exato"
-  - Tooltip de orientação (boas práticas)
-  - Bloqueio se foto > 30 min do registro (timestamp)
+Fallback continua sendo `Package` (para `fotografo` em contratos antigos).
 
-**c) FAQ** — inserir 3 novas perguntas:
-  1. "Como solicitar pagamento por horas extras?"
-  2. "Por que preciso enviar uma foto-prova?"
-  3. "O que acontece se o cliente recusar o aditivo?"
+### 3. `src/pages/ContratosPage.tsx` (linha 93)
 
----
+Trocar `category_name: "Fotógrafo"` por `"Filmmaker"` no exemplo hard-coded (apenas placeholder visual de demonstração — não afeta dados reais).
 
-## Bloco 5 — FloatingNav some quando há pop-up/sheet aberto
+### 4. Validação de não-quebra
 
-Objetivo: nav flutuante não bloquear cliques em modais/bottom sheets.
+- `CategoriasPage.tsx`, `OportunidadesPage.tsx`, `OportunidadeDetalhePage.tsx`, `PerfilPage.tsx` lêem categorias do banco — nenhuma mudança necessária, vão refletir os 8 itens automaticamente.
+- Profissionais já cadastrados em `videomaker-mobile` / `filmmaker` / `social-media` continuam intactos.
+- O `CategoryIcon` retorna `Package` como fallback para qualquer slug desconhecido — sem crash possível.
 
-- Criar um **store global leve** (Zustand ou Context) `useUiOverlay` com `register()/unregister()` e contador de overlays abertos.
-- `FloatingNav` lê o store: se `count > 0`, retorna `null` (com fade out via `AnimatePresence`).
-- Auditar e instrumentar todos os pontos identificados:
-  - `PerfilPage` (2 sheets de redes sociais)
-  - `EquipamentosPage` (form sheet)
-  - `FinanceiroPage` (sheet de saque)
-  - `OportunidadeDetalhePage` (4 modais)
-  - `MeusServicosPage`, `ContratosPage`, `MenuPage`, `MensagensPage`, `ContractAddendums`, etc.
-- Cada componente que abre overlay chama `useUiOverlay.register()` no `useEffect` quando `open === true`.
+### 5. Arquivo único para o app do Cliente
 
----
-
-## Bloco 6 — Termos de Uso compatíveis com App Store
-
-Objetivo: termos atendendo às diretrizes da Apple (App Review Guidelines 1.2, 3.1, 5.1).
-
-Inserir nova versão `2.0` na tabela `terms` (insert) cobrindo:
-
-1. **Identificação da plataforma** (CNPJ/empresa, contato `suporte@freelaqui.com.br`)
-2. **Elegibilidade** (18+ anos, capacidade civil)
-3. **Cadastro e responsabilidade pelos dados**
-4. **Política de conteúdo gerado pelo usuário (UGC)** — proibição de assédio, conteúdo ofensivo, mecanismo de denúncia em até 24h, banimento (exigência Apple Guideline 1.2)
-5. **Privacidade e LGPD** — coleta, finalidade, retenção, direitos do titular, link pra Política de Privacidade
-6. **Pagamentos via Asaas** — sem assinatura recorrente (importante p/ não cair em Guideline 3.1.1)
-7. **Cancelamento e reembolso** (regras já existentes na tabela `cancellation_rules`)
-8. **Disputas** — fluxo via suporte, mediação Freelaki
-9. **Propriedade intelectual** — usuário mantém direitos sobre seus posts; concede licença limitada à plataforma
-10. **Hora extra com foto-prova** (referência ao novo fluxo)
-11. **Foro** São Paulo/SP
-12. **Versão e data** (2.0, data de hoje)
-
-Marcar `2.0` como `is_active = true` e `1.0` como `false`.
-
-Adicionar **Política de Privacidade** linkada (criar tela `/privacidade` simples puxando da tabela `terms` com slug específico — ou nova tabela `privacy_policy` se preferir; recomendo reusar `terms` com campo `kind`).
+Gerar `/mnt/documents/CategoryIcon.client.tsx` com:
+- Mesmo `CATEGORY_ICON_MAP` dos 8 slugs.
+- Mesmo componente `<CategoryIcon slug name size className />`.
+- Comentário no topo explicando que o app do Cliente compartilha a tabela `categories` do mesmo projeto Supabase, então a sincronização é em tempo real — basta colar o arquivo em `src/components/ui/CategoryIcon.tsx` lá.
 
 ---
 
 ## Detalhes técnicos (resumo)
 
-| Bloco | Migrations | Frontend | Edge functions |
-|---|---|---|---|
-| 1 | UPDATE categories SET is_active=false (6 rows) | `CategoriasPage`, `CadastroStep3`, filtros | — |
-| 2 | — | `Cadastro.tsx`, `PerfilPage`, novo `useOnboardingChecklist` hook, `OnlineToggle` | — |
-| 3 | ALTER TABLE addresses ADD base_lat, base_lng | `EnderecoPage` (Nominatim fetch) | — |
-| 4 | CREATE OR REPLACE FUNCTION generate_contract; INSERT 3 FAQs | `ContractAddendums.tsx` (banner) | — |
-| 5 | — | Novo `src/stores/useUiOverlay.ts`, modificar `FloatingNav`, instrumentar ~12 componentes | — |
-| 6 | INSERT terms v2.0; UPDATE terms set is_active=false where version='1.0' | `TermosPage` já lê `is_active=true` (sem mudança); novo link de Política de Privacidade no `AjudaPage` | — |
+| Camada | Arquivo | Ação |
+|---|---|---|
+| DB | migração SQL | DELETE 6 + UPDATE fotografo + INSERT 3 + reorder |
+| App Pro | `src/components/ui/CategoryIcon.tsx` | Reescrever mapa para 8 slugs |
+| App Pro | `src/pages/ContratosPage.tsx` L93 | Trocar placeholder "Fotógrafo" → "Filmmaker" |
+| App Cliente | `/mnt/documents/CategoryIcon.client.tsx` | Gerar arquivo idêntico para colar |
 
-## O que você precisa fazer
+Sem alterações em RLS, edge functions, hooks ou rotas. Risco zero de crash: todas as queries continuam dinâmicas e o componente tem fallback.
 
-Nada durante a execução. Após cada bloco eu te aviso "Bloco X concluído, teste e me confirme" — você abre o app, clica nas telas afetadas e me diz se está OK antes de eu seguir pro próximo.
-
-## Ordem de execução
-
-1 → 2 → 3 → 4 → 5 → 6
-
-Posso começar pelo **Bloco 1** assim que você aprovar este plano. Se quiser priorizar outra ordem (ex: começar pelos termos pra já mandar pra Apple), me avise.
-
+Após aprovação, executo a migração (com confirmação do Supabase) e aplico os 2 edits no código.
