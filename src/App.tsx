@@ -19,6 +19,7 @@ import NotFound from "@/pages/NotFound";
 
 // Lazy: usa o MESMO loader do routePrefetch (chunk reaproveitado após hover/touchstart).
 const CadastroStep1 = lazy(() => import("@/pages/Cadastro"));
+const PrivacidadePage = lazy(() => import("@/pages/PrivacidadePage"));
 const CadastroStep2 = lazy(() => import("@/pages/CadastroStep2"));
 const CadastroStep3 = lazy(() => import("@/pages/CadastroStep3"));
 const ConfirmarEmailPage = lazy(() => import("@/pages/ConfirmarEmailPage"));
