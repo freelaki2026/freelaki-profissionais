@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Perfil Profissional</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>body { margin:0; font-family:'Inter',sans-serif; background:#F5F6F8; }</style>
+</head>
+<body>
+<div class="min-h-screen pb-28">
+  <!-- Status bar -->
+  <div class="flex justify-between items-center px-6 pt-3 pb-1 text-[13px] font-semibold text-black">
+    <span>9:41</span>
+    <div class="flex items-center gap-1.5">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="black"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="black" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="black"/></svg>
+    </div>
+  </div>
+
+  <!-- Cover gradient -->
+  <div class="h-32 mx-6 mt-3 rounded-3xl relative overflow-hidden" style="background:linear-gradient(135deg,#276EF1 0%,#7c3aed 50%,#ec4899 100%);">
+    <div class="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-white/10"></div>
+    <div class="absolute -left-8 bottom-0 w-24 h-24 rounded-full bg-white/10"></div>
+  </div>
+
+  <!-- Avatar + Verified -->
+  <div class="px-6 -mt-12">
+    <div class="flex items-end gap-3">
+      <div class="relative">
+        <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-extrabold text-3xl border-4 border-white shadow-xl">L</div>
+        <div class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-blue-500 border-2 border-white flex items-center justify-center">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+      </div>
+      <div class="pb-1">
+        <h1 class="text-[20px] font-extrabold text-black leading-tight">Lucas Andrade</h1>
+        <p class="text-[12px] text-gray-500 font-medium">Fotógrafo · DJ · Videomaker</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="mx-6 mt-5 grid grid-cols-3 gap-2 bg-white rounded-2xl p-4 border border-gray-100">
+    <div class="text-center">
+      <p class="text-[20px] font-extrabold text-black">4.9</p>
+      <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Avaliação</p>
+    </div>
+    <div class="text-center border-x border-gray-100">
+      <p class="text-[20px] font-extrabold text-black">147</p>
+      <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Freelas</p>
+    </div>
+    <div class="text-center">
+      <p class="text-[20px] font-extrabold text-black">98%</p>
+      <p class="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Conclusão</p>
+    </div>
+  </div>
+
+  <!-- Bio -->
+  <div class="mx-6 mt-3 bg-white rounded-2xl p-4 border border-gray-100">
+    <p class="text-[13px] text-gray-700 leading-relaxed">Apaixonado por capturar momentos únicos. 8 anos de experiência em casamentos, eventos corporativos e ensaios. Equipamento Sony A7IV próprio.</p>
+  </div>
+
+  <!-- Categories -->
+  <div class="mx-6 mt-3">
+    <p class="text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-2">Especialidades</p>
+    <div class="flex flex-wrap gap-2">
+      <span class="px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-[12px] font-bold flex items-center gap-1">📸 Fotografia</span>
+      <span class="px-3 py-1.5 rounded-full bg-purple-100 text-purple-700 text-[12px] font-bold flex items-center gap-1">🎧 DJ</span>
+      <span class="px-3 py-1.5 rounded-full bg-rose-100 text-rose-700 text-[12px] font-bold flex items-center gap-1">🎥 Vídeo</span>
+      <span class="px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-[12px] font-bold flex items-center gap-1">💍 Casamentos</span>
+    </div>
+  </div>
+
+  <!-- Pricing -->
+  <div class="mx-6 mt-4 bg-white rounded-2xl p-4 border border-gray-100">
+    <p class="text-[11px] uppercase tracking-wider text-gray-400 font-bold mb-3">Sua tabela de preços</p>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="rounded-xl p-3" style="background:linear-gradient(135deg,#f0f5ff,#e0e7ff);">
+        <p class="text-[10px] text-gray-500 font-semibold">Por hora</p>
+        <p class="text-[18px] font-extrabold text-black mt-0.5">R$ 180</p>
+      </div>
+      <div class="rounded-xl p-3" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+        <p class="text-[10px] text-gray-500 font-semibold">Por dia</p>
+        <p class="text-[18px] font-extrabold text-black mt-0.5">R$ 1.450</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent reviews -->
+  <div class="mx-6 mt-4">
+    <div class="flex items-center justify-between mb-2">
+      <p class="text-[11px] uppercase tracking-wider text-gray-400 font-bold">Últimas avaliações</p>
+      <span class="text-[11px] font-semibold" style="color:#276EF1;">Ver todas</span>
+    </div>
+    <div class="bg-white rounded-2xl p-4 border border-gray-100">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-[11px]">M</div>
+        <div class="flex-1">
+          <p class="text-[12px] font-bold text-black">Maria Helena</p>
+          <div class="flex gap-0.5">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+        </div>
+        <span class="text-[10px] text-gray-400">há 3 dias</span>
+      </div>
+      <p class="text-[12px] text-gray-600 mt-2 leading-relaxed">"Profissional impecável! Pontual, atencioso e entregou fotos lindas em tempo recorde. Super recomendo 💙"</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>
