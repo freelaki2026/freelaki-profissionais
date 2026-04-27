@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Vertical</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  body { margin:0; font-family:'Inter',sans-serif; background:#000; }
+  .vframe { width:414px; height:896px; position:relative; overflow:hidden; }
+  .scroll-hide::-webkit-scrollbar { display:none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  @keyframes pulseRing { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.6);opacity:0} }
+  .pulse-dot { animation: pulse 1.6s ease-in-out infinite; }
+  .ph { width:300px; height:600px; border-radius:42px; overflow:hidden; position:relative; box-shadow:0 50px 100px -15px rgba(0,0,0,0.7), 0 0 0 10px #1a1a1f, 0 0 0 12px #2a2a30; }
+  .pin { width:34px; height:34px; border-radius:50% 50% 50% 0; background:#276EF1; transform:rotate(-45deg); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.4); border:2px solid white; }
+  .pin span { transform:rotate(45deg); font-size:13px; }
+  .pin-pulse { position:absolute; inset:-8px; border-radius:50%; background:#276EF1; animation: pulseRing 2s ease-out infinite; z-index:-1; }
+  .leaflet-container { background:#0a0a0f; }
+  .stat-svg svg { fill:currentColor; }
+</style>
+</head>
+<body>
+<!-- Each section is 414x896, body lays them vertically -->
+
+<!-- 1) OPORTUNIDADES -->
+<section class="vframe" id="v1" style="background:linear-gradient(180deg,#0a0e1a 0%,#1a1530 50%,#0a0e1a 100%);">
+  <div class="absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(39,110,241,0.4),transparent 70%);"></div>
+  <div class="absolute -bottom-40 -right-32 w-[500px] h-[500px] rounded-full" style="background:radial-gradient(circle,rgba(168,85,247,0.3),transparent 70%);"></div>
+  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
+    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold text-white" style="background:rgba(39,110,241,0.25); border:1px solid rgba(39,110,241,0.5);">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span> EM TEMPO REAL
+    </span>
+    <h1 class="text-white font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Freelas perto<br/>de você.<br/><span style="background:linear-gradient(90deg,#60a5fa,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent;">Sem espera.</span></h1>
+  </div>
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#F5F6F8;">
+    <div class="flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-black">
+      <span>9:41</span>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="10" viewBox="0 0 16 11" fill="black"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="black" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="black"/></svg>
+      </div>
+    </div>
+    <div class="px-5 pt-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-[11px] text-gray-500 font-medium">Olá, Lucas 👋</p>
+          <h1 class="text-[20px] font-extrabold tracking-tight text-black leading-tight">Oportunidades<br/>perto de você</h1>
+        </div>
+        <div class="relative">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">L</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white pulse-dot"></span>
+        </div>
+      </div>
+    </div>
+    <div class="mx-5 mt-4 rounded-2xl p-3 flex items-center justify-between" style="background:linear-gradient(135deg,#0B0B0F,#1a1a2e);">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-dot"></span>
+        </div>
+        <div>
+          <p class="text-white font-semibold text-[12px]">Você está online</p>
+          <p class="text-white/50 text-[10px]">Recebendo chamados</p>
+        </div>
+      </div>
+      <div class="w-10 h-6 rounded-full bg-emerald-500 relative">
+        <div class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow"></div>
+      </div>
+    </div>
+    <div class="flex gap-2 px-5 mt-4 overflow-x-auto scroll-hide">
+      <span class="px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-black text-white">Disponíveis · 8</span>
+      <span class="px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-white text-gray-500 border border-gray-200">Em análise</span>
+    </div>
+    <div class="px-5 mt-3 space-y-2.5">
+      <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-orange-100 text-orange-700 uppercase">Hoje</span>
+            <span class="text-[10px] text-gray-400">há 4 min</span>
+          </div>
+          <span class="text-[10px] text-gray-400">📷 Fotógrafo</span>
+        </div>
+        <h3 class="mt-1.5 font-bold text-[13px] text-black leading-snug">Cobertura — Casamento</h3>
+        <p class="text-[11px] text-gray-500">Vila Madalena, SP · Sáb 14h</p>
+        <div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-100">
+          <div>
+            <p class="text-[9px] text-gray-400 uppercase font-semibold">Você recebe</p>
+            <p class="text-[17px] font-extrabold text-black">R$ 1.450</p>
+          </div>
+          <button class="px-4 py-2 rounded-xl text-[11px] font-bold text-white" style="background:#276EF1;">Ver →</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-blue-100 text-blue-700 uppercase">Amanhã</span>
+            <span class="text-[10px] text-gray-400">há 22 min</span>
+          </div>
+          <span class="text-[10px] text-gray-400">🎬 Filmmaker</span>
+        </div>
+        <h3 class="mt-1.5 font-bold text-[13px] text-black leading-snug">Gravação Alphaville</h3>
+        <p class="text-[11px] text-gray-500">Alphaville, Barueri · Dom 8h</p>
+      </div>
+      <div class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-purple-100 text-purple-700 uppercase">Sex</span>
+            <span class="text-[10px] text-gray-400">há 1h</span>
+          </div>
+          <span class="text-[10px] text-gray-400">📣 Social Media</span>
+        </div>
+        <h3 class="mt-1.5 font-bold text-[13px] text-black leading-snug">Conteúdo p/ lançamento</h3>
+        <p class="text-[11px] text-gray-500">Pinheiros, SP · Sex 10h</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2) GANHOS -->
+<section class="vframe" id="v2" style="background:linear-gradient(180deg,#040814 0%,#0a1a3a 50%,#040814 100%);">
+  <div class="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full" style="background:radial-gradient(circle,rgba(34,197,94,0.22),transparent 70%);"></div>
+  <div class="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full" style="background:radial-gradient(circle,rgba(39,110,241,0.3),transparent 70%);"></div>
+  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
+    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold text-white" style="background:rgba(34,197,94,0.25); border:1px solid rgba(34,197,94,0.5);">
+      💸 SAQUE INSTANTÂNEO
+    </span>
+    <h1 class="text-white font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Seu dinheiro<br/>na mão.<br/><span style="background:linear-gradient(90deg,#22c55e,#60a5fa); -webkit-background-clip:text; background-clip:text; color:transparent;">Direto no PIX.</span></h1>
+  </div>
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#0B0B0F;">
+    <div class="flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-white">
+      <span>9:41</span>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="white" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="white"/></svg>
+      </div>
+    </div>
+    <div class="px-5 pt-3 text-white">
+      <p class="text-white/60 text-[11px] font-medium">← Ganhos</p>
+      <h1 class="text-[22px] font-extrabold tracking-tight mt-1">Seu desempenho<br/>este mês 📈</h1>
+    </div>
+    <div class="mx-5 mt-4 rounded-3xl p-5 relative overflow-hidden" style="background:linear-gradient(135deg,#276EF1,#1a4cb8);">
+      <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/10"></div>
+      <div class="relative text-white">
+        <p class="text-[10px] uppercase tracking-[2px] text-white/70 font-semibold">Saldo disponível</p>
+        <div class="flex items-baseline gap-1 mt-1">
+          <span class="text-[15px] font-bold text-white/80">R$</span>
+          <span class="text-[36px] font-extrabold leading-none tracking-tight">8.420</span>
+          <span class="text-[16px] font-bold text-white/80">,50</span>
+        </div>
+        <button class="mt-3 bg-white text-[#276EF1] font-bold text-[12px] px-4 py-2 rounded-full">Sacar via PIX →</button>
+      </div>
+    </div>
+    <div class="px-5 mt-4 grid grid-cols-2 gap-2.5">
+      <div class="rounded-2xl p-3" style="background:#15151c;">
+        <p class="text-emerald-400 text-[9px] font-bold">↑ +24%</p>
+        <p class="text-[9px] uppercase text-white/40 mt-0.5 font-semibold">Total no mês</p>
+        <p class="text-[17px] font-extrabold text-white mt-0.5">R$ 12.840</p>
+      </div>
+      <div class="rounded-2xl p-3" style="background:#15151c;">
+        <p class="text-amber-400 text-[9px] font-bold">⏱ em 2 dias</p>
+        <p class="text-[9px] uppercase text-white/40 mt-0.5 font-semibold">A receber</p>
+        <p class="text-[17px] font-extrabold text-white mt-0.5">R$ 3.200</p>
+      </div>
+      <div class="rounded-2xl p-3" style="background:#15151c;">
+        <p class="text-blue-400 text-[9px] font-bold">✓ 100%</p>
+        <p class="text-[9px] uppercase text-white/40 mt-0.5 font-semibold">Concluídos</p>
+        <p class="text-[17px] font-extrabold text-white mt-0.5">28</p>
+      </div>
+      <div class="rounded-2xl p-3" style="background:#15151c;">
+        <p class="text-yellow-400 text-[9px] font-bold">★ média</p>
+        <p class="text-[9px] uppercase text-white/40 mt-0.5 font-semibold">Avaliação</p>
+        <p class="text-[17px] font-extrabold text-white mt-0.5">4.9 <span class="text-[10px] text-white/40">/5</span></p>
+      </div>
+    </div>
+    <div class="mx-5 mt-4 rounded-2xl p-3" style="background:#15151c;">
+      <p class="text-[9px] uppercase text-white/40 font-bold mb-2">Últimos recebimentos</p>
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-white text-[12px] font-semibold">📷 Casamento</p>
+            <p class="text-white/40 text-[9px]">há 2h · PIX</p>
+          </div>
+          <p class="text-emerald-400 text-[13px] font-bold">+ R$ 1.450</p>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-white text-[12px] font-semibold">🎬 Aniversário</p>
+            <p class="text-white/40 text-[9px]">ontem · PIX</p>
+          </div>
+          <p class="text-emerald-400 text-[13px] font-bold">+ R$ 850</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3) DETALHE -->
+<section class="vframe" id="v3" style="background:linear-gradient(180deg,#fef3c7 0%,#fde68a 50%,#fef3c7 100%);">
+  <div class="absolute -top-32 -right-40 w-[500px] h-[500px] rounded-full" style="background:radial-gradient(circle,rgba(251,191,36,0.5),transparent 70%);"></div>
+  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
+    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold" style="background:rgba(0,0,0,0.1); color:#0B0B0F;">
+      ⚡ ACEITE EM 1 TOQUE
+    </span>
+    <h1 class="text-black font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Tudo que<br/>importa.<br/><span style="background:linear-gradient(90deg,#9a3412,#dc2626); -webkit-background-clip:text; background-clip:text; color:transparent;">Antes de aceitar.</span></h1>
+  </div>
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#F5F6F8;">
+    <div class="flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-black">
+      <span>9:41</span>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="10" viewBox="0 0 16 11" fill="black"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="black" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="black"/></svg>
+      </div>
+    </div>
+    <div class="relative h-32 mx-5 mt-3 rounded-2xl overflow-hidden" style="background:linear-gradient(135deg,#dbeafe,#e0e7ff);">
+      <svg viewBox="0 0 400 220" class="absolute inset-0 w-full h-full">
+        <path d="M0 80 Q 100 60, 180 90 T 400 70" stroke="#94a3b8" stroke-width="3" fill="none" opacity=".4"/>
+        <path d="M0 140 Q 120 120, 220 150 T 400 130" stroke="#94a3b8" stroke-width="3" fill="none" opacity=".4"/>
+        <path d="M50 0 L 70 220" stroke="#94a3b8" stroke-width="2" fill="none" opacity=".3"/>
+        <path d="M280 0 L 310 220" stroke="#94a3b8" stroke-width="2" fill="none" opacity=".3"/>
+        <path d="M50 100 Q 200 70 310 130" stroke="#276EF1" stroke-width="4" fill="none" stroke-dasharray="8 4"/>
+      </svg>
+      <div class="absolute right-2 bottom-2 bg-white rounded-full px-2.5 py-1 shadow text-[10px] font-bold text-black">📍 1,2 km</div>
+    </div>
+    <div class="px-5 mt-3">
+      <div class="flex items-center gap-2 mb-1.5">
+        <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-orange-100 text-orange-700 uppercase">Hoje</span>
+        <span class="px-2 py-0.5 rounded-md text-[9px] font-bold bg-blue-100 text-blue-700 uppercase">📷 Fotógrafo</span>
+      </div>
+      <h1 class="text-[16px] font-extrabold tracking-tight text-black leading-tight">Cobertura — Casamento na Vila Madá</h1>
+      <div class="flex items-center gap-2 mt-2">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-[11px]">M</div>
+        <div>
+          <p class="text-[11px] font-semibold text-black">Maria Helena S.</p>
+          <p class="text-[9px] text-gray-500">★ 4.9 · cliente verificada</p>
+        </div>
+      </div>
+      <div class="mt-3 rounded-2xl bg-white border border-gray-100 divide-y divide-gray-100">
+        <div class="flex items-center gap-3 p-2.5">
+          <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-[12px]">📅</div>
+          <div>
+            <p class="text-[8px] uppercase text-gray-400 font-semibold">Quando</p>
+            <p class="text-[11px] font-bold text-black">Sáb, 02 mai · 14h às 22h</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 p-2.5">
+          <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-[12px]">📍</div>
+          <div>
+            <p class="text-[8px] uppercase text-gray-400 font-semibold">Onde</p>
+            <p class="text-[11px] font-bold text-black">Vila Madalena, SP</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 p-2.5">
+          <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-[12px]">⏱</div>
+          <div>
+            <p class="text-[8px] uppercase text-gray-400 font-semibold">Duração</p>
+            <p class="text-[11px] font-bold text-black">8 horas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-5 pt-2.5 pb-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-[9px] uppercase text-gray-400 font-bold">Você recebe</p>
+          <p class="text-[20px] font-extrabold text-black leading-none">R$ 1.450,00</p>
+        </div>
+        <button class="px-5 py-2.5 rounded-2xl text-[12px] font-bold text-white" style="background:#276EF1;">Aceitar agora</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4) MENSAGENS -->
+<section class="vframe" id="v4" style="background:linear-gradient(180deg,#0a0a14 0%,#1a0a2e 50%,#0a0a14 100%);">
+  <div class="absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(168,85,247,0.35),transparent 70%);"></div>
+  <div class="absolute -bottom-32 -right-32 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(39,110,241,0.3),transparent 70%);"></div>
+  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
+    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold text-white" style="background:rgba(168,85,247,0.25); border:1px solid rgba(168,85,247,0.5);">
+      💬 CHAT INTEGRADO
+    </span>
+    <h1 class="text-white font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Fale direto<br/>com quem<br/><span style="background:linear-gradient(90deg,#a78bfa,#60a5fa); -webkit-background-clip:text; background-clip:text; color:transparent;">vai te contratar.</span></h1>
+  </div>
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#F5F6F8;">
+    <div class="flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-black">
+      <span>9:41</span>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="10" viewBox="0 0 16 11" fill="black"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="black" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="black"/></svg>
+      </div>
+    </div>
+    <div class="px-5 pt-3">
+      <h1 class="text-[22px] font-extrabold tracking-tight text-black">Mensagens</h1>
+      <p class="text-[11px] text-gray-500 font-medium">4 conversas ativas</p>
+    </div>
+    <div class="mt-4 px-5 flex gap-3 overflow-x-auto scroll-hide">
+      <div class="flex flex-col items-center gap-1 min-w-[52px]">
+        <div class="relative">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold ring-2 ring-emerald-500 ring-offset-2">R</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
+        </div>
+        <span class="text-[9px] font-semibold text-black">Rafael</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 min-w-[52px]">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold">M</div>
+        <span class="text-[9px] font-semibold text-black">Maria H.</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 min-w-[52px]">
+        <div class="relative">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold ring-2 ring-emerald-500 ring-offset-2">J</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></span>
+        </div>
+        <span class="text-[9px] font-semibold text-black">Júlia</span>
+      </div>
+      <div class="flex flex-col items-center gap-1 min-w-[52px]">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold">F</div>
+        <span class="text-[9px] font-semibold text-black">Fernanda</span>
+      </div>
+    </div>
+    <div class="mt-4 px-5 space-y-2">
+      <p class="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-1">Recentes</p>
+      <div class="bg-white rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm border border-gray-100">
+        <div class="relative">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white font-bold text-[13px]">M</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <p class="text-[12px] font-bold text-black">Maria Helena S.</p>
+            <span class="text-[9px] text-gray-400">14:32</span>
+          </div>
+          <p class="text-[10px] text-gray-500 truncate">Perfeito! Te espero no local às 14h ✨</p>
+        </div>
+        <span class="w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style="background:#276EF1;">2</span>
+      </div>
+      <div class="bg-white rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm border border-gray-100">
+        <div class="relative">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-[13px]">R</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <p class="text-[12px] font-bold text-black">Rafael Costa</p>
+            <span class="text-[9px] text-gray-400">12:08</span>
+          </div>
+          <p class="text-[10px] text-gray-500 truncate">Boa! Acabei de enviar o briefing 📎</p>
+        </div>
+        <span class="w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style="background:#276EF1;">1</span>
+      </div>
+      <div class="bg-white rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm border border-gray-100">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-[13px]">J</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <p class="text-[12px] font-bold text-black">Júlia Mendonça</p>
+            <span class="text-[9px] text-gray-400">Ontem</span>
+          </div>
+          <p class="text-[10px] text-gray-500 truncate">Você: Posso fechar pra sábado então 👍</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm border border-gray-100">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold text-[13px]">F</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <p class="text-[12px] font-bold text-black">Fernanda Alves</p>
+            <span class="text-[9px] text-gray-400">Ontem</span>
+          </div>
+          <p class="text-[10px] text-gray-500 truncate">Obrigada pelo trabalho impecável! ⭐</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5) PERFIL -->
+<section class="vframe" id="v5" style="background:linear-gradient(180deg,#1e1b4b 0%,#312e81 50%,#1e1b4b 100%);">
+  <div class="absolute top-0 left-1/3 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(236,72,153,0.3),transparent 70%);"></div>
+  <div class="absolute -bottom-32 -left-20 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(124,58,237,0.35),transparent 70%);"></div>
+  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
+    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold text-white" style="background:rgba(236,72,153,0.25); border:1px solid rgba(236,72,153,0.5);">
+      ✨ PERFIL VERIFICADO
+    </span>
+    <h1 class="text-white font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Sua marca.<br/>Seu portfólio.<br/><span style="background:linear-gradient(90deg,#ec4899,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent;">Seu próximo job.</span></h1>
+  </div>
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#F5F6F8;">
+    <div class="flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-black">
+      <span>9:41</span>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="10" viewBox="0 0 16 11" fill="black"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="black" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="black"/></svg>
+      </div>
+    </div>
+    <div class="h-24 mx-5 mt-3 rounded-2xl relative overflow-hidden" style="background:linear-gradient(135deg,#276EF1,#7c3aed,#ec4899);">
+      <div class="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-white/10"></div>
+    </div>
+    <div class="px-5 -mt-8">
+      <div class="flex items-end gap-3">
+        <div class="relative">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-extrabold text-xl border-4 border-white shadow-xl">L</div>
+          <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-blue-500 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">✓</div>
+        </div>
+        <div class="pb-1">
+          <h1 class="text-[15px] font-extrabold text-black leading-tight">Lucas Andrade</h1>
+          <p class="text-[10px] text-gray-500 font-medium">📷 Fotógrafo · 🎬 Filmmaker</p>
+        </div>
+      </div>
+    </div>
+    <div class="mx-5 mt-3 grid grid-cols-3 gap-2 bg-white rounded-2xl p-2.5 border border-gray-100">
+      <div class="text-center">
+        <p class="text-[16px] font-extrabold text-black">4.9</p>
+        <p class="text-[8px] uppercase text-gray-400 font-bold">Avaliação</p>
+      </div>
+      <div class="text-center border-x border-gray-100">
+        <p class="text-[16px] font-extrabold text-black">147</p>
+        <p class="text-[8px] uppercase text-gray-400 font-bold">Freelas</p>
+      </div>
+      <div class="text-center">
+        <p class="text-[16px] font-extrabold text-black">98%</p>
+        <p class="text-[8px] uppercase text-gray-400 font-bold">Conclusão</p>
+      </div>
+    </div>
+    <div class="mx-5 mt-3">
+      <p class="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Especialidades</p>
+      <div class="flex flex-wrap gap-1.5">
+        <span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">📷 Fotógrafo</span>
+        <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">🎬 Filmmaker</span>
+        <span class="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">📱 Videomaker Mobile</span>
+        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">✨ Storymaker</span>
+      </div>
+    </div>
+    <div class="mx-5 mt-3 bg-white rounded-2xl p-2.5 border border-gray-100">
+      <p class="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Tabela de preços</p>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="rounded-xl p-2" style="background:linear-gradient(135deg,#f0f5ff,#e0e7ff);">
+          <p class="text-[9px] text-gray-500 font-semibold">Por hora</p>
+          <p class="text-[14px] font-extrabold text-black">R$ 180</p>
+        </div>
+        <div class="rounded-xl p-2" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);">
+          <p class="text-[9px] text-gray-500 font-semibold">Por dia</p>
+          <p class="text-[14px] font-extrabold text-black">R$ 1.450</p>
+        </div>
+      </div>
+    </div>
+    <div class="mx-5 mt-3 bg-white rounded-2xl p-2.5 border border-gray-100">
+      <p class="text-[9px] uppercase tracking-wider text-gray-400 font-bold mb-1.5">Últimas avaliações</p>
+      <div class="flex items-start gap-2">
+        <div class="w-6 h-6 rounded-full bg-pink-400 flex items-center justify-center text-white text-[9px] font-bold">M</div>
+        <div class="flex-1">
+          <div class="flex items-center gap-1">
+            <span class="text-[10px] font-bold text-black">Maria H.</span>
+            <span class="text-[9px] text-yellow-500">★★★★★</span>
+          </div>
+          <p class="text-[9px] text-gray-500 leading-snug">"Profissional impecável, super pontual!"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6) MAPA -->
+<section class="vframe" id="v6" style="background:linear-gradient(180deg,#000 0%,#0a0e1a 50%,#000 100%);">
+  <div class="absolute -top-32 -right-32 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(250,204,21,0.22),transparent 70%);"></div>
+  <div class="absolute -bottom-32 -left-32 w-[400px] h-[400px] rounded-full" style="background:radial-gradient(circle,rgba(59,130,246,0.3),transparent 70%);"></div>
+  <div class="relative h-[260px] px-10 pt-12 flex flex-col items-center text-center">
+    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold text-white" style="background:rgba(250,204,21,0.2); border:1px solid rgba(250,204,21,0.5);">
+      📍 RAIO DE 5 KM
+    </span>
+    <h1 class="text-white font-black tracking-tight leading-[0.95] mt-3" style="font-size:42px;">Veja todos<br/>os freelas<br/><span style="background:linear-gradient(90deg,#facc15,#60a5fa); -webkit-background-clip:text; background-clip:text; color:transparent;">ao seu redor.</span></h1>
+  </div>
+  <div class="absolute left-1/2 -translate-x-1/2 bottom-6 ph" style="background:#000;">
+    <div class="absolute top-0 left-0 right-0 flex justify-between items-center px-5 pt-3 pb-1 text-[12px] font-semibold text-white" style="background:linear-gradient(180deg,rgba(0,0,0,0.5),transparent); z-index:1100;">
+      <span>9:41</span>
+      <div class="flex items-center gap-1.5">
+        <svg width="14" height="10" viewBox="0 0 16 11" fill="white"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="22" height="11" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="white" fill="none"/><rect x="2.5" y="2.5" width="18" height="7" rx="1.5" fill="white"/></svg>
+      </div>
+    </div>
+    <div id="map" style="width:100%;height:100%;"></div>
+    <div class="absolute top-9 left-3 right-3" style="z-index:1000;">
+      <div class="rounded-2xl p-2.5 flex items-center gap-2" style="background:rgba(11,11,15,0.85); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.08);">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-base" style="background:rgba(39,110,241,0.2);">📍</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-[12px] font-bold leading-tight">Vila Madalena, SP</p>
+          <p class="text-white/50 text-[9px]">12 oportunidades em 3 km</p>
+        </div>
+        <div class="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1" style="background:rgba(34,197,94,0.2); color:#4ade80;">
+          <span class="w-1 h-1 rounded-full bg-emerald-400"></span> AO VIVO
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 right-0 rounded-t-3xl p-3.5" style="z-index:1000; background:#0B0B0F; border-top:1px solid rgba(255,255,255,0.08);">
+      <div class="w-10 h-1 bg-white/20 rounded-full mx-auto mb-2"></div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="px-2 py-0.5 rounded-md text-[8px] font-bold uppercase" style="background:rgba(245,158,11,0.2); color:#fbbf24;">⚡ Mais próximo</span>
+        <span class="text-white/40 text-[9px]">há 2 min</span>
+      </div>
+      <h3 class="text-white text-[13px] font-extrabold leading-tight">Ensaio externo · Casal</h3>
+      <p class="text-white/50 text-[10px] mt-0.5">📷 Fotógrafo · 0,8 km · Sáb 16h</p>
+      <div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-white/10">
+        <div>
+          <p class="text-[8px] text-white/40 uppercase font-bold">Você recebe</p>
+          <p class="text-white text-[17px] font-extrabold leading-none">R$ 680</p>
+        </div>
+        <button class="px-4 py-2 rounded-xl text-[11px] font-bold text-white" style="background:#276EF1;">Ver →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Map initialization for v6
+  setTimeout(() => {
+    const mapDiv = document.getElementById('map');
+    if (!mapDiv) return;
+    const map = L.map('map', { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false }).setView([-23.5475, -46.6925], 14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { subdomains:'abcd', maxZoom:19 }).addTo(map);
+    const userIcon = L.divIcon({ className:'', html:'<div style="position:relative;width:22px;height:22px;"><div style="position:absolute;inset:0;background:#276EF1;border-radius:50%;border:3px solid white;box-shadow:0 0 0 4px rgba(39,110,241,.3),0 4px 12px rgba(0,0,0,.5);"></div></div>', iconSize:[22,22], iconAnchor:[11,11] });
+    L.marker([-23.5475, -46.6925], {icon:userIcon}).addTo(map);
+    const opps = [
+      { lat:-23.5450, lng:-46.6900, icon:'📷' },
+      { lat:-23.5500, lng:-46.6970, icon:'🎬' },
+      { lat:-23.5430, lng:-46.6960, icon:'📱' },
+      { lat:-23.5510, lng:-46.6880, icon:'📣' },
+      { lat:-23.5460, lng:-46.6850, icon:'✨' },
+      { lat:-23.5520, lng:-46.6920, icon:'🎨' },
+      { lat:-23.5440, lng:-46.6990, icon:'📷' },
+      { lat:-23.5490, lng:-46.6840, icon:'🎬' },
+      { lat:-23.5410, lng:-46.6920, icon:'📷' },
+      { lat:-23.5490, lng:-46.7000, icon:'📣' },
+      { lat:-23.5530, lng:-46.6960, icon:'📱' },
+      { lat:-23.5420, lng:-46.6870, icon:'✨' },
+    ];
+    opps.forEach(o => {
+      const html = `<div style="position:relative;"><div class="pin-pulse"></div><div class="pin"><span>${o.icon}</span></div></div>`;
+      const icon = L.divIcon({ className:'', html, iconSize:[34,40], iconAnchor:[17,40] });
+      L.marker([o.lat,o.lng], {icon}).addTo(map);
+    });
+  }, 200);
+</script>
+</body>
+</html>
