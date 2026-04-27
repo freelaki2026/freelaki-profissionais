@@ -21,6 +21,7 @@ interface OppDetail {
   location_address: string | null;
   category_name: string;
   category_icon: string;
+  category_slug: string;
   category_description: string | null;
   client_name: string | null;
   client_avatar: string | null;
