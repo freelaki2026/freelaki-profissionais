@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/><title>7 — Freela Concluído</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;font-family:'Inter',sans-serif;}
+  .frame{width:1290px;height:2796px;position:relative;overflow:hidden;background:radial-gradient(ellipse at top,#1a4fc4 0%,#0a2470 50%,#020a24 100%);}
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+  .confetti{position:absolute;border-radius:4px;}
+</style>
+</head><body>
+<div class="frame">
+  <!-- Status bar -->
+  <div class="flex justify-between items-center px-16 pt-6 pb-2 text-white" style="font-size:36px;font-weight:600;">
+    <span>9:41</span>
+    <div class="flex items-center gap-3">
+      <svg width="48" height="32" viewBox="0 0 16 11" fill="white"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="48" height="32" viewBox="0 0 24 18" fill="none" stroke="white" stroke-width="2"><path d="M2 8 a14 14 0 0 1 20 0"/><path d="M5 11 a10 10 0 0 1 14 0"/><path d="M8 14 a6 6 0 0 1 8 0"/><circle cx="12" cy="17" r="1.2" fill="white"/></svg>
+      <svg width="80" height="36" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="white" fill="none" stroke-width="1"/><rect x="2.5" y="2.5" width="17" height="7" rx="1.2" fill="white"/></svg>
+    </div>
+  </div>
+
+  <!-- Confetti -->
+  <div class="confetti" style="top:280px;left:120px;width:24px;height:24px;background:#FFD93D;transform:rotate(20deg);"></div>
+  <div class="confetti" style="top:340px;left:1050px;width:18px;height:32px;background:#FF6B9D;transform:rotate(45deg);"></div>
+  <div class="confetti" style="top:480px;left:200px;width:30px;height:14px;background:#4ADE80;transform:rotate(-15deg);"></div>
+  <div class="confetti" style="top:520px;left:980px;width:22px;height:22px;background:#7C3AED;border-radius:9999px;"></div>
+  <div class="confetti" style="top:680px;left:90px;width:18px;height:18px;background:#F472B6;border-radius:9999px;"></div>
+  <div class="confetti" style="top:720px;left:1100px;width:28px;height:14px;background:#FDE047;transform:rotate(60deg);"></div>
+  <div class="confetti" style="top:880px;left:160px;width:16px;height:30px;background:#60A5FA;transform:rotate(30deg);"></div>
+  <div class="confetti" style="top:920px;left:1020px;width:20px;height:20px;background:#FB923C;"></div>
+
+  <!-- Big check circle -->
+  <div style="display:flex;justify-content:center;margin-top:280px;">
+    <div style="position:relative;width:420px;height:420px;">
+      <div style="position:absolute;inset:0;border-radius:9999px;background:radial-gradient(circle,rgba(74,222,128,0.4) 0%,rgba(74,222,128,0) 70%);filter:blur(40px);"></div>
+      <div style="position:absolute;inset:30px;border-radius:9999px;background:linear-gradient(135deg,#22c55e,#15803d);display:flex;align-items:center;justify-content:center;box-shadow:0 30px 80px rgba(34,197,94,0.5);">
+        <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Texts -->
+  <div style="text-align:center;padding:80px 60px 0;">
+    <h1 style="font-size:96px;font-weight:900;color:#fff;letter-spacing:-3px;line-height:1;">Parabéns!</h1>
+    <p style="margin-top:32px;font-size:42px;color:rgba(255,255,255,0.85);font-weight:500;line-height:1.3;">Você concluiu mais um freela com sucesso</p>
+  </div>
+
+  <!-- Earnings card -->
+  <div style="margin:100px 48px 0;background:rgba(255,255,255,0.08);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.15);border-radius:48px;padding:56px 48px;">
+    <p style="font-size:30px;color:rgba(255,255,255,0.6);font-weight:500;letter-spacing:1px;text-transform:uppercase;">Você ganhou</p>
+    <p style="margin-top:18px;font-size:120px;font-weight:900;color:#4ADE80;letter-spacing:-4px;line-height:1;">R$ 1.350</p>
+    <div style="margin-top:40px;height:1px;background:rgba(255,255,255,0.1);"></div>
+    <div class="flex items-center justify-between" style="margin-top:36px;">
+      <div>
+        <p style="font-size:26px;color:rgba(255,255,255,0.5);">Cliente</p>
+        <p style="font-size:36px;color:#fff;font-weight:700;margin-top:6px;">Marina Costa</p>
+      </div>
+      <div style="text-align:right;">
+        <p style="font-size:26px;color:rgba(255,255,255,0.5);">Avaliação</p>
+        <p style="font-size:36px;color:#FFD93D;font-weight:700;margin-top:6px;">★ ★ ★ ★ ★</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="position:absolute;bottom:160px;left:48px;right:48px;">
+    <div style="background:#fff;color:#000;border-radius:32px;padding:38px 0;text-align:center;font-weight:800;font-size:38px;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+      Avaliar cliente →
+    </div>
+    <p style="text-align:center;margin-top:32px;color:rgba(255,255,255,0.6);font-size:28px;">O valor cairá no seu PIX em até 24h</p>
+  </div>
+
+  <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);width:280px;height:10px;background:#fff;border-radius:9999px;"></div>
+</div>
+</body></html>
