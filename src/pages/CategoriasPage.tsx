@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import { ChevronLeft, Check, Zap } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/CategoryIcon";
 
 interface Category {
   id: string;
@@ -166,7 +167,13 @@ const CategoriasPage = () => {
                         <Check className="h-[10px] w-[10px] text-white" />
                       </motion.div>
                     )}
-                    <span className="text-[28px]">{cat.icon || "📦"}</span>
+                    <CategoryIcon
+                      slug={cat.slug}
+                      name={cat.name}
+                      size={28}
+                      strokeWidth={2}
+                      className={isSelected ? "text-[hsl(var(--primary))]" : "text-foreground"}
+                    />
                     <span
                       className={`mt-1.5 text-center text-[11px] leading-tight ${
                         isSelected
