@@ -132,6 +132,7 @@ const OportunidadeDetalhePage = () => {
         budget: data.budget, total_amount: (data as any).total_amount, status: data.status, scheduled_at: data.scheduled_at,
         location_address: data.location_address,
         category_name: cat?.name || "Geral", category_icon: cat?.icon || "📦",
+        category_slug: (cat as any)?.slug || "",
         category_description: cat?.description || null,
         client_name: prof?.full_name || null, client_avatar: prof?.avatar_url || null,
         client_id: data.client_id || null,
@@ -597,7 +598,9 @@ const OportunidadeDetalhePage = () => {
 
         {/* Category */}
         <div className="flex items-center gap-2">
-          <span className="text-[28px] leading-none">{opp.category_icon}</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full" style={{ background: "rgba(39,110,241,0.12)" }}>
+            <CategoryIcon slug={opp.category_slug} name={opp.category_name} size={20} className="text-[#276EF1]" strokeWidth={2.25} />
+          </span>
           <span className="rounded-full px-3 py-1 text-[13px] font-semibold" style={{ background: "rgba(39,110,241,0.08)", color: "#276EF1" }}>
             {opp.category_name}
           </span>
