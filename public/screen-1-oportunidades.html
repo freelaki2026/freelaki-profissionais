@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<title>1 — Oportunidades</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;font-family:'Inter',sans-serif;background:#000;}
+  .frame{width:1290px;height:2796px;position:relative;overflow:hidden;background:#000;}
+  /* escala visual: tudo aqui usa o mesmo design do app, apenas em px maiores p/ caber 1290 */
+</style>
+</head>
+<body>
+<div class="frame">
+  <!-- Status bar iOS -->
+  <div class="flex justify-between items-center px-16 pt-6 pb-2 text-white" style="font-size:36px;font-weight:600;">
+    <span>9:41</span>
+    <div class="flex items-center gap-3">
+      <svg width="48" height="32" viewBox="0 0 16 11" fill="white"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4" y="5" width="3" height="6" rx="1"/><rect x="8" y="2" width="3" height="9" rx="1"/><rect x="12" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="48" height="32" viewBox="0 0 24 18" fill="none" stroke="white" stroke-width="2"><path d="M2 8 a14 14 0 0 1 20 0"/><path d="M5 11 a10 10 0 0 1 14 0"/><path d="M8 14 a6 6 0 0 1 8 0"/><circle cx="12" cy="17" r="1.2" fill="white"/></svg>
+      <svg width="80" height="36" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="21" height="10" rx="2.5" stroke="white" fill="none" stroke-width="1"/><rect x="2.5" y="2.5" width="17" height="7" rx="1.2" fill="white"/></svg>
+    </div>
+  </div>
+
+  <!-- Header com logo -->
+  <div class="flex items-center justify-center pt-6 pb-12">
+    <div class="flex items-center" style="gap:20px;">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="#276EF1" stroke="#276EF1" stroke-width="2" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span style="font-size:60px;font-weight:800;color:#fff;letter-spacing:-1.5px;">freelaki</span>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="flex gap-3 px-12 pb-12">
+    <div style="flex:1;background:#276EF1;color:#fff;border-radius:24px;padding:28px 0;text-align:center;font-weight:700;font-size:32px;position:relative;">
+      Disponíveis
+      <span style="position:absolute;top:-8px;right:14px;background:#276EF1;color:#fff;border:3px solid #000;border-radius:9999px;min-width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;padding:0 10px;">5</span>
+    </div>
+    <div style="flex:1;background:rgba(255,255,255,0.06);color:#767676;border-radius:24px;padding:28px 0;text-align:center;font-weight:700;font-size:32px;position:relative;">
+      Em Análise
+      <span style="position:absolute;top:-8px;right:14px;background:#F59E0B;color:#fff;border:3px solid #000;border-radius:9999px;min-width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;padding:0 10px;">2</span>
+    </div>
+    <div style="flex:1;background:rgba(255,255,255,0.06);color:#767676;border-radius:24px;padding:28px 0;text-align:center;font-weight:700;font-size:32px;position:relative;">
+      Aceitas
+      <span style="position:absolute;top:-8px;right:14px;background:#2E7D32;color:#fff;border:3px solid #000;border-radius:9999px;min-width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;padding:0 10px;">1</span>
+    </div>
+  </div>
+
+  <!-- Body cards -->
+  <div style="background:#F7F7F7;border-radius:60px 60px 0 0;padding:48px 32px 0;min-height:1900px;">
+    <!-- Card 1 -->
+    <div style="background:#fff;border-radius:40px;padding:36px;box-shadow:0 8px 32px rgba(0,0,0,0.08);margin-bottom:28px;">
+      <div class="flex items-center justify-between">
+        <span style="background:rgba(39,110,241,0.08);color:#276EF1;border-radius:9999px;padding:14px 22px;font-weight:700;font-size:26px;display:inline-flex;align-items:center;gap:10px;">
+          <span style="font-size:32px;">📷</span> Fotógrafo
+        </span>
+        <span style="color:#2E7D32;font-weight:800;font-size:34px;">R$ 850,00</span>
+      </div>
+      <p style="margin-top:24px;font-size:36px;font-weight:800;color:#000;">Casamento — cerimônia + festa</p>
+      <p style="margin-top:14px;font-size:26px;line-height:1.5;color:#767676;">Procuro fotógrafo experiente para registrar cerimônia ao ar livre e festa em buffet na Vila Madalena.</p>
+      <div class="flex items-center" style="gap:32px;margin-top:24px;">
+        <span style="font-size:24px;color:#767676;display:inline-flex;align-items:center;gap:8px;">📍 Vila Madalena</span>
+        <span style="font-size:24px;color:#276EF1;font-weight:600;display:inline-flex;align-items:center;gap:8px;">📅 Sábado às 16:00</span>
+      </div>
+      <div style="margin-top:32px;background:#276EF1;color:#fff;border-radius:24px;padding:30px 0;text-align:center;font-weight:800;font-size:28px;">Me candidatar →</div>
+    </div>
+
+    <!-- Card 2 -->
+    <div style="background:#fff;border-radius:40px;padding:36px;box-shadow:0 8px 32px rgba(0,0,0,0.08);margin-bottom:28px;">
+      <div class="flex items-center justify-between">
+        <span style="background:rgba(39,110,241,0.08);color:#276EF1;border-radius:9999px;padding:14px 22px;font-weight:700;font-size:26px;display:inline-flex;align-items:center;gap:10px;">
+          <span style="font-size:32px;">🎬</span> Filmmaker
+        </span>
+        <span style="color:#2E7D32;font-weight:800;font-size:34px;">R$ 2.400,00</span>
+      </div>
+      <p style="margin-top:24px;font-size:36px;font-weight:800;color:#000;">Vídeo institucional — 2 dias</p>
+      <p style="margin-top:14px;font-size:26px;line-height:1.5;color:#767676;">Gravação de vídeo institucional para clínica odontológica. Roteiro e equipamento por nossa conta.</p>
+      <div class="flex items-center" style="gap:32px;margin-top:24px;">
+        <span style="font-size:24px;color:#767676;display:inline-flex;align-items:center;gap:8px;">📍 Pinheiros</span>
+        <span style="font-size:24px;color:#276EF1;font-weight:600;display:inline-flex;align-items:center;gap:8px;">📅 Hoje às 09:00</span>
+      </div>
+      <div style="margin-top:32px;background:#276EF1;color:#fff;border-radius:24px;padding:30px 0;text-align:center;font-weight:800;font-size:28px;">Me candidatar →</div>
+    </div>
+
+    <!-- Card 3 -->
+    <div style="background:#fff;border-radius:40px;padding:36px;box-shadow:0 8px 32px rgba(0,0,0,0.08);margin-bottom:28px;">
+      <div class="flex items-center justify-between">
+        <span style="background:rgba(39,110,241,0.08);color:#276EF1;border-radius:9999px;padding:14px 22px;font-weight:700;font-size:26px;display:inline-flex;align-items:center;gap:10px;">
+          <span style="font-size:32px;">📱</span> Videomaker Mobile
+        </span>
+        <span style="color:#2E7D32;font-weight:800;font-size:34px;">R$ 480,00</span>
+      </div>
+      <p style="margin-top:24px;font-size:36px;font-weight:800;color:#000;">Reels para restaurante novo</p>
+      <p style="margin-top:14px;font-size:26px;line-height:1.5;color:#767676;">Capturar 5 vídeos verticais de pratos e ambiente para Instagram.</p>
+      <div class="flex items-center" style="gap:32px;margin-top:24px;">
+        <span style="font-size:24px;color:#767676;display:inline-flex;align-items:center;gap:8px;">📍 Itaim Bibi</span>
+        <span style="font-size:24px;color:#276EF1;font-weight:600;display:inline-flex;align-items:center;gap:8px;">📅 Amanhã às 14:00</span>
+      </div>
+      <div style="margin-top:32px;background:#276EF1;color:#fff;border-radius:24px;padding:30px 0;text-align:center;font-weight:800;font-size:28px;">Me candidatar →</div>
+    </div>
+
+    <!-- Card 4 (parcial visível) -->
+    <div style="background:#fff;border-radius:40px;padding:36px;box-shadow:0 8px 32px rgba(0,0,0,0.08);margin-bottom:28px;">
+      <div class="flex items-center justify-between">
+        <span style="background:rgba(39,110,241,0.08);color:#276EF1;border-radius:9999px;padding:14px 22px;font-weight:700;font-size:26px;display:inline-flex;align-items:center;gap:10px;">
+          <span style="font-size:32px;">✨</span> Storymaker
+        </span>
+        <span style="color:#2E7D32;font-weight:800;font-size:34px;">R$ 320,00</span>
+      </div>
+      <p style="margin-top:24px;font-size:36px;font-weight:800;color:#000;">Cobertura de evento corporativo</p>
+      <p style="margin-top:14px;font-size:26px;line-height:1.5;color:#767676;">Stories ao vivo durante painel sobre tecnologia. Edição inclusa.</p>
+    </div>
+  </div>
+
+  <!-- Floating Nav -->
+  <div style="position:absolute;bottom:90px;left:0;right:0;display:flex;justify-content:center;">
+    <div style="background:#111;border-radius:9999px;padding:16px;display:flex;align-items:center;gap:8px;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
+      <div style="background:#fff;color:#000;border-radius:9999px;padding:18px 32px;display:inline-flex;align-items:center;gap:12px;font-weight:600;font-size:28px;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 12 2 21 9 21 20 14 20 14 13 10 13 10 20 3 20 z"/></svg>
+        Home
+      </div>
+      <div style="color:#71717a;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2 H6 a2 2 0 0 0 -2 2 v16 a2 2 0 0 0 2 2 h12 a2 2 0 0 0 2 -2 V8 z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></div>
+      <div style="color:#71717a;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 11.5 a8.38 8.38 0 0 1 -.9 3.8 8.5 8.5 0 0 1 -7.6 4.7 8.38 8.38 0 0 1 -3.8 -.9 L3 21 l1.9 -5.7 a8.38 8.38 0 0 1 -.9 -3.8 8.5 8.5 0 0 1 4.7 -7.6 8.38 8.38 0 0 1 3.8 -.9 h.5 a8.48 8.48 0 0 1 8 8 v.5 z"/></svg></div>
+      <div style="color:#71717a;width:80px;height:80px;display:flex;align-items:center;justify-content:center;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+    </div>
+  </div>
+  <!-- iOS home indicator -->
+  <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);width:280px;height:10px;background:#fff;border-radius:9999px;"></div>
+</div>
+</body></html>
