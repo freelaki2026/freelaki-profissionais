@@ -257,7 +257,7 @@ const PreCadastroPage = () => {
         <h1 className="text-[30px] font-bold text-white leading-[1.1] tracking-tight">
           Bora fazer parte
           <br />
-          do <span style={{ color: "#276EF1" }}>Freelaki</span>?
+          do <span className="text-white">free</span><span style={{ color: "#276EF1" }}>laki</span>?
         </h1>
         <p className="mt-3 text-[14px] text-white/50 font-light leading-relaxed max-w-[320px]">
           Conta um pouco sobre você. Se seu perfil bater com a gente, você recebe um convite por email.
