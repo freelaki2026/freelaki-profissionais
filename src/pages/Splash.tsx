@@ -22,7 +22,7 @@ const Splash = () => {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        return { path: "/login", state: undefined, logged: false };
+        return { path: "/", state: undefined, logged: false };
       }
 
       if (!session.user.email_confirmed_at) {

@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Zap, Eye, EyeOff, Check, AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Zap, Eye, EyeOff, Check, AlertTriangle, Lock } from "lucide-react";
 import FreelakiInput from "@/components/ui/FreelakiInput";
 import FreelakiButton from "@/components/ui/FreelakiButton";
+import { supabase } from "@/integrations/supabase/client";
 
 /* ───── phone mask ───── */
 function maskPhone(v: string) {
@@ -96,6 +97,13 @@ const StepIndicator = ({ current }: { current: number }) => (
 /* ───── main ───── */
 const CadastroStep1 = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get("token");
+  const emailFromUrl = searchParams.get("email");
+
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [emailLocked, setEmailLocked] = useState(false);
+  const [gateChecking, setGateChecking] = useState(true);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -107,6 +115,40 @@ const CadastroStep1 = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [terms, setTerms] = useState(false);
   const [age18, setAge18] = useState(false);
+
+  // Gate de convite: precisa ter token válido na URL OU em sessionStorage
+  useEffect(() => {
+    const stored = sessionStorage.getItem("invite_token");
+    const storedEmail = sessionStorage.getItem("invite_email");
+
+    const validate = async (code: string, mail: string) => {
+      const { data } = await supabase.rpc("validate_invite_code", {
+        p_code: code,
+        p_email: mail,
+      });
+      const r = data as { valid: boolean } | null;
+      if (r?.valid) {
+        setInviteToken(code);
+        setEmail(mail);
+        setEmailLocked(true);
+        sessionStorage.setItem("invite_token", code);
+        sessionStorage.setItem("invite_email", mail);
+        setGateChecking(false);
+      } else {
+        sessionStorage.removeItem("invite_token");
+        sessionStorage.removeItem("invite_email");
+        navigate("/", { replace: true });
+      }
+    };
+
+    if (tokenFromUrl && emailFromUrl) {
+      void validate(tokenFromUrl, emailFromUrl);
+    } else if (stored && storedEmail) {
+      void validate(stored, storedEmail);
+    } else {
+      navigate("/", { replace: true });
+    }
+  }, [tokenFromUrl, emailFromUrl, navigate]);
 
   const pw8 = password.length >= 8;
   const pwMatch = confirm.length > 0 && password === confirm;
@@ -133,10 +175,18 @@ const CadastroStep1 = () => {
     const iso = brToISO(birthDate);
     sessionStorage.setItem(
       "cadastro_step1",
-      JSON.stringify({ name, email, phone, password, birth_date: iso })
+      JSON.stringify({ name, email, phone, password, birth_date: iso, invite_token: inviteToken })
     );
     navigate("/cadastro/etapa2");
   };
+
+  if (gateChecking) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black">
+        <div className="h-8 w-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
@@ -196,7 +246,10 @@ const CadastroStep1 = () => {
             type="email"
             placeholder="seu@email.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => !emailLocked && setEmail(e.target.value)}
+            readOnly={emailLocked}
+            icon={emailLocked ? <Lock size={16} className="text-muted-foreground" /> : undefined}
+            className={emailLocked ? "opacity-70 cursor-not-allowed" : undefined}
           />
 
           <FreelakiInput

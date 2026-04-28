@@ -2209,6 +2209,80 @@ export type Database = {
           },
         ]
       }
+      waitlist_applications: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          category_id: string | null
+          city: string
+          code_expires_at: string | null
+          code_used_at: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          invite_code: string | null
+          message: string | null
+          phone: string
+          portfolio_url: string | null
+          rejected_at: string | null
+          rejected_reason: string | null
+          state: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string | null
+          city: string
+          code_expires_at?: string | null
+          code_used_at?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          invite_code?: string | null
+          message?: string | null
+          phone: string
+          portfolio_url?: string | null
+          rejected_at?: string | null
+          rejected_reason?: string | null
+          state: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          category_id?: string | null
+          city?: string
+          code_expires_at?: string | null
+          code_used_at?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invite_code?: string | null
+          message?: string | null
+          phone?: string
+          portfolio_url?: string | null
+          rejected_at?: string | null
+          rejected_reason?: string | null
+          state?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_applications_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       withdrawals: {
         Row: {
           amount: number
@@ -2461,6 +2535,10 @@ export type Database = {
         Args: { p_profile_id: string }
         Returns: undefined
       }
+      approve_waitlist_application: {
+        Args: { p_application_id: string; p_expiry_days?: number }
+        Returns: Json
+      }
       cancel_contract_addendum: {
         Args: { p_addendum_id: string }
         Returns: Json
@@ -2471,6 +2549,10 @@ export type Database = {
       client_has_pending_addendum_debt: {
         Args: { p_client_id: string }
         Returns: boolean
+      }
+      consume_invite_code: {
+        Args: { p_code: string; p_email: string }
+        Returns: Json
       }
       decline_private_opportunity: {
         Args: { p_opportunity_id: string }
@@ -2531,6 +2613,10 @@ export type Database = {
         Args: { p_document_id: string; p_reason: string }
         Returns: undefined
       }
+      reject_waitlist_application: {
+        Args: { p_application_id: string; p_reason?: string }
+        Returns: Json
+      }
       respond_contract_addendum: {
         Args: {
           p_action: string
@@ -2560,6 +2646,23 @@ export type Database = {
           p_signer_type: string
           p_user_agent: string
         }
+        Returns: Json
+      }
+      submit_waitlist_application: {
+        Args: {
+          p_category_id: string
+          p_city: string
+          p_email: string
+          p_full_name: string
+          p_message?: string
+          p_phone: string
+          p_portfolio_url?: string
+          p_state: string
+        }
+        Returns: Json
+      }
+      validate_invite_code: {
+        Args: { p_code: string; p_email: string }
         Returns: Json
       }
     }
