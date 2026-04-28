@@ -1,104 +1,123 @@
-## Objetivo
+## O que vai ser construído
 
-Restringir as categorias do app aos 8 itens abaixo, removendo todas as outras de forma segura (sem quebrar oportunidades, contratos ou perfis existentes), e gerar um único arquivo idêntico para colar no app do **Cliente**, mantendo tudo "linkado em tempo real" via Supabase compartilhado.
+Uma nova tela de **boas-vindas** que é a primeira coisa que o usuário vê ao abrir o app (antes do Splash, somente para visitantes). Essa tela tem:
 
-### Categorias finais (ordem do grid)
-1. Videomaker
-2. Filmmaker
-3. Storymaker
-4. Social Media
-5. Videomaker Mobile
-6. Designer
-7. Editor de vídeo
-8. Editor de vídeo com IA
+- Identidade Freelaki (logo + tagline curta).
+- 2 botões principais:
+  - **"Já tenho convite"** → abre uma tela onde a pessoa digita o código + email cadastrado. Se válido, libera o cadastro normal (`/cadastro`).
+  - **"Quero me cadastrar"** → abre formulário curto de aplicação (waitlist). Salva no banco, envia notificação para você no Admin, e mostra tela de "pedido recebido".
+
+Quem já está logado **não vê essa tela** — vai direto pro Splash → Dashboard (mantém o fluxo atual).
 
 ---
 
-## Diagnóstico atual
+## Fluxo completo (visual)
 
-A tabela `categories` no Supabase tem 12 itens. As 6 que precisam sair já estão com `is_active=false` (Roteirista, Entrevistador, Mestre de Cerimônia, Recepcionista de Eventos, Operador de Luz, Operador de Som) e **0 profissionais / 0 oportunidades vinculados** — seguro deletar.
-
-Itens a tratar:
-- `Fotógrafo` (slug `fotografo`) — está ativo, **0 profissionais e 0 oportunidades**, será **desativado** (não removido, pois aparece hard-coded em `ContratosPage.tsx` como exemplo).
-- Faltam 3 categorias novas: **Videomaker**, **Editor de vídeo**, **Editor de vídeo com IA**.
-
-Como ambos os apps (Profissional e Cliente) leem da mesma tabela `categories` filtrando por `is_active=true`, qualquer mudança via SQL reflete em tempo real nos dois — basta atualizar o componente de ícones em ambos.
-
----
-
-## Mudanças
-
-### 1. Migração SQL (Supabase)
-
-```sql
--- Desativar Fotógrafo (mantém histórico de referências)
-UPDATE categories SET is_active = false WHERE slug = 'fotografo';
-
--- Remover definitivamente as 6 categorias inativas sem uso
-DELETE FROM categories
-WHERE slug IN (
-  'roteirista','entrevistador','mestre-de-cerimonia',
-  'recepcionista-eventos','operador-de-luz','operador-de-som'
-);
-
--- Reordenar as restantes e inserir as 3 novas
-UPDATE categories SET order_index = 1 WHERE slug = 'filmmaker';        -- já existia
-UPDATE categories SET order_index = 4 WHERE slug = 'social-media';
-UPDATE categories SET order_index = 3 WHERE slug = 'storymaker';
-UPDATE categories SET order_index = 5 WHERE slug = 'videomaker-mobile';
-UPDATE categories SET order_index = 6 WHERE slug = 'designer';
-
-INSERT INTO categories (slug, name, is_active, order_index) VALUES
-  ('videomaker',          'Videomaker',             true, 0),
-  ('editor-de-video',     'Editor de vídeo',        true, 7),
-  ('editor-de-video-ia',  'Editor de vídeo com IA', true, 8)
-ON CONFLICT (slug) DO UPDATE SET name=EXCLUDED.name, is_active=true, order_index=EXCLUDED.order_index;
+```text
+Abre o app
+    │
+    ├── Já logado? ──Sim──> Splash → Dashboard (igual hoje)
+    │
+    └── Não logado
+            │
+            ▼
+      [Pré-cadastro / Boas-vindas]
+       ┌──────────────────────┐
+       │   ⚡ freelaki         │
+       │   profissionais       │
+       │                       │
+       │  100% do que você     │
+       │  ganha é seu.         │
+       │                       │
+       │  [Já tenho convite]   │──> /convite ──> valida código ──> /cadastro?token=...
+       │  [Quero me cadastrar] │──> /pre-cadastro (form) ──> salva ──> "Pedido recebido"
+       │                       │
+       │  Já tenho conta       │──> /login
+       └──────────────────────┘
 ```
 
-Ordem final: Videomaker (0), Filmmaker (1), Storymaker (3), Social Media (4), Videomaker Mobile (5), Designer (6), Editor de vídeo (7), Editor de vídeo com IA (8).
+---
 
-### 2. `src/components/ui/CategoryIcon.tsx`
+## Formulário de aplicação (waitlist)
 
-Atualizar o mapa para os 8 slugs ativos e remover os obsoletos. Sugestão de ícones Lucide:
-- `videomaker` → `Video`
-- `filmmaker` → `Clapperboard`
-- `storymaker` → `Sparkles`
-- `social-media` → `Megaphone`
-- `videomaker-mobile` → `Smartphone`
-- `designer` → `Palette`
-- `editor-de-video` → `Scissors`
-- `editor-de-video-ia` → `Wand2`
+Campos curtos, pensado para você ter info suficiente para aprovar:
 
-Fallback continua sendo `Package` (para `fotografo` em contratos antigos).
+1. Nome completo
+2. Email
+3. Telefone (WhatsApp)
+4. Cidade / Estado
+5. Categoria principal (dropdown com as 8 categorias atuais)
+6. Instagram ou link do portfólio (opcional mas recomendado)
+7. Mensagem curta (máx 280 caracteres) — "Por que você quer entrar?"
 
-### 3. `src/pages/ContratosPage.tsx` (linha 93)
-
-Trocar `category_name: "Fotógrafo"` por `"Filmmaker"` no exemplo hard-coded (apenas placeholder visual de demonstração — não afeta dados reais).
-
-### 4. Validação de não-quebra
-
-- `CategoriasPage.tsx`, `OportunidadesPage.tsx`, `OportunidadeDetalhePage.tsx`, `PerfilPage.tsx` lêem categorias do banco — nenhuma mudança necessária, vão refletir os 8 itens automaticamente.
-- Profissionais já cadastrados em `videomaker-mobile` / `filmmaker` / `social-media` continuam intactos.
-- O `CategoryIcon` retorna `Package` como fallback para qualquer slug desconhecido — sem crash possível.
-
-### 5. Arquivo único para o app do Cliente
-
-Gerar `/mnt/documents/CategoryIcon.client.tsx` com:
-- Mesmo `CATEGORY_ICON_MAP` dos 8 slugs.
-- Mesmo componente `<CategoryIcon slug name size className />`.
-- Comentário no topo explicando que o app do Cliente compartilha a tabela `categories` do mesmo projeto Supabase, então a sincronização é em tempo real — basta colar o arquivo em `src/components/ui/CategoryIcon.tsx` lá.
+Validação client-side com **zod** (nome, email válido, telefone, etc.). Bloqueia envio duplicado pelo mesmo email (retorna mensagem amigável).
 
 ---
 
-## Detalhes técnicos (resumo)
+## Código de convite
 
-| Camada | Arquivo | Ação |
-|---|---|---|
-| DB | migração SQL | DELETE 6 + UPDATE fotografo + INSERT 3 + reorder |
-| App Pro | `src/components/ui/CategoryIcon.tsx` | Reescrever mapa para 8 slugs |
-| App Pro | `src/pages/ContratosPage.tsx` L93 | Trocar placeholder "Fotógrafo" → "Filmmaker" |
-| App Cliente | `/mnt/documents/CategoryIcon.client.tsx` | Gerar arquivo idêntico para colar |
+- **Único por pessoa**, formato `FRLK-XXXXXX` (6 chars alfanuméricos).
+- Você gera o código no Admin ao aprovar a pessoa.
+- Vinculado ao **email aprovado** — só funciona se a pessoa digitar o mesmo email no cadastro.
+- **Uso único**: ao concluir o cadastro, o código é marcado como `used` e não funciona de novo.
+- Códigos vencem em 30 dias (configurável).
 
-Sem alterações em RLS, edge functions, hooks ou rotas. Risco zero de crash: todas as queries continuam dinâmicas e o componente tem fallback.
+---
 
-Após aprovação, executo a migração (com confirmação do Supabase) e aplico os 2 edits no código.
+## Integração com o Admin (Freelaki Admin)
+
+Como o Admin é um app separado, vou:
+
+1. Criar as tabelas e RPCs no Supabase compartilhado (ambos os apps acessam).
+2. Gerar um arquivo único `WaitlistAdmin.tsx` em `/mnt/documents/` com a aba completa pronta para você colar no app Admin. A aba tem:
+   - Lista de pedidos pendentes (com badge de contagem).
+   - Filtros: pendente / aprovado / recusado.
+   - Click no usuário → abre painel lateral com **todas as informações enviadas no formulário**.
+   - Botões **"Aprovar e gerar código"** (gera FRLK-XXXXXX, marca como aprovado) e **"Recusar"**.
+   - Após aprovar, mostra o código gerado com botão "Copiar" — você manda manualmente para a pessoa (WhatsApp/email pessoal), conforme você pediu.
+3. **Notificação no Admin**: cada novo pedido cria uma `notification` para todos os admins (sino vai piscar, igual já funciona no app).
+
+---
+
+## Mudanças técnicas (resumo)
+
+### Banco de dados (1 migração)
+
+Nova tabela **`waitlist_applications`**:
+- `id`, `full_name`, `email` (unique), `phone`, `city`, `state`, `category_id`, `portfolio_url`, `message`
+- `status` (`pending` / `approved` / `rejected`)
+- `invite_code` (gerado na aprovação), `code_used_at`, `code_expires_at`
+- `approved_by`, `approved_at`, `rejected_reason`, `created_at`
+
+**RLS**:
+- INSERT público (qualquer um pode se candidatar — sem auth).
+- SELECT/UPDATE só para admins.
+- RPC pública `validate_invite_code(code, email)` que retorna `{valid, application_id}` sem expor outros dados.
+- RPC pública `submit_waitlist_application(...)` com validação de email único.
+- RPC `consume_invite_code(code)` chamada no fim do cadastro para marcar como usado.
+
+### App Profissional (este projeto)
+
+- **Nova rota `/`** → `BoasVindasPage.tsx` (tela com 2 botões). Splash vira `/splash`.
+- **`Splash.tsx`** ajustado: se não há sessão, redireciona pra `/` (boas-vindas) em vez de `/login`. Se há sessão, fluxo igual hoje.
+- **Nova rota `/pre-cadastro`** → formulário de aplicação.
+- **Nova rota `/convite`** → input de código + email, valida via RPC.
+- **`Cadastro.tsx`** ajustado: lê `?token=FRLK-XXXX&email=...` da URL, trava o email, e chama `consume_invite_code` no submit. Se acessar `/cadastro` sem token válido, redireciona para `/`.
+- **Memória atualizada**: novo passo no Onboarding Cascade.
+
+### App Admin (arquivo entregável)
+
+- `/mnt/documents/WaitlistAdmin.tsx` — componente standalone pronto pra colar. Usa o mesmo `supabase` client, sem deps externas além das que o Admin já tem.
+
+---
+
+## O que NÃO muda
+
+- Login normal continua funcionando igual.
+- Quem já está logado pula direto pro Splash/Dashboard.
+- Cadastro em si (steps 1, 2, 3) não muda — só ganha um gate de token na entrada.
+- Email de confirmação Supabase continua igual.
+
+---
+
+Posso prosseguir com a implementação?
