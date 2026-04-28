@@ -46,14 +46,21 @@ const BoasVindasPage = () => {
           profissionais
         </p>
 
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center whitespace-pre-line">
           <p className="text-[22px] font-semibold text-white leading-tight">
             Sua vaga está
             <br />
             <span style={{ color: "#276EF1" }}>quase chegando.</span>
           </p>
-          <p className="mt-4 text-[14px] text-white/50 font-light max-w-[280px] mx-auto leading-relaxed">
-            O Freelaki está em fase de pré-lançamento. O acesso é liberado por convite — com a gente, freela é coisa séria.
+          
+          <p className="mt-4 text-[14px] font-light max-w-[280px] mx-auto leading-relaxed text-primary-foreground">
+            {`
+
+
+
+
+O acesso é liberado por convite.
+Com a gente, freela é coisa séria.`}
           </p>
         </div>
       </div>
