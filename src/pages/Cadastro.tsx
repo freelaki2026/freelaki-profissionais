@@ -246,7 +246,10 @@ const CadastroStep1 = () => {
             type="email"
             placeholder="seu@email.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => !emailLocked && setEmail(e.target.value)}
+            readOnly={emailLocked}
+            icon={emailLocked ? <Lock size={16} className="text-muted-foreground" /> : undefined}
+            className={emailLocked ? "opacity-70 cursor-not-allowed" : undefined}
           />
 
           <FreelakiInput
