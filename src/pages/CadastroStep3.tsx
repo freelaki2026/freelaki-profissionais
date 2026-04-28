@@ -243,11 +243,25 @@ const CadastroStep3 = () => {
         });
       }
 
-      // 5. Clear session storage
+      // 5. Consume invite code (marca como usado, não bloqueia se falhar)
+      if (step1.invite_token) {
+        try {
+          await supabase.rpc("consume_invite_code", {
+            p_code: step1.invite_token,
+            p_email: step1.email,
+          });
+        } catch {
+          /* não-fatal */
+        }
+      }
+
+      // 6. Clear session storage
       sessionStorage.removeItem("cadastro_step1");
       sessionStorage.removeItem("cadastro_step2");
+      sessionStorage.removeItem("invite_token");
+      sessionStorage.removeItem("invite_email");
 
-      // 6. Redirect to email confirmation
+      // 7. Redirect to email confirmation
       navigate("/confirmar-email", { replace: true, state: { email: step1.email } });
     } catch (err) {
       setError(parseError(err));
