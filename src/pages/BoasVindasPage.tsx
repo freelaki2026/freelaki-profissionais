@@ -52,8 +52,9 @@ const BoasVindasPage = () => {
             <br />
             <span style={{ color: "#276EF1" }}>quase chegando.</span>
           </p>
-          <p className="mt-4 text-[14px] text-white/50 font-light max-w-[280px] mx-auto leading-relaxed">
-            O Freelaki está em fase de pré-lançamento. O acesso é liberado por convite — com a gente, freela é coisa séria.
+          <p className="mt-4 text-[14px] font-light max-w-[280px] mx-auto leading-relaxed text-primary-foreground whitespace-pre-line">
+            {`O acesso é liberado por convite.
+Com a gente, freela é coisa séria.`}
           </p>
         </div>
       </div>
