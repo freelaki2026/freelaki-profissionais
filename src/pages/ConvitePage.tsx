@@ -106,7 +106,7 @@ const ConvitePage = () => {
 
         {error && (
           <div className="mt-4">
-            <ErrorBanner message={error.message} hint={error.hint} />
+            <ErrorBanner code={error.code} message={error.message} hint={error.hint} />
           </div>
         )}
       </div>
