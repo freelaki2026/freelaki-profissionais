@@ -16,6 +16,7 @@ import { useCapacitorBootstrap } from "@/hooks/useCapacitorBootstrap";
 import Splash from "@/pages/Splash";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
+import BoasVindasPage from "@/pages/BoasVindasPage";
 
 // Lazy: usa o MESMO loader do routePrefetch (chunk reaproveitado após hover/touchstart).
 const CadastroStep1 = lazy(() => import("@/pages/Cadastro"));
@@ -27,6 +28,8 @@ const OportunidadeDetalhePage = lazy(() => import("@/pages/OportunidadeDetalhePa
 const ChatClientePage = lazy(() => import("@/pages/ChatClientePage"));
 const ChatClienteUnificadoPage = lazy(() => import("@/pages/ChatClienteUnificadoPage"));
 const PerfilClientePage = lazy(() => import("@/pages/PerfilClientePage"));
+const PreCadastroPage = lazy(() => import("@/pages/PreCadastroPage"));
+const ConvitePage = lazy(() => import("@/pages/ConvitePage"));
 
 // Helper para tipar lazy() a partir do mapa de loaders.
 const lazyFromMap = (path: string) =>
@@ -97,8 +100,11 @@ const App = () => {
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             {/* Rotas públicas */}
-            <Route path="/" element={<Splash />} />
+            <Route path="/" element={<BoasVindasPage />} />
+            <Route path="/splash" element={<Splash />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/pre-cadastro" element={<PreCadastroPage />} />
+            <Route path="/convite" element={<ConvitePage />} />
             <Route path="/cadastro" element={<CadastroStep1 />} />
             <Route path="/cadastro/etapa2" element={<CadastroStep2 />} />
             <Route path="/cadastro/etapa3" element={<CadastroStep3 />} />
