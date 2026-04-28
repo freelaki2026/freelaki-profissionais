@@ -46,13 +46,13 @@ const BoasVindasPage = () => {
           profissionais
         </p>
 
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center whitespace-pre-line">
           <p className="text-[22px] font-semibold text-white leading-tight">
-            Sua vaga está
-            <br />
-            <span style={{ color: "#276EF1" }}>quase chegando.</span>
+            {`Sua vaga está
+quase chegando.`}
           </p>
-          <p className="mt-4 text-[14px] font-light max-w-[280px] mx-auto leading-relaxed text-primary-foreground whitespace-pre-line">
+          <div className="h-10" /> {/* Simulando os \n\n\n\n\n com espaço */}
+          <p className="mt-4 text-[14px] font-light max-w-[280px] mx-auto leading-relaxed text-primary-foreground">
             {`O acesso é liberado por convite.
 Com a gente, freela é coisa séria.`}
           </p>
