@@ -569,8 +569,7 @@ const PerfilPublicoPage = () => {
                 autoPlay
                 loop
                 playsInline
-                // @ts-expect-error - atributo iOS para autoplay inline no WebView
-                webkit-playsinline="true"
+                {...({ "webkit-playsinline": "true" } as any)}
                 onClick={(e) => e.stopPropagation()}
                 className="max-h-[92vh] max-w-full"
               />
