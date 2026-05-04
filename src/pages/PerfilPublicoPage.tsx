@@ -549,36 +549,40 @@ const PerfilPublicoPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black p-0"
             onClick={() => setLightbox(null)}
           >
             <button
-              className="absolute top-12 right-4 text-white/60 hover:text-white transition-colors"
+              className="absolute top-12 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 backdrop-blur-md transition-colors hover:bg-white/20 hover:text-white"
               onClick={() => setLightbox(null)}
             >
-              <X size={28} />
+              <X size={20} />
             </button>
             {lightbox.type === "video" ? (
               <motion.video
-                initial={{ scale: 0.85, opacity: 0 }}
+                initial={{ scale: 0.92, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.85, opacity: 0 }}
+                exit={{ scale: 0.92, opacity: 0 }}
                 transition={{ type: "spring", damping: 25 }}
                 src={lightbox.url}
                 controls
                 autoPlay
+                loop
                 playsInline
+                // @ts-expect-error - atributo iOS para autoplay inline no WebView
+                webkit-playsinline="true"
                 onClick={(e) => e.stopPropagation()}
-                className="max-h-[80vh] max-w-full rounded-xl"
+                className="max-h-[92vh] max-w-full"
               />
             ) : (
               <motion.img
-                initial={{ scale: 0.85, opacity: 0 }}
+                initial={{ scale: 0.92, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.85, opacity: 0 }}
+                exit={{ scale: 0.92, opacity: 0 }}
                 transition={{ type: "spring", damping: 25 }}
                 src={lightbox.url}
-                className="max-h-[80vh] max-w-full rounded-xl object-contain"
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[92vh] max-w-full object-contain"
                 alt=""
               />
             )}
