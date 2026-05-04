@@ -1,42 +1,62 @@
-## Objetivo
+## Compressão de vídeo client-side (qualidade preservada, pronto pra iOS + Android)
 
-Permitir que o profissional faça upload de vídeos `.mp4` (máx. 1 minuto, máx. ~50MB) na grade do portfólio em `/perfil-publico`, somando junto com as fotos um total máximo de 6 itens.
+### Como funciona
 
-## Mudanças no Banco (Supabase)
+Usar **`@ffmpeg/ffmpeg` (WebAssembly)** rodando no navegador e dentro do WebView do Capacitor — funciona igual em iPhone e Android sem plugin nativo.
 
-Migration na tabela `portfolio_photos` (mantendo o nome para não quebrar o resto do app):
+**Regra inteligente:**
+- Vídeo entra com até **300MB**.
+- Se já for MP4 e ≤ 30MB → sobe direto, sem reprocessar (qualidade 100% original).
+- Caso contrário → recomprime para **MP4 H.264 720p, ~2.5 Mbps + AAC 128kbps**, com `+faststart` (começa a tocar antes de baixar tudo). Resultado típico de 90s: **~20–30MB**, qualidade indistinguível a olho nu (padrão Instagram/WhatsApp).
+- Duração máxima: **90s**.
 
-```sql
-ALTER TABLE portfolio_photos
-  ADD COLUMN media_type text NOT NULL DEFAULT 'image',
-  ADD COLUMN duration_seconds numeric;
--- valores possíveis: 'image' | 'video'
+### Arquivos
+
+**1. Novo: `src/lib/videoCompression.ts`**
+Wrapper isolado com `compressVideo(file, { onProgress })` e `prewarmVideoCompressor()`. Mantém uma instância singleton do ffmpeg pra não recarregar o `.wasm` (~30MB) a cada upload — primeira vez baixa, próximas são instantâneas.
+
+Comando ffmpeg:
+```
+-vf scale='min(1280,iw)':'min(720,ih)':force_original_aspect_ratio=decrease
+-c:v libx264 -preset veryfast -crf 23 -maxrate 2800k -bufsize 5600k
+-pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart
 ```
 
-Bucket de storage `portfolio` já existe e é público — vamos reaproveitá-lo (vídeos vão para o mesmo bucket, sob o mesmo prefixo `{user_id}/`). Sem alteração de RLS necessária (políticas já cobrem o `profile_id`).
+**2. Editar: `src/pages/PerfilPublicoPage.tsx`**
+- Limites: `MAX_VIDEO_BYTES = 300MB`, `MAX_VIDEO_SECONDS = 90`.
+- Novo fluxo de upload de vídeo:
+  1. Validar tamanho/tipo/duração.
+  2. Chamar `compressVideo(file, { onProgress: setProgress })`.
+  3. UI mostra "Otimizando vídeo… 42%" no slot enquanto processa.
+  4. Sobe o arquivo final pro Supabase.
+- Botão de upload desabilitado durante compressão.
+- Fallback: se ffmpeg falhar (raro, ex.: codec exótico), mostra erro "Não foi possível processar este vídeo. Tente outro formato."
+- `prewarmVideoCompressor()` chamado uma vez ao montar a página (download do wasm em background, sem travar a UI).
 
-## Mudanças no Frontend
+**3. Lightbox estilo Instagram (mesma página):**
+- Fundo `bg-black` 100% opaco.
+- `<video controls autoPlay playsInline webkit-playsinline loop>` (loop opcional, igual IG Reels).
+- Tap fora fecha; tap no vídeo NÃO fecha (já está com `stopPropagation`).
+- Funciona dentro do WebView Capacitor sem plugin (atributos `playsInline` + `webkit-playsinline` resolvem o autoplay inline no iOS).
 
-**Arquivo:** `src/pages/PerfilPublicoPage.tsx`
+### Pronto pra Capacitor (iOS + Android)
 
-1. **Input de upload**: trocar `accept="image/*"` por `accept="image/*,video/mp4"`.
-2. **Validações no `handleUpload`**:
-   - Detectar tipo pelo `file.type` (`image/*` vs `video/mp4`).
-   - Vídeo: rejeitar se não for `video/mp4`, se for >50MB, ou se a duração (lida via `<video>` oculto + `loadedmetadata`) for >60s.
-   - Foto: manter limite de 5MB.
-   - Manter o limite combinado de 6 (`MAX_ITEMS = 6`).
-3. **Insert**: incluir `media_type` e (para vídeos) `duration_seconds`.
-4. **Renderização da grade**:
-   - Para `media_type === 'video'`: usar `<video src={...} muted playsInline preload="metadata">` com ícone de play sobreposto e badge de duração (ex.: "0:42").
-   - Clique no vídeo abre o lightbox em modo player (`<video controls autoPlay>`).
-   - Foto continua igual.
-5. **Contador**: "X/6" considera fotos + vídeos.
-6. **Texto vazio**: atualizar para "Adicione fotos e vídeos dos seus trabalhos…".
-7. **Lightbox**: detectar tipo (estado `{ url, type }`) e renderizar `<img>` ou `<video controls>`.
+- `ffmpeg.wasm` carregado de `unpkg.com` via `toBlobURL` — funciona no WebView dos dois sistemas.
+- Nenhuma permissão nativa adicional necessária além das já configuradas (`NSPhotoLibraryUsageDescription` etc.).
+- Se quiser performance maior no futuro, basta trocar a implementação de `compressVideo` por `@capacitor-community/video-editor` (plugin nativo) — a assinatura permanece igual e nenhum outro arquivo precisa mudar.
 
-## Observações Técnicas
+### Trade-offs honestos
 
-- Validação de duração é client-side (cria `URL.createObjectURL`, carrega metadados, verifica `video.duration`). Sem dependência extra.
-- Mantemos `portfolio_photos` (sem renomear) para evitar refatorar `PerfilPage`, queries e tipos gerados do Supabase.
-- Bucket `portfolio` já é público → URL retornada via `getPublicUrl` funciona para vídeo igual à imagem.
-- Sem mudanças em `PerfilPage.tsx` (essa página não exibe a grade do portfólio).
+| Aspecto | Realidade |
+|---|---|
+| Download inicial | ~30MB de wasm na 1ª vez (cacheado depois) |
+| Tempo de compressão (90s, 1080p) | ~20–40s no iPhone moderno, ~40–80s no Android médio |
+| Qualidade | 720p H.264 a 2.5Mbps — visualmente igual ao original em tela de celular |
+| Tamanho final típico | 15–30MB para vídeo de 90s |
+| Risco no upload Supabase | Zero (todos ficam abaixo dos 50MB do limite padrão) |
+
+### Dependências a instalar
+
+```
+bun add @ffmpeg/ffmpeg @ffmpeg/util
+```
