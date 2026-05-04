@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, Star, X, Plus, Trash2, Grid3X3,
   Instagram, Globe, Linkedin, Github, Youtube, Zap,
-  Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package,
+  Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package, Play,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,13 +28,43 @@ const EQUIPMENT_ICONS: Record<string, React.ElementType> = {
   other: Wrench,
 };
 
-const MAX_PHOTOS = 6;
+const MAX_ITEMS = 6;
+const MAX_VIDEO_SECONDS = 60;
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-interface PortfolioPhoto {
+interface PortfolioItem {
   id: string;
   photo_url: string;
   order_index: number;
+  media_type?: "image" | "video" | string | null;
+  duration_seconds?: number | null;
 }
+
+const formatDuration = (s: number) => {
+  const sec = Math.max(0, Math.round(s));
+  const m = Math.floor(sec / 60);
+  const r = sec % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
+};
+
+const readVideoMetadata = (file: File): Promise<{ duration: number }> =>
+  new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.src = url;
+    video.onloadedmetadata = () => {
+      const duration = video.duration;
+      URL.revokeObjectURL(url);
+      resolve({ duration });
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Não foi possível ler o vídeo"));
+    };
+  });
 
 const PerfilPublicoPage = () => {
   const navigate = useNavigate();
@@ -42,12 +72,12 @@ const PerfilPublicoPage = () => {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [profile, setProfile] = useState<any>(null);
-  const [photos, setPhotos] = useState<PortfolioPhoto[]>([]);
+  const [photos, setPhotos] = useState<PortfolioItem[]>([]);
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const [pricing, setPricing] = useState<{ hourly_rate: number | null; daily_rate: number | null } | null>(null);
   const [equipments, setEquipments] = useState<Array<{ id: string; name: string; category: string | null; description: string | null }>>([]);
 
@@ -69,7 +99,7 @@ const PerfilPublicoPage = () => {
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
-      if (photosRes.data) setPhotos(photosRes.data as PortfolioPhoto[]);
+      if (photosRes.data) setPhotos(photosRes.data as PortfolioItem[]);
       if (pricingRes.data) setPricing(pricingRes.data);
       if (equipRes.data) setEquipments(equipRes.data as any);
 
@@ -93,23 +123,72 @@ const PerfilPublicoPage = () => {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (photos.length >= MAX_PHOTOS) {
-      toast.error(`Máximo de ${MAX_PHOTOS} fotos atingido`);
+    if (photos.length >= MAX_ITEMS) {
+      toast.error(`Máximo de ${MAX_ITEMS} arquivos atingido`);
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Arquivo muito grande (máx. 5MB)");
+
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+
+    if (isVideo) {
+      if (file.type !== "video/mp4") {
+        toast.error("Apenas vídeos MP4 são aceitos");
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+      if (file.size > MAX_VIDEO_BYTES) {
+        toast.error("Vídeo muito grande (máx. 50MB)");
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+    } else if (isImage) {
+      if (file.size > MAX_IMAGE_BYTES) {
+        toast.error("Imagem muito grande (máx. 5MB)");
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+    } else {
+      toast.error("Tipo de arquivo não suportado");
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
 
     setUploading(true);
+
+    let durationSeconds: number | null = null;
+    if (isVideo) {
+      try {
+        const meta = await readVideoMetadata(file);
+        if (!isFinite(meta.duration) || meta.duration <= 0) {
+          throw new Error("Duração inválida");
+        }
+        if (meta.duration > MAX_VIDEO_SECONDS + 0.5) {
+          toast.error("Vídeo deve ter no máximo 1 minuto");
+          setUploading(false);
+          if (fileRef.current) fileRef.current.value = "";
+          return;
+        }
+        durationSeconds = Math.round(meta.duration * 10) / 10;
+      } catch {
+        toast.error("Não foi possível processar o vídeo");
+        setUploading(false);
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+    }
+
     const ext = file.name.split(".").pop();
     const path = `${user.id}/${Date.now()}.${ext}`;
 
-    const { error: uploadErr } = await supabase.storage.from("portfolio").upload(path, file);
+    const { error: uploadErr } = await supabase.storage
+      .from("portfolio")
+      .upload(path, file, { contentType: file.type, cacheControl: "3600" });
     if (uploadErr) {
-      toast.error("Erro ao enviar foto");
+      toast.error("Erro ao enviar arquivo");
       setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
       return;
     }
 
@@ -117,28 +196,35 @@ const PerfilPublicoPage = () => {
 
     const { data: inserted, error: insertErr } = await supabase
       .from("portfolio_photos")
-      .insert({ profile_id: user.id, photo_url: urlData.publicUrl, file_name: file.name, order_index: photos.length })
+      .insert({
+        profile_id: user.id,
+        photo_url: urlData.publicUrl,
+        file_name: file.name,
+        order_index: photos.length,
+        media_type: isVideo ? "video" : "image",
+        duration_seconds: durationSeconds,
+      } as any)
       .select()
       .single();
 
     if (insertErr) {
-      toast.error("Erro ao salvar foto");
+      toast.error("Erro ao salvar arquivo");
     } else if (inserted) {
-      setPhotos((prev) => [...prev, inserted as PortfolioPhoto]);
-      toast.success("Foto adicionada!");
+      setPhotos((prev) => [...prev, inserted as PortfolioItem]);
+      toast.success(isVideo ? "Vídeo adicionado!" : "Foto adicionada!");
     }
     setUploading(false);
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const handleDelete = async (photo: PortfolioPhoto) => {
-    const pathMatch = photo.photo_url.match(/portfolio\/(.+)$/);
+  const handleDelete = async (item: PortfolioItem) => {
+    const pathMatch = item.photo_url.match(/portfolio\/(.+)$/);
     if (pathMatch) {
       await supabase.storage.from("portfolio").remove([pathMatch[1]]);
     }
-    await supabase.from("portfolio_photos").delete().eq("id", photo.id);
-    setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
-    toast.success("Foto removida");
+    await supabase.from("portfolio_photos").delete().eq("id", item.id);
+    setPhotos((prev) => prev.filter((p) => p.id !== item.id));
+    toast.success("Removido");
   };
 
   const initials = profile?.full_name
@@ -171,7 +257,13 @@ const PerfilPublicoPage = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#0A0A0F]">
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*,video/mp4"
+        className="hidden"
+        onChange={handleUpload}
+      />
 
       {/* Ambient glow */}
       <div className="pointer-events-none fixed inset-0 z-0">
@@ -196,7 +288,6 @@ const PerfilPublicoPage = () => {
 
         {/* Avatar + Name block */}
         <div className="flex flex-col items-center px-6">
-          {/* Avatar with glow ring */}
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#276EF1] to-[#7C3AED] blur-md opacity-50 scale-110" />
             {profile?.avatar_url ? (
@@ -212,12 +303,10 @@ const PerfilPublicoPage = () => {
             )}
           </div>
 
-          {/* Name */}
           <h1 className="mt-4 text-[22px] font-bold text-white tracking-tight">
             {profile?.full_name || "Profissional"}
           </h1>
 
-          {/* Stars */}
           <div className="mt-1.5 flex items-center gap-0.5">
             {[1, 2, 3, 4, 5].map((i) => (
               <Star
@@ -233,7 +322,6 @@ const PerfilPublicoPage = () => {
             </span>
           </div>
 
-          {/* Category tags */}
           {categories.length > 0 && (
             <div className="mt-3 flex flex-wrap justify-center gap-1.5">
               {categories.map((c) => (
@@ -274,14 +362,12 @@ const PerfilPublicoPage = () => {
         transition={{ duration: 0.4, delay: 0.1 }}
         className="relative z-10 flex-1 mt-6 px-6 pb-10"
       >
-        {/* Bio */}
         {profile?.bio && (
           <div className="mb-5 rounded-2xl bg-white/[0.04] border border-white/[0.06] p-4">
             <p className="text-[13px] leading-relaxed text-white/60">{profile.bio}</p>
           </div>
         )}
 
-        {/* Social links */}
         {socials.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-2">
             {socials.map((s) => (
@@ -299,7 +385,6 @@ const PerfilPublicoPage = () => {
           </div>
         )}
 
-        {/* Equipamentos */}
         {equipments.length > 0 && (
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
@@ -332,37 +417,72 @@ const PerfilPublicoPage = () => {
               <Grid3X3 size={16} className="text-white/30" />
               <span className="text-[13px] font-semibold text-white/70">Portfólio</span>
             </div>
-            <span className="text-[11px] text-white/25 font-medium">{photos.length}/{MAX_PHOTOS}</span>
+            <span className="text-[11px] text-white/25 font-medium">{photos.length}/{MAX_ITEMS}</span>
           </div>
 
           <div className="grid grid-cols-3 gap-[3px]">
-            {photos.map((photo, idx) => (
-              <motion.div
-                key={photo.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: idx * 0.05 }}
-                className="group relative aspect-square overflow-hidden rounded-lg"
-              >
-                <img
-                  src={photo.photo_url}
-                  alt=""
-                  className="h-full w-full object-cover cursor-pointer transition-all duration-300 group-hover:scale-110 group-hover:brightness-75"
-                  onClick={() => setLightbox(photo.photo_url)}
-                />
-                {/* Gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <button
-                  onClick={() => handleDelete(photo)}
-                  className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500"
+            {photos.map((item, idx) => {
+              const isVideo = item.media_type === "video";
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="group relative aspect-square overflow-hidden rounded-lg bg-black"
                 >
-                  <Trash2 size={13} />
-                </button>
-              </motion.div>
-            ))}
+                  {isVideo ? (
+                    <video
+                      src={item.photo_url}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="h-full w-full object-cover cursor-pointer transition-all duration-300 group-hover:scale-110 group-hover:brightness-75"
+                      onClick={() => setLightbox({ url: item.photo_url, type: "video" })}
+                    />
+                  ) : (
+                    <img
+                      src={item.photo_url}
+                      alt=""
+                      className="h-full w-full object-cover cursor-pointer transition-all duration-300 group-hover:scale-110 group-hover:brightness-75"
+                      onClick={() => setLightbox({ url: item.photo_url, type: "image" })}
+                    />
+                  )}
 
-            {/* Add photo slot */}
-            {photos.length < MAX_PHOTOS && (
+                  {isVideo && (
+                    <>
+                      <div
+                        className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                        onClick={() => setLightbox({ url: item.photo_url, type: "video" })}
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black/55 backdrop-blur-sm">
+                          <Play size={16} className="text-white fill-white ml-0.5" />
+                        </div>
+                      </div>
+                      {item.duration_seconds ? (
+                        <span className="pointer-events-none absolute top-1.5 left-1.5 rounded-md bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                          {formatDuration(item.duration_seconds)}
+                        </span>
+                      ) : null}
+                    </>
+                  )}
+
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(item);
+                    }}
+                    className="absolute bottom-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-red-500/80 text-white opacity-100 transition-all hover:bg-red-500 sm:opacity-0 sm:group-hover:opacity-100"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </motion.div>
+              );
+            })}
+
+            {/* Add slot */}
+            {photos.length < MAX_ITEMS && (
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
@@ -377,11 +497,9 @@ const PerfilPublicoPage = () => {
             )}
           </div>
 
-          {photos.length === 0 && !uploading && (
-            <p className="mt-3 text-center text-[12px] text-white/25">
-              Adicione fotos dos seus trabalhos para atrair mais clientes
-            </p>
-          )}
+          <p className="mt-3 text-center text-[11px] text-white/30">
+            Fotos (até 5MB) e vídeos MP4 (até 1 min, 50MB) — máx. {MAX_ITEMS} arquivos
+          </p>
         </div>
       </motion.div>
 
@@ -395,18 +513,36 @@ const PerfilPublicoPage = () => {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm"
             onClick={() => setLightbox(null)}
           >
-            <button className="absolute top-12 right-4 text-white/60 hover:text-white transition-colors" onClick={() => setLightbox(null)}>
+            <button
+              className="absolute top-12 right-4 text-white/60 hover:text-white transition-colors"
+              onClick={() => setLightbox(null)}
+            >
               <X size={28} />
             </button>
-            <motion.img
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.85, opacity: 0 }}
-              transition={{ type: "spring", damping: 25 }}
-              src={lightbox}
-              className="max-h-[80vh] max-w-full rounded-xl object-contain"
-              alt=""
-            />
+            {lightbox.type === "video" ? (
+              <motion.video
+                initial={{ scale: 0.85, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.85, opacity: 0 }}
+                transition={{ type: "spring", damping: 25 }}
+                src={lightbox.url}
+                controls
+                autoPlay
+                playsInline
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[80vh] max-w-full rounded-xl"
+              />
+            ) : (
+              <motion.img
+                initial={{ scale: 0.85, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.85, opacity: 0 }}
+                transition={{ type: "spring", damping: 25 }}
+                src={lightbox.url}
+                className="max-h-[80vh] max-w-full rounded-xl object-contain"
+                alt=""
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
