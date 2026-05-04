@@ -9,6 +9,7 @@ import {
   Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package, Play,
 } from "lucide-react";
 import { toast } from "sonner";
+import { compressVideo, prewarmVideoCompressor } from "@/lib/videoCompression";
 
 const SOCIAL_ICONS: Record<string, React.ElementType> = {
   instagram: Instagram,
@@ -29,8 +30,8 @@ const EQUIPMENT_ICONS: Record<string, React.ElementType> = {
 };
 
 const MAX_ITEMS = 6;
-const MAX_VIDEO_SECONDS = 60;
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const MAX_VIDEO_SECONDS = 90;
+const MAX_VIDEO_BYTES = 300 * 1024 * 1024; // 300MB de entrada (será comprimido)
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 interface PortfolioItem {
@@ -77,9 +78,16 @@ const PerfilPublicoPage = () => {
   const [reviewCount, setReviewCount] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle");
+  const [compressPct, setCompressPct] = useState(0);
   const [lightbox, setLightbox] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const [pricing, setPricing] = useState<{ hourly_rate: number | null; daily_rate: number | null } | null>(null);
   const [equipments, setEquipments] = useState<Array<{ id: string; name: string; category: string | null; description: string | null }>>([]);
+
+  // Pré-aquece o compressor (baixa o wasm em background) sem travar a UI.
+  useEffect(() => {
+    prewarmVideoCompressor();
+  }, []);
 
   const socialFields = [
     "instagram", "tiktok", "youtube", "linkedin", "behance",
@@ -129,17 +137,12 @@ const PerfilPublicoPage = () => {
       return;
     }
 
-    const isVideo = file.type.startsWith("video/");
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|qt)$/i.test(file.name);
     const isImage = file.type.startsWith("image/");
 
     if (isVideo) {
-      if (file.type !== "video/mp4") {
-        toast.error("Apenas vídeos MP4 são aceitos");
-        if (fileRef.current) fileRef.current.value = "";
-        return;
-      }
       if (file.size > MAX_VIDEO_BYTES) {
-        toast.error("Vídeo muito grande (máx. 50MB)");
+        toast.error("Vídeo muito grande (máx. 300MB)");
         if (fileRef.current) fileRef.current.value = "";
         return;
       }
@@ -156,8 +159,12 @@ const PerfilPublicoPage = () => {
     }
 
     setUploading(true);
+    setUploadStage("uploading");
+    setCompressPct(0);
 
     let durationSeconds: number | null = null;
+    let fileToUpload: File = file;
+
     if (isVideo) {
       try {
         const meta = await readVideoMetadata(file);
@@ -165,29 +172,49 @@ const PerfilPublicoPage = () => {
           throw new Error("Duração inválida");
         }
         if (meta.duration > MAX_VIDEO_SECONDS + 0.5) {
-          toast.error("Vídeo deve ter no máximo 1 minuto");
+          toast.error(`Vídeo deve ter no máximo ${MAX_VIDEO_SECONDS} segundos`);
           setUploading(false);
+          setUploadStage("idle");
           if (fileRef.current) fileRef.current.value = "";
           return;
         }
         durationSeconds = Math.round(meta.duration * 10) / 10;
       } catch {
-        toast.error("Não foi possível processar o vídeo");
+        toast.error("Não foi possível ler o vídeo");
         setUploading(false);
+        setUploadStage("idle");
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+
+      // Comprime para MP4 720p (~2.5Mbps) preservando qualidade visual.
+      try {
+        setUploadStage("compressing");
+        const result = await compressVideo(file, {
+          onProgress: (p) => setCompressPct(p),
+        });
+        fileToUpload = result.file;
+        setUploadStage("uploading");
+      } catch (err) {
+        console.error("[compressVideo] erro:", err);
+        toast.error("Não foi possível processar este vídeo. Tente outro arquivo.");
+        setUploading(false);
+        setUploadStage("idle");
         if (fileRef.current) fileRef.current.value = "";
         return;
       }
     }
 
-    const ext = file.name.split(".").pop();
+    const ext = isVideo ? "mp4" : (file.name.split(".").pop() || "jpg");
     const path = `${user.id}/${Date.now()}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from("portfolio")
-      .upload(path, file, { contentType: file.type, cacheControl: "3600" });
+      .upload(path, fileToUpload, { contentType: fileToUpload.type, cacheControl: "3600" });
     if (uploadErr) {
       toast.error("Erro ao enviar arquivo");
       setUploading(false);
+      setUploadStage("idle");
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
@@ -214,6 +241,8 @@ const PerfilPublicoPage = () => {
       toast.success(isVideo ? "Vídeo adicionado!" : "Foto adicionada!");
     }
     setUploading(false);
+    setUploadStage("idle");
+    setCompressPct(0);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -260,7 +289,7 @@ const PerfilPublicoPage = () => {
       <input
         ref={fileRef}
         type="file"
-        accept="image/*,video/mp4"
+        accept="image/*,video/mp4,video/quicktime,.mov,.mp4"
         className="hidden"
         onChange={handleUpload}
       />
@@ -486,10 +515,20 @@ const PerfilPublicoPage = () => {
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] transition-all hover:border-[#276EF1]/40 hover:bg-[#276EF1]/10"
+                className="relative flex aspect-square flex-col items-center justify-center gap-1.5 overflow-hidden rounded-lg border border-dashed border-white/10 bg-white/[0.03] transition-all hover:border-[#276EF1]/40 hover:bg-[#276EF1]/10"
               >
                 {uploading ? (
-                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
+                  <>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
+                    <span className="px-1 text-center text-[9px] font-medium leading-tight text-white/60">
+                      {uploadStage === "compressing"
+                        ? `Otimizando ${compressPct}%`
+                        : "Enviando..."}
+                    </span>
+                    {uploadStage === "compressing" && (
+                      <div className="absolute bottom-0 left-0 h-1 bg-[#276EF1] transition-all" style={{ width: `${compressPct}%` }} />
+                    )}
+                  </>
                 ) : (
                   <Plus size={22} className="text-white/20" />
                 )}
@@ -497,8 +536,8 @@ const PerfilPublicoPage = () => {
             )}
           </div>
 
-          <p className="mt-3 text-center text-[11px] text-white/30">
-            Fotos (até 5MB) e vídeos MP4 (até 1 min, 50MB) — máx. {MAX_ITEMS} arquivos
+          <p className="mt-3 text-center text-[11px] leading-relaxed text-white/30">
+            Fotos (até 5MB) e vídeos até {MAX_VIDEO_SECONDS}s (máx. 300MB, otimizados automaticamente) — limite de {MAX_ITEMS} arquivos
           </p>
         </div>
       </motion.div>
@@ -510,36 +549,39 @@ const PerfilPublicoPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black p-0"
             onClick={() => setLightbox(null)}
           >
             <button
-              className="absolute top-12 right-4 text-white/60 hover:text-white transition-colors"
+              className="absolute top-12 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 backdrop-blur-md transition-colors hover:bg-white/20 hover:text-white"
               onClick={() => setLightbox(null)}
             >
-              <X size={28} />
+              <X size={20} />
             </button>
             {lightbox.type === "video" ? (
               <motion.video
-                initial={{ scale: 0.85, opacity: 0 }}
+                initial={{ scale: 0.92, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.85, opacity: 0 }}
+                exit={{ scale: 0.92, opacity: 0 }}
                 transition={{ type: "spring", damping: 25 }}
                 src={lightbox.url}
                 controls
                 autoPlay
+                loop
                 playsInline
+                {...({ "webkit-playsinline": "true" } as any)}
                 onClick={(e) => e.stopPropagation()}
-                className="max-h-[80vh] max-w-full rounded-xl"
+                className="max-h-[92vh] max-w-full"
               />
             ) : (
               <motion.img
-                initial={{ scale: 0.85, opacity: 0 }}
+                initial={{ scale: 0.92, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.85, opacity: 0 }}
+                exit={{ scale: 0.92, opacity: 0 }}
                 transition={{ type: "spring", damping: 25 }}
                 src={lightbox.url}
-                className="max-h-[80vh] max-w-full rounded-xl object-contain"
+                onClick={(e) => e.stopPropagation()}
+                className="max-h-[92vh] max-w-full object-contain"
                 alt=""
               />
             )}
