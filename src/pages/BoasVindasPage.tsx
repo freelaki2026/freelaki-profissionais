@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Ticket, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import pomboLogo from "@/assets/pombo-branco.png";
 
 const BoasVindasPage = () => {
   const navigate = useNavigate();
@@ -32,6 +33,13 @@ const BoasVindasPage = () => {
         className="relative z-10 flex flex-1 flex-col items-center justify-center px-8"
         style={{ animation: "fadeInUp 600ms ease-out both" }}
       >
+        <img
+          src={pomboLogo}
+          alt="Freelaki"
+          className="mb-6"
+          style={{ width: 96, height: 96, objectFit: "contain" }}
+        />
+
         <h1
           className="font-bold"
           style={{ fontSize: 46, letterSpacing: -1.6, lineHeight: 1 }}
@@ -46,21 +54,17 @@ const BoasVindasPage = () => {
           profissionais
         </p>
 
-        <div className="mt-12 text-center whitespace-pre-line">
+        <div className="mt-10 text-center px-2">
           <p className="text-[22px] font-semibold text-white leading-tight">
             Sua vaga está
             <br />
             <span style={{ color: "#276EF1" }}>quase chegando.</span>
           </p>
-          
-          <p className="mt-4 text-[14px] font-light max-w-[280px] mx-auto leading-relaxed text-primary-foreground">
-            {`
 
-
-
-
-O acesso é liberado por convite.
-Com a gente, freela é coisa séria.`}
+          <p className="mt-5 text-[14px] font-light max-w-[280px] mx-auto leading-relaxed text-white/60">
+            O acesso é liberado por convite.
+            <br />
+            Com a gente, freela é coisa séria.
           </p>
         </div>
       </div>
