@@ -140,14 +140,12 @@ const PerfilPublicoPage = () => {
     const isVideo = file.type.startsWith("video/");
     const isImage = file.type.startsWith("image/");
 
+    const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|qt)$/i.test(file.name);
+    const isImage = file.type.startsWith("image/");
+
     if (isVideo) {
-      if (file.type !== "video/mp4") {
-        toast.error("Apenas vídeos MP4 são aceitos");
-        if (fileRef.current) fileRef.current.value = "";
-        return;
-      }
       if (file.size > MAX_VIDEO_BYTES) {
-        toast.error("Vídeo muito grande (máx. 50MB)");
+        toast.error("Vídeo muito grande (máx. 300MB)");
         if (fileRef.current) fileRef.current.value = "";
         return;
       }
@@ -164,8 +162,12 @@ const PerfilPublicoPage = () => {
     }
 
     setUploading(true);
+    setUploadStage("uploading");
+    setCompressPct(0);
 
     let durationSeconds: number | null = null;
+    let fileToUpload: File = file;
+
     if (isVideo) {
       try {
         const meta = await readVideoMetadata(file);
@@ -173,29 +175,49 @@ const PerfilPublicoPage = () => {
           throw new Error("Duração inválida");
         }
         if (meta.duration > MAX_VIDEO_SECONDS + 0.5) {
-          toast.error("Vídeo deve ter no máximo 1 minuto");
+          toast.error(`Vídeo deve ter no máximo ${MAX_VIDEO_SECONDS} segundos`);
           setUploading(false);
+          setUploadStage("idle");
           if (fileRef.current) fileRef.current.value = "";
           return;
         }
         durationSeconds = Math.round(meta.duration * 10) / 10;
       } catch {
-        toast.error("Não foi possível processar o vídeo");
+        toast.error("Não foi possível ler o vídeo");
         setUploading(false);
+        setUploadStage("idle");
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+
+      // Comprime para MP4 720p (~2.5Mbps) preservando qualidade visual.
+      try {
+        setUploadStage("compressing");
+        const result = await compressVideo(file, {
+          onProgress: (p) => setCompressPct(p),
+        });
+        fileToUpload = result.file;
+        setUploadStage("uploading");
+      } catch (err) {
+        console.error("[compressVideo] erro:", err);
+        toast.error("Não foi possível processar este vídeo. Tente outro arquivo.");
+        setUploading(false);
+        setUploadStage("idle");
         if (fileRef.current) fileRef.current.value = "";
         return;
       }
     }
 
-    const ext = file.name.split(".").pop();
+    const ext = isVideo ? "mp4" : (file.name.split(".").pop() || "jpg");
     const path = `${user.id}/${Date.now()}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
       .from("portfolio")
-      .upload(path, file, { contentType: file.type, cacheControl: "3600" });
+      .upload(path, fileToUpload, { contentType: fileToUpload.type, cacheControl: "3600" });
     if (uploadErr) {
       toast.error("Erro ao enviar arquivo");
       setUploading(false);
+      setUploadStage("idle");
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
@@ -222,6 +244,8 @@ const PerfilPublicoPage = () => {
       toast.success(isVideo ? "Vídeo adicionado!" : "Foto adicionada!");
     }
     setUploading(false);
+    setUploadStage("idle");
+    setCompressPct(0);
     if (fileRef.current) fileRef.current.value = "";
   };
 
