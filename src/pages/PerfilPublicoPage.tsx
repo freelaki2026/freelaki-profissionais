@@ -289,7 +289,7 @@ const PerfilPublicoPage = () => {
       <input
         ref={fileRef}
         type="file"
-        accept="image/*,video/mp4"
+        accept="image/*,video/mp4,video/quicktime,.mov,.mp4"
         className="hidden"
         onChange={handleUpload}
       />
