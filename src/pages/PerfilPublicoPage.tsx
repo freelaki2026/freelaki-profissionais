@@ -137,9 +137,6 @@ const PerfilPublicoPage = () => {
       return;
     }
 
-    const isVideo = file.type.startsWith("video/");
-    const isImage = file.type.startsWith("image/");
-
     const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|m4v|webm|qt)$/i.test(file.name);
     const isImage = file.type.startsWith("image/");
 
