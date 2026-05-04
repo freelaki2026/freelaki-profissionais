@@ -9,6 +9,7 @@ import {
   Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package, Play,
 } from "lucide-react";
 import { toast } from "sonner";
+import { compressVideo, prewarmVideoCompressor } from "@/lib/videoCompression";
 
 const SOCIAL_ICONS: Record<string, React.ElementType> = {
   instagram: Instagram,
@@ -29,8 +30,8 @@ const EQUIPMENT_ICONS: Record<string, React.ElementType> = {
 };
 
 const MAX_ITEMS = 6;
-const MAX_VIDEO_SECONDS = 60;
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const MAX_VIDEO_SECONDS = 90;
+const MAX_VIDEO_BYTES = 300 * 1024 * 1024; // 300MB de entrada (será comprimido)
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 interface PortfolioItem {
@@ -77,9 +78,16 @@ const PerfilPublicoPage = () => {
   const [reviewCount, setReviewCount] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle");
+  const [compressPct, setCompressPct] = useState(0);
   const [lightbox, setLightbox] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const [pricing, setPricing] = useState<{ hourly_rate: number | null; daily_rate: number | null } | null>(null);
   const [equipments, setEquipments] = useState<Array<{ id: string; name: string; category: string | null; description: string | null }>>([]);
+
+  // Pré-aquece o compressor (baixa o wasm em background) sem travar a UI.
+  useEffect(() => {
+    prewarmVideoCompressor();
+  }, []);
 
   const socialFields = [
     "instagram", "tiktok", "youtube", "linkedin", "behance",
