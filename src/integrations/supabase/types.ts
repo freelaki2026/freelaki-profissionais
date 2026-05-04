@@ -1589,24 +1589,30 @@ export type Database = {
       portfolio_photos: {
         Row: {
           created_at: string | null
+          duration_seconds: number | null
           file_name: string | null
           id: string
+          media_type: string
           order_index: number | null
           photo_url: string
           profile_id: string
         }
         Insert: {
           created_at?: string | null
+          duration_seconds?: number | null
           file_name?: string | null
           id?: string
+          media_type?: string
           order_index?: number | null
           photo_url: string
           profile_id: string
         }
         Update: {
           created_at?: string | null
+          duration_seconds?: number | null
           file_name?: string | null
           id?: string
+          media_type?: string
           order_index?: number | null
           photo_url?: string
           profile_id?: string
