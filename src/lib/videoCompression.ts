@@ -99,7 +99,9 @@ export async function compressVideo(
     ]);
 
     const data = await ffmpeg.readFile(outputName);
-    const blob = new Blob([data as Uint8Array], { type: "video/mp4" });
+    const u8 = data as Uint8Array;
+    const ab = u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength) as ArrayBuffer;
+    const blob = new Blob([ab], { type: "video/mp4" });
     const file = new File([blob], `compressed_${Date.now()}.mp4`, { type: "video/mp4" });
 
     try { await ffmpeg.deleteFile(inputName); } catch { /* noop */ }
