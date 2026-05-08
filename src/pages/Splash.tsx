@@ -115,8 +115,7 @@ const Splash = () => {
           autoPlay
           muted
           playsInline
-          // @ts-expect-error atributo iOS legado necessario no WebView do Capacitor
-          webkit-playsinline="true"
+          {...({ "webkit-playsinline": "true" } as Record<string, string>)}
           preload="auto"
           onEnded={finishSequence}
           onError={() => setVideoFailed(true)}
