@@ -1,62 +1,40 @@
-## Compressão de vídeo client-side (qualidade preservada, pronto pra iOS + Android)
+## Vídeo de abertura no Splash
 
-### Como funciona
+### Arquivo
+- `Logo_Freelaki_SFX.mp4` — 593 KB, 5,04s, 1080×1920, H.264 + AAC.
+- Já está leve e em ótima qualidade. **Não precisa comprimir** (compressão pioraria a marca sem ganho real).
 
-Usar **`@ffmpeg/ffmpeg` (WebAssembly)** rodando no navegador e dentro do WebView do Capacitor — funciona igual em iPhone e Android sem plugin nativo.
+### Hospedagem
+- Criar bucket público `branding` no Supabase Storage.
+- Upload do MP4 como `branding/splash-intro.mp4` (URL pública, cache do navegador cobre as próximas aberturas — ~593 KB no primeiro load).
+- RLS: leitura pública, escrita só autenticada (apenas precaução; upload feito por nós).
 
-**Regra inteligente:**
-- Vídeo entra com até **300MB**.
-- Se já for MP4 e ≤ 30MB → sobe direto, sem reprocessar (qualidade 100% original).
-- Caso contrário → recomprime para **MP4 H.264 720p, ~2.5 Mbps + AAC 128kbps**, com `+faststart` (começa a tocar antes de baixar tudo). Resultado típico de 90s: **~20–30MB**, qualidade indistinguível a olho nu (padrão Instagram/WhatsApp).
-- Duração máxima: **90s**.
+### Comportamento (Splash)
+Substituir a animação atual de `src/pages/Splash.tsx` por:
 
-### Arquivos
-
-**1. Novo: `src/lib/videoCompression.ts`**
-Wrapper isolado com `compressVideo(file, { onProgress })` e `prewarmVideoCompressor()`. Mantém uma instância singleton do ffmpeg pra não recarregar o `.wasm` (~30MB) a cada upload — primeira vez baixa, próximas são instantâneas.
-
-Comando ffmpeg:
+```text
+[ vídeo do logo em fullscreen, fundo #0A0A0F ]
+   autoPlay · muted · playsInline · webkit-playsinline
+   ↓ ao terminar (onEnded ~5s)
+[ tagline aparece com fadeInUp: "100% do que você ganha é seu." + "Grátis pra sempre." ]
+   ↓ +900ms para leitura
+→ redirect (mesma lógica atual: /, /confirmar-email, /categorias ou /dashboard)
 ```
--vf scale='min(1280,iw)':'min(720,ih)':force_original_aspect_ratio=decrease
--c:v libx264 -preset veryfast -crf 23 -maxrate 2800k -bufsize 5600k
--pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart
-```
 
-**2. Editar: `src/pages/PerfilPublicoPage.tsx`**
-- Limites: `MAX_VIDEO_BYTES = 300MB`, `MAX_VIDEO_SECONDS = 90`.
-- Novo fluxo de upload de vídeo:
-  1. Validar tamanho/tipo/duração.
-  2. Chamar `compressVideo(file, { onProgress: setProgress })`.
-  3. UI mostra "Otimizando vídeo… 42%" no slot enquanto processa.
-  4. Sobe o arquivo final pro Supabase.
-- Botão de upload desabilitado durante compressão.
-- Fallback: se ffmpeg falhar (raro, ex.: codec exótico), mostra erro "Não foi possível processar este vídeo. Tente outro formato."
-- `prewarmVideoCompressor()` chamado uma vez ao montar a página (download do wasm em background, sem travar a UI).
+- Toca **toda vez que o app abre**, para visitantes E logados (substitui o splash atual em todos os fluxos: pré-login, login, pré-cadastro, dashboard).
+- Sem botão pular (vídeo curto).
+- `muted` por padrão (browsers bloqueiam autoplay com som). Como o MP4 tem trilha SFX, vamos tentar tocar com som via `video.muted = false; video.play()` num try/catch — se o browser bloquear, segue mudo sem quebrar.
+- Preload do próximo destino em paralelo (mantém o `import("@/pages/DashboardPage")` atual).
+- Fallback: se o vídeo falhar (rede off, 404), cai direto na animação textual antiga + redirect.
 
-**3. Lightbox estilo Instagram (mesma página):**
-- Fundo `bg-black` 100% opaco.
-- `<video controls autoPlay playsInline webkit-playsinline loop>` (loop opcional, igual IG Reels).
-- Tap fora fecha; tap no vídeo NÃO fecha (já está com `stopPropagation`).
-- Funciona dentro do WebView Capacitor sem plugin (atributos `playsInline` + `webkit-playsinline` resolvem o autoplay inline no iOS).
+### Mudanças
+1. **Migration Supabase**: criar bucket `branding` público + policies (`select` público, `insert/update/delete` só autenticado).
+2. **Upload do MP4**: feito via script no nosso lado (não pedir ao usuário).
+3. **`src/pages/Splash.tsx`**: trocar o bloco do logo pelo `<video>` apontando para a URL pública do bucket; mostrar tagline no `onEnded`; manter resolução de rota e durações mínimas baseadas no fim do vídeo (~5s) em vez dos timers fixos atuais.
+4. **`src/pages/BoasVindasPage.tsx`**: hoje, se já tem sessão, redireciona para `/splash`. Mantém — assim logados também passam pelo vídeo.
+5. **Memória**: atualizar `mem://logic/splash-behavior` para refletir o novo comportamento (vídeo + tagline pós-vídeo).
 
-### Pronto pra Capacitor (iOS + Android)
-
-- `ffmpeg.wasm` carregado de `unpkg.com` via `toBlobURL` — funciona no WebView dos dois sistemas.
-- Nenhuma permissão nativa adicional necessária além das já configuradas (`NSPhotoLibraryUsageDescription` etc.).
-- Se quiser performance maior no futuro, basta trocar a implementação de `compressVideo` por `@capacitor-community/video-editor` (plugin nativo) — a assinatura permanece igual e nenhum outro arquivo precisa mudar.
-
-### Trade-offs honestos
-
-| Aspecto | Realidade |
-|---|---|
-| Download inicial | ~30MB de wasm na 1ª vez (cacheado depois) |
-| Tempo de compressão (90s, 1080p) | ~20–40s no iPhone moderno, ~40–80s no Android médio |
-| Qualidade | 720p H.264 a 2.5Mbps — visualmente igual ao original em tela de celular |
-| Tamanho final típico | 15–30MB para vídeo de 90s |
-| Risco no upload Supabase | Zero (todos ficam abaixo dos 50MB do limite padrão) |
-
-### Dependências a instalar
-
-```
-bun add @ffmpeg/ffmpeg @ffmpeg/util
-```
+### Notas técnicas
+- URL final: `https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/branding/splash-intro.mp4`.
+- Após o primeiro acesso, o vídeo fica em cache HTTP do navegador/WebView do Capacitor — aberturas seguintes são instantâneas.
+- iOS WebView exige `playsInline` + `webkit-playsinline` + `muted` para autoplay (já contemplado).
