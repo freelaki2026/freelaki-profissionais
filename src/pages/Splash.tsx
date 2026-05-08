@@ -1,144 +1,169 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-// Splash inteligente: dura mais para visitantes (impacto da marca)
-// e bem menos quando o usuário já está autenticado (UX rápida estilo big tech).
-const SPLASH_DURATION_GUEST = 1800;
-const SPLASH_DURATION_LOGGED = 900;
-const TAGLINE_DELAY = 250;
+// Splash com video de abertura da marca.
+// - Toca o MP4 do logo em fullscreen toda vez que o app abre.
+// - Ao terminar o video, exibe a tagline e segue para a rota correta.
+// - Se o video falhar (rede, codec), faz fallback textual sem travar o usuario.
+
+const VIDEO_SRC = "/branding/splash-intro.mp4";
+const FALLBACK_DURATION_MS = 5200; // ~duracao do MP4 (5.04s)
+const TAGLINE_HOLD_MS = 1100; // tempo para o usuario ler a tagline antes do redirect
 
 const Splash = () => {
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [showTagline, setShowTagline] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  // Resolucao da rota destino (mesma logica de antes)
+  const nextPathRef = useRef<{ path: string; state?: unknown } | null>(null);
+  const redirectedRef = useRef(false);
 
   useEffect(() => {
-    let isActive = true;
-    const taglineTimer = setTimeout(() => setShowTagline(true), TAGLINE_DELAY);
+    let active = true;
 
-    const resolveNextPath = async () => {
+    const resolveNext = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session) {
-        return { path: "/", state: undefined, logged: false };
-      }
-
+      if (!session) return { path: "/", state: undefined };
       if (!session.user.email_confirmed_at) {
-        return {
-          path: "/confirmar-email",
-          state: { email: session.user.email },
-          logged: true,
-        };
+        return { path: "/confirmar-email", state: { email: session.user.email } };
       }
-
-      // Pré-aquece o chunk do dashboard em paralelo à query.
       void import("@/pages/DashboardPage");
-
       const { count } = await supabase
         .from("professional_categories")
         .select("*", { count: "exact", head: true })
         .eq("profile_id", session.user.id);
-
-      return {
-        path: (count ?? 0) === 0 ? "/categorias" : "/dashboard",
-        state: undefined,
-        logged: true,
-      };
+      return { path: (count ?? 0) === 0 ? "/categorias" : "/dashboard", state: undefined };
     };
 
-    const run = async () => {
-      const resolved = await resolveNextPath();
-      const minDuration = resolved.logged ? SPLASH_DURATION_LOGGED : SPLASH_DURATION_GUEST;
-      await new Promise((resolve) => setTimeout(resolve, minDuration));
-
-      if (!isActive) return;
-      navigate(resolved.path, { replace: true, state: resolved.state });
-    };
-
-    run();
+    resolveNext().then((next) => {
+      if (active) nextPathRef.current = next;
+    });
 
     return () => {
-      isActive = false;
-      clearTimeout(taglineTimer);
+      active = false;
     };
-  }, [navigate]);
+  }, []);
+
+  const goNext = () => {
+    if (redirectedRef.current) return;
+    redirectedRef.current = true;
+    const target = nextPathRef.current ?? { path: "/", state: undefined };
+    navigate(target.path, { replace: true, state: target.state });
+  };
+
+  const finishSequence = () => {
+    setShowTagline(true);
+    // espera o usuario ler a tagline e tambem garante que a rota ja foi resolvida
+    const tryRedirect = (attempt = 0) => {
+      if (nextPathRef.current || attempt > 10) {
+        setTimeout(goNext, TAGLINE_HOLD_MS);
+      } else {
+        setTimeout(() => tryRedirect(attempt + 1), 100);
+      }
+    };
+    tryRedirect();
+  };
+
+  // Fallback caso o video nao termine (autoplay bloqueado, erro, etc.)
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!showTagline) finishSequence();
+    }, FALLBACK_DURATION_MS + 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Tenta dar play com som; se o navegador bloquear, mantem mudo (autoplay garantido).
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    const playPromise = v.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise
+        .then(() => {
+          // tenta reativar o som apos o play comecar
+          try {
+            v.muted = false;
+          } catch {
+            /* noop */
+          }
+        })
+        .catch(() => {
+          // mantem mudo se bloqueado
+          v.muted = true;
+          v.play().catch(() => setVideoFailed(true));
+        });
+    }
+  }, []);
 
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
       style={{ background: "#0A0A0F" }}
     >
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#276EF1]/8 blur-[120px]" />
-      </div>
-
-      <div
-        className="relative z-10 flex flex-col items-center"
-        style={{ animation: "splashLogoIn 450ms ease-out both" }}
-      >
-        <h1 className="font-bold" style={{ fontSize: 42, letterSpacing: -1.5, lineHeight: 1 }}>
-          <span className="text-primary">free</span>
-          <span className="text-secondary" style={{ color: "#276EF1" }}>
-            laki
-          </span>
-        </h1>
-        <p
-          className="font-light uppercase text-primary-foreground"
-          style={{ fontSize: 11, letterSpacing: 4, marginTop: 6 }}
-        >
-          profissionais
-        </p>
-      </div>
-
-      <div
-        className="relative z-10 mt-10 text-center px-10"
-        style={{
-          animation: showTagline ? "splashTaglineIn 450ms ease-out both" : undefined,
-          opacity: showTagline ? undefined : 0,
-        }}
-      >
-        <p className="text-[18px] font-semibold text-white/90 leading-snug">
-          100% do que você ganha <span style={{ color: "#276EF1" }}>é seu.</span>
-        </p>
-        <p className="mt-2 text-[13px] text-white/30 font-light">Grátis pra sempre.</p>
-      </div>
-
-      <div
-        className="fixed flex flex-col items-center"
-        style={{ bottom: 52, left: "50%", transform: "translateX(-50%)" }}
-      >
+      {!videoFailed ? (
+        <video
+          ref={videoRef}
+          src={VIDEO_SRC}
+          autoPlay
+          muted
+          playsInline
+          {...({ "webkit-playsinline": "true" } as Record<string, string>)}
+          preload="auto"
+          onEnded={finishSequence}
+          onError={() => setVideoFailed(true)}
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ background: "#0A0A0F" }}
+        />
+      ) : (
+        // Fallback textual caso o video nao carregue
         <div
-          className="overflow-hidden"
+          className="relative z-10 flex flex-col items-center"
+          style={{ animation: "splashLogoIn 450ms ease-out both" }}
+        >
+          <h1 className="font-bold" style={{ fontSize: 42, letterSpacing: -1.5, lineHeight: 1 }}>
+            <span className="text-white">free</span>
+            <span style={{ color: "#276EF1" }}>laki</span>
+          </h1>
+          <p
+            className="font-light uppercase text-white/70"
+            style={{ fontSize: 11, letterSpacing: 4, marginTop: 6 }}
+          >
+            profissionais
+          </p>
+        </div>
+      )}
+
+      {/* Tagline (aparece apenas depois do video terminar) */}
+      {showTagline && (
+        <div
+          className="pointer-events-none absolute inset-x-0 z-20 text-center px-10"
           style={{
-            width: 60,
-            height: 2,
-            borderRadius: 1,
-            background: "rgba(255,255,255,0.06)",
+            bottom: "18%",
+            animation: "splashTaglineIn 500ms ease-out both",
           }}
         >
-          <div
-            style={{
-              height: "100%",
-              background: "#276EF1",
-              animation: `progress-fill ${SPLASH_DURATION_GUEST}ms linear forwards`,
-            }}
-          />
+          <p className="text-[18px] font-semibold text-white/95 leading-snug drop-shadow-lg">
+            100% do que você ganha <span style={{ color: "#276EF1" }}>é seu.</span>
+          </p>
+          <p className="mt-2 text-[13px] text-white/60 font-light drop-shadow">Grátis pra sempre.</p>
         </div>
-      </div>
+      )}
 
       <style>{`
-        @keyframes progress-fill {
-          from { width: 0%; }
-          to { width: 100%; }
-        }
         @keyframes splashLogoIn {
           from { opacity: 0; transform: scale(0.96); }
           to   { opacity: 1; transform: scale(1); }
         }
         @keyframes splashTaglineIn {
-          from { opacity: 0; transform: translateY(8px); }
+          from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
