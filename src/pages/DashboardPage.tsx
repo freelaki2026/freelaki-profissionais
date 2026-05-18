@@ -812,7 +812,7 @@ const DashboardPage = () => {
           </div>
 
           {/* 4. Botões de ação rápida em cards brancos */}
-          <div className="grid grid-cols-3 gap-3 px-5 mb-5">
+          <div className="grid grid-cols-3 gap-3 px-5 mb-5" data-tour="quick-actions">
             {[
               { icon: <ArrowUp size={18} className="text-[#276EF1]" />, label: "Sacar", onClick: () => navigate("/ganhos") },
               { icon: <Map size={18} className="text-[#276EF1]" />, label: "Mapa", onClick: () => navigate("/mapa") },
