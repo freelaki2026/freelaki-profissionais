@@ -191,6 +191,7 @@ const DashboardPage = () => {
   const oppRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
   const { canAcceptWork, pending: pendingChecklist, isApproved: checklistApproved } = useOnboardingChecklist();
+  const tour = useAppTour();
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [bellShake, setBellShake] = useState(false);
