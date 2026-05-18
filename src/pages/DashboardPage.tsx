@@ -20,6 +20,8 @@ import { OnboardingChecklistBanner } from "@/components/dashboard/OnboardingChec
 import { TipsBanner } from "@/components/dashboard/TipsBanner";
 import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { haptics } from "@/lib/haptics";
+import AppTour from "@/components/tour/AppTour";
+import { useAppTour } from "@/hooks/useAppTour";
 
 const SOUND_ONLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.mp3';
 const SOUND_OFFLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.mp3';
