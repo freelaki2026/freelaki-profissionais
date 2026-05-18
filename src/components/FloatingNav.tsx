@@ -4,10 +4,10 @@ import { prefetchRoute } from "@/lib/routePrefetch";
 import { haptics } from "@/lib/haptics";
 
 const NAV_ITEMS = [
-  { label: "Home",      icon: Home,          path: "/dashboard" },
-  { label: "Contratos", icon: ScrollText,    path: "/contratos" },
-  { label: "Mensagens", icon: MessageCircle, path: "/mensagens" },
-  { label: "Menu",      icon: MenuIcon,      path: "/menu" },
+  { label: "Home",      icon: Home,          path: "/dashboard",  tour: "nav-home" },
+  { label: "Contratos", icon: ScrollText,    path: "/contratos",  tour: "nav-contratos" },
+  { label: "Mensagens", icon: MessageCircle, path: "/mensagens",  tour: "nav-mensagens" },
+  { label: "Menu",      icon: MenuIcon,      path: "/menu",       tour: "nav-menu" },
 ];
 
 export function FloatingNav() {
