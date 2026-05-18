@@ -772,7 +772,7 @@ const DashboardPage = () => {
             </div>
 
             {/* Saldo destacado dentro do header escuro */}
-            <div className="text-center">
+            <div className="text-center" data-tour="balance">
               <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1.5">Saldo disponível</p>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-[36px] font-bold tracking-tight text-white leading-none">
