@@ -729,6 +729,7 @@ const DashboardPage = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  data-tour="online-toggle"
                   onClick={toggleOnline}
                   disabled={togglingOnline || !canAcceptWork}
                   className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 rounded-full px-3 py-1.5 outline-none disabled:opacity-50 transition-colors"
