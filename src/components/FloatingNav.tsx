@@ -24,6 +24,7 @@ export function FloatingNav() {
           return (
             <button
               key={path}
+              data-tour={tour}
               type="button"
               onMouseEnter={prefetch}
               onTouchStart={prefetch}
