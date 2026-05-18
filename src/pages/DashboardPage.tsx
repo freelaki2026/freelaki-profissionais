@@ -1160,6 +1160,14 @@ const DashboardPage = () => {
           .offline-ring, .offline-bolt, .bolt-flash { animation: none !important; }
         }
       `}</style>
+
+      <AppTour
+        open={tour.open}
+        stepIndex={tour.stepIndex}
+        onNext={tour.next}
+        onPrev={tour.prev}
+        onFinish={tour.finish}
+      />
     </div>
   );
 };
