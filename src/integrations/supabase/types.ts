@@ -1876,6 +1876,7 @@ export type Database = {
           terms_accepted: boolean | null
           terms_accepted_at: string | null
           tiktok: string | null
+          tour_completed_at: string | null
           twitter: string | null
           updated_at: string | null
           user_type: string | null
@@ -1916,6 +1917,7 @@ export type Database = {
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
           tiktok?: string | null
+          tour_completed_at?: string | null
           twitter?: string | null
           updated_at?: string | null
           user_type?: string | null
@@ -1956,6 +1958,7 @@ export type Database = {
           terms_accepted?: boolean | null
           terms_accepted_at?: string | null
           tiktok?: string | null
+          tour_completed_at?: string | null
           twitter?: string | null
           updated_at?: string | null
           user_type?: string | null
