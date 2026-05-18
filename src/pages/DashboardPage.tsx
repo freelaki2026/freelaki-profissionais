@@ -748,6 +748,7 @@ const DashboardPage = () => {
 
                 <button
                   type="button"
+                  data-tour="notifications"
                   onClick={() => setNotifOpen(true)}
                   className="relative outline-none w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
                   style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}
