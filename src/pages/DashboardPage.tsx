@@ -20,6 +20,8 @@ import { OnboardingChecklistBanner } from "@/components/dashboard/OnboardingChec
 import { TipsBanner } from "@/components/dashboard/TipsBanner";
 import { useOnboardingChecklist } from "@/hooks/useOnboardingChecklist";
 import { haptics } from "@/lib/haptics";
+import AppTour from "@/components/tour/AppTour";
+import { useAppTour } from "@/hooks/useAppTour";
 
 const SOUND_ONLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Online%20button%20freelaki.mp3';
 const SOUND_OFFLINE = 'https://chkeoqugdcciojzmuczr.supabase.co/storage/v1/object/public/Sounds/Offline%20button%20freelaki.mp3';
@@ -189,6 +191,7 @@ const DashboardPage = () => {
   const oppRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, markAsRead, markAllAsRead, insertNotification } = useNotifications();
   const { canAcceptWork, pending: pendingChecklist, isApproved: checklistApproved } = useOnboardingChecklist();
+  const tour = useAppTour();
 
   const [notifOpen, setNotifOpen] = useState(false);
   const [bellShake, setBellShake] = useState(false);
@@ -729,6 +732,7 @@ const DashboardPage = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
+                  data-tour="online-toggle"
                   onClick={toggleOnline}
                   disabled={togglingOnline || !canAcceptWork}
                   className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 rounded-full px-3 py-1.5 outline-none disabled:opacity-50 transition-colors"
@@ -747,6 +751,7 @@ const DashboardPage = () => {
 
                 <button
                   type="button"
+                  data-tour="notifications"
                   onClick={() => setNotifOpen(true)}
                   className="relative outline-none w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors"
                   style={{ animation: bellShake ? "bellShake 300ms ease" : "none" }}
@@ -770,7 +775,7 @@ const DashboardPage = () => {
             </div>
 
             {/* Saldo destacado dentro do header escuro */}
-            <div className="text-center">
+            <div className="text-center" data-tour="balance">
               <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1.5">Saldo disponível</p>
               <div className="flex items-center justify-center gap-2">
                 <span className="text-[36px] font-bold tracking-tight text-white leading-none">
@@ -810,7 +815,7 @@ const DashboardPage = () => {
           </div>
 
           {/* 4. Botões de ação rápida em cards brancos */}
-          <div className="grid grid-cols-3 gap-3 px-5 mb-5">
+          <div className="grid grid-cols-3 gap-3 px-5 mb-5" data-tour="quick-actions">
             {[
               { icon: <ArrowUp size={18} className="text-[#276EF1]" />, label: "Sacar", onClick: () => navigate("/ganhos") },
               { icon: <Map size={18} className="text-[#276EF1]" />, label: "Mapa", onClick: () => navigate("/mapa") },
@@ -1155,6 +1160,14 @@ const DashboardPage = () => {
           .offline-ring, .offline-bolt, .bolt-flash { animation: none !important; }
         }
       `}</style>
+
+      <AppTour
+        open={tour.open}
+        stepIndex={tour.stepIndex}
+        onNext={tour.next}
+        onPrev={tour.prev}
+        onFinish={tour.finish}
+      />
     </div>
   );
 };
