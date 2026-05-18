@@ -17,7 +17,7 @@ export function FloatingNav() {
   return (
     <div className="fixed bottom-10 left-0 right-0 flex justify-center z-50 px-4 pointer-events-none">
       <nav className="flex items-center gap-1 bg-[#111111] rounded-full px-2 py-2 shadow-2xl pointer-events-auto">
-        {NAV_ITEMS.map(({ label, icon: Icon, path }) => {
+        {NAV_ITEMS.map(({ label, icon: Icon, path, tour }) => {
           const isActive = location.pathname === path || location.pathname.startsWith(path + "/");
           // Prefetch agressivo: começa a baixar o chunk antes do clique completar.
           const prefetch = () => prefetchRoute(path);
