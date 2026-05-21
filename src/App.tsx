@@ -57,6 +57,7 @@ const PerfilPublicoPage = lazyFromMap("/perfil-publico");
 const AgendaPage = lazyFromMap("/agenda");
 const MapaPage = lazyFromMap("/mapa");
 const AvaliarClientePage = lazy(() => import("@/pages/AvaliarClientePage"));
+const ContaEmExclusaoPage = lazy(() => import("@/pages/ContaEmExclusaoPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -138,6 +139,7 @@ const App = () => {
             <Route path="/agenda" element={<ProtectedRoute><AgendaPage /></ProtectedRoute>} />
             <Route path="/mapa" element={<ProtectedRoute><MapaPage /></ProtectedRoute>} />
             <Route path="/avaliar/:id" element={<ProtectedRoute><AvaliarClientePage /></ProtectedRoute>} />
+            <Route path="/conta-em-exclusao" element={<ProtectedRoute><ContaEmExclusaoPage /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
