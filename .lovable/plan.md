@@ -1,57 +1,78 @@
-# Tour Guiado — Primeiro Acesso
+# Plano: Exclusão de Conta com Período de Carência
 
-Tutorial interativo que aparece **uma única vez**, logo após o primeiro login bem-sucedido, destacando as principais funções do app com legenda, navegação (avançar/voltar) e botão de fechar.
+Implementação em 3 blocos independentes para evitar instabilidades.
 
-## Como vai funcionar
+## Bloco 1 — Backend (Supabase)
 
-- Dispara automaticamente quando o usuário entra no `/dashboard` pela primeira vez.
-- Overlay escuro semi-transparente cobre a tela, recortando ("spotlight") o elemento destacado da etapa atual.
-- Card flutuante com: título curto, legenda (1–2 linhas), contador (ex: "2 de 6"), botão **Voltar**, **Avançar / Concluir** e **X** para fechar a qualquer momento.
-- Possibilidade de **pular tour** (link discreto). Se pular ou concluir, não aparece mais.
-- Indicador de progresso (bolinhas) no rodapé do card.
-- Animação suave de transição entre etapas (fade + slide), respeitando o design system Tech Startup.
+### Schema (`profiles`)
+Adicionar colunas:
+- `deletion_requested_at timestamptz` — quando o usuário pediu exclusão
+- `deletion_scheduled_for timestamptz` — data de exclusão definitiva (request + 15d)
+- `deletion_reason text` — motivo escolhido
+- `deletion_feedback text` — comentário livre opcional
+- `deleted_at timestamptz` — quando foi efetivamente apagada
 
-## Etapas propostas (6)
+### RPCs (security definer)
+- `request_account_deletion(p_reason, p_feedback)` — valida que não há contratos `accepted`/`in_progress`/`awaiting_signatures`. Se houver, retorna `{success:false, error:'has_active_contracts', count:N}`. Caso contrário, marca `deletion_requested_at = now()`, `deletion_scheduled_for = now() + 15 days`, salva motivo/feedback.
+- `cancel_account_deletion()` — limpa os 3 campos (`deletion_requested_at`, `deletion_scheduled_for`, motivo/feedback).
+- `is_account_pending_deletion(uid)` — helper para o frontend/RLS.
 
-1. **Boas-vindas** — modal central: "Bem-vindo ao Freelaki! Vamos te mostrar o essencial em 1 minuto." (sem spotlight)
-2. **Oportunidades** (item da BottomNav) — "Veja jobs abertos perto de você e candidate-se com 1 toque."
-3. **Agenda** (BottomNav) — "Acompanhe seus jobs aceitos, contratos e horários."
-4. **Mensagens / Notificações** (sino no topo) — "Avise e receba atualizações em tempo real dos clientes."
-5. **Ganhos** (BottomNav ou card do dashboard) — "Acompanhe quanto entrou, quanto está pendente e saque por PIX."
-6. **Menu / Perfil** — "Complete seu perfil, documentos e dados bancários para receber jobs." → CTA final: "Começar".
+### Cron job (pg_cron + pg_net)
+Job diário `purge-deleted-accounts` (03:00 BRT) que:
+1. Busca profiles com `deletion_scheduled_for <= now()` e `deleted_at IS NULL`
+2. Chama edge function `purge-account` via `net.http_post` com service_role
+3. A edge function apaga: documentos no Storage, registros em tabelas dependentes (sem FK cascade clara), depois `auth.admin.deleteUser(id)` (cascateia profile via trigger existente)
 
-## Onde persistir o "já viu"
+### Trigger de bloqueio de login
+Não bloquear via Supabase Auth (complexo). Em vez disso, no app: ao carregar sessão, se `deletion_requested_at IS NOT NULL`, redirecionar para `/conta-em-exclusao`.
 
-Tabela `profiles` (ou nova coluna): `tour_completed_at timestamptz`. Persistir no Supabase garante que o tour não reaparece em outro dispositivo. Fallback em `localStorage` para evitar piscar enquanto carrega.
+## Bloco 2 — UI de Solicitação (dentro de `/perfil`)
 
-Migration necessária:
-```sql
-alter table public.profiles
-  add column if not exists tour_completed_at timestamptz;
-```
+Nova seção no fim da página `PerfilPage.tsx`:
+- Botão vermelho discreto "Excluir minha conta" → abre **bottom sheet** em 3 passos:
+  1. **Pesquisa**: dropdown de motivos (`Não uso mais`, `Encontrei outro app`, `Problemas técnicos`, `Privacidade`, `Outro`) + textarea opcional 200 chars
+  2. **Aviso + Termos**: pop-up com texto completo (ver abaixo) + checkbox "Li e aceito"
+  3. **Confirmação final**: campo onde usuário digita `EXCLUIR` para confirmar
+- Botão "Confirmar exclusão" chama `request_account_deletion`, exibe toast de sucesso e faz signOut.
 
-## Arquivos a criar / editar
+### Texto dos Termos (pop-up)
+> **Termos de Exclusão de Conta — Freelaki Profissionais**
+>
+> Ao solicitar a exclusão da sua conta, você declara estar ciente de que:
+>
+> 1. Sua conta será **desativada imediatamente** e ficará inacessível durante o período de carência de **15 dias corridos**.
+> 2. Durante esse período, você poderá **reativar sua conta** a qualquer momento fazendo login novamente.
+> 3. Após **15 dias**, todos os seus dados pessoais, perfil, portfólio, mensagens, avaliações e histórico serão **excluídos definitivamente** dos nossos servidores e não poderão ser recuperados.
+> 4. Dados fiscais e financeiros (contratos concluídos, pagamentos, notas fiscais) serão **mantidos pelo prazo legal de 5 anos** conforme exigência da Receita Federal, mesmo após a exclusão da conta.
+> 5. Você não poderá solicitar exclusão se tiver **contratos em andamento** (aceitos, em execução ou aguardando assinatura). Conclua-os antes.
+> 6. Saques pendentes serão processados normalmente para a chave PIX cadastrada antes da exclusão definitiva.
+>
+> Esta ação está em conformidade com a **LGPD (Lei 13.709/18), Art. 18**.
 
-- `src/components/tour/AppTour.tsx` — componente do overlay + card (spotlight com `getBoundingClientRect` no elemento alvo, recalculado em resize/scroll).
-- `src/components/tour/tourSteps.ts` — array das etapas (selector, título, legenda, posição do card).
-- `src/hooks/useAppTour.ts` — lê/escreve `tour_completed_at`, controla `open`, `stepIndex`, `next/prev/close/skip`.
-- `src/pages/DashboardPage.tsx` — monta `<AppTour />` e dispara via hook.
-- `src/components/dashboard/BottomNav.tsx` — adicionar `data-tour="oportunidades|agenda|ganhos|menu"` nos itens.
-- `src/components/dashboard/NotificationPanel.tsx` (ou onde está o sino) — `data-tour="notificacoes"`.
-- Migration Supabase para `tour_completed_at`.
-- Atualizar `mem://` com uma nova memória `features/app-tour-onboarding`.
+## Bloco 3 — Tela de Reativação + Gate no App
+
+### Nova rota `/conta-em-exclusao`
+- Ícone laranja + título "Sua conta está em processo de exclusão"
+- Mostra "Faltam **X dias** para a exclusão definitiva" (calculado de `deletion_scheduled_for`)
+- Dois botões:
+  - **Reativar minha conta** (primário) → chama `cancel_account_deletion`, redireciona para `/dashboard`
+  - **Sair** (secundário) → signOut
+
+### Gate em `useAuth` / `ProtectedRoute`
+Ao detectar sessão, fazer fetch leve de `profiles.deletion_requested_at`. Se preenchido E rota atual ≠ `/conta-em-exclusao`, redirecionar para lá. Bloqueia acesso a todas as outras telas autenticadas.
+
+---
 
 ## Detalhes técnicos
 
-- Sem libs externas — implementação própria leve (~150 linhas) para manter bundle enxuto.
-- Spotlight via `box-shadow: 0 0 0 9999px rgba(0,0,0,.72)` no rect calculado + `border-radius` arredondado.
-- Card se posiciona acima ou abaixo do alvo conforme espaço disponível na viewport (390×775 já testado).
-- Bloqueia scroll do body enquanto ativo; libera ao fechar.
-- Acessível: `role="dialog"`, `aria-label`, foco no botão primário, fecha com `Esc`.
-- Capacitor/iOS-safe: usa `playsInline`-equivalent (sem mídia) e respeita `safe-area-inset-top/bottom`.
-- Não dispara se o usuário ainda está no fluxo de cascade (sem categorias, email não confirmado).
+- **Edge function `purge-account`**: usa `SUPABASE_SERVICE_ROLE_KEY`, recebe `{user_id}`, apaga objetos do Storage (avatars/{id}/, documents/{id}/, portfolio/{id}/), depois `supabase.auth.admin.deleteUser(user_id)`. Tabelas com `ON DELETE CASCADE` via auth.uid já caem juntas; demais (notifications, addresses, etc.) são apagadas explicitamente antes.
+- **pg_cron**: agendar via `INSERT` (não migration, pois contém URL/key do projeto).
+- **Bloqueio de contratos ativos**: query `SELECT COUNT(*) FROM contracts WHERE (client_id = uid OR professional_id = uid) AND status IN ('pending','accepted','in_progress','awaiting_signatures')`.
+- **Memory update**: adicionar `mem://features/account-deletion` ao índice.
 
-## Fora de escopo
-
-- Re-disparar o tour manualmente a partir do Menu/Ajuda (pode ser adicionado depois — quer que eu já inclua?).
-- Tours específicos por página (ex: tour da página Ganhos). Por enquanto só o overview no Dashboard.
+## Ordem de execução
+1. Migration (schema + RPCs)
+2. Edge function `purge-account` + INSERT do cron
+3. UI no `/perfil` + bottom sheet de 3 passos
+4. Rota `/conta-em-exclusao` + gate no `useAuth`
+5. Smoke test: solicitar exclusão, ver tela, reativar, voltar ao normal
