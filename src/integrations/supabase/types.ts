@@ -1859,6 +1859,11 @@ export type Database = {
           cpf_cnpj_locked: boolean | null
           cpf_cnpj_type: string | null
           created_at: string | null
+          deleted_at: string | null
+          deletion_feedback: string | null
+          deletion_reason: string | null
+          deletion_requested_at: string | null
+          deletion_scheduled_for: string | null
           dribbble: string | null
           email: string
           email_locked: boolean | null
@@ -1900,6 +1905,11 @@ export type Database = {
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          deletion_feedback?: string | null
+          deletion_reason?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_for?: string | null
           dribbble?: string | null
           email: string
           email_locked?: boolean | null
@@ -1941,6 +1951,11 @@ export type Database = {
           cpf_cnpj_locked?: boolean | null
           cpf_cnpj_type?: string | null
           created_at?: string | null
+          deleted_at?: string | null
+          deletion_feedback?: string | null
+          deletion_reason?: string | null
+          deletion_requested_at?: string | null
+          deletion_scheduled_for?: string | null
           dribbble?: string | null
           email?: string
           email_locked?: boolean | null
@@ -2548,6 +2563,7 @@ export type Database = {
         Args: { p_application_id: string; p_expiry_days?: number }
         Returns: Json
       }
+      cancel_account_deletion: { Args: never; Returns: Json }
       cancel_contract_addendum: {
         Args: { p_addendum_id: string }
         Returns: Json
@@ -2580,6 +2596,10 @@ export type Database = {
       get_professional_reserved_balance: {
         Args: { p_profile_id: string }
         Returns: number
+      }
+      is_account_pending_deletion: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_user_18_plus: { Args: { _birth_date: string }; Returns: boolean }
@@ -2624,6 +2644,10 @@ export type Database = {
       }
       reject_waitlist_application: {
         Args: { p_application_id: string; p_reason?: string }
+        Returns: Json
+      }
+      request_account_deletion: {
+        Args: { p_feedback?: string; p_reason: string }
         Returns: Json
       }
       respond_contract_addendum: {

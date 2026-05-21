@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { OnboardingChecklistFull } from "@/components/dashboard/OnboardingChecklistBanner";
 import { CategoryIcon } from "@/components/ui/CategoryIcon";
+import DeleteAccountSection from "@/components/perfil/DeleteAccountSection";
 
 interface ProfileData {
   full_name: string | null;
@@ -590,6 +591,9 @@ const PerfilPage = () => {
             </div>
           </div>
         </div>
+
+        {/* EXCLUIR CONTA */}
+        <DeleteAccountSection />
       </motion.div>
 
       {/* SELECT NETWORK BOTTOM SHEET */}
