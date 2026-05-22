@@ -39,30 +39,27 @@ const DocumentosPage = () => {
   const [progress, setProgress] = useState(0);
   const [selectedDocType, setSelectedDocType] = useState<DocIdType | null>(null);
 
+  const [identityLocked, setIdentityLocked] = useState(false);
+
   const loadData = useCallback(async () => {
     if (!user) return;
     const [{ data: docData }, { data: profileData }] = await Promise.all([
       supabase.from("documents").select("*").eq("profile_id", user.id),
       supabase
         .from("profiles")
-        .select("approval_status")
+        .select("approval_status, identity_doc_type")
         .eq("id", user.id)
         .single(),
     ]);
-    if (docData) {
-      setDocs(docData as DocRecord[]);
-      // Auto-detect selected doc type from existing docs
-      if (!selectedDocType) {
-        const hasRgVerso = docData.some((d: any) => d.doc_type === "rg_verso");
-        if (hasRgVerso) {
-          setSelectedDocType("rg");
-        } else if (docData.some((d: any) => d.doc_type === "rg_frente")) {
-          // Could be CNH or passport, default to cnh if only rg_frente
-          setSelectedDocType("cnh");
-        }
+    if (docData) setDocs(docData as DocRecord[]);
+    if (profileData) {
+      setApprovalStatus(profileData.approval_status);
+      const locked = (profileData as any).identity_doc_type as DocIdType | null;
+      if (locked) {
+        setSelectedDocType(locked);
+        setIdentityLocked(true);
       }
     }
-    if (profileData) setApprovalStatus(profileData.approval_status);
   }, [user]);
 
   useEffect(() => {
