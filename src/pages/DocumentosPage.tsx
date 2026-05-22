@@ -39,30 +39,27 @@ const DocumentosPage = () => {
   const [progress, setProgress] = useState(0);
   const [selectedDocType, setSelectedDocType] = useState<DocIdType | null>(null);
 
+  const [identityLocked, setIdentityLocked] = useState(false);
+
   const loadData = useCallback(async () => {
     if (!user) return;
     const [{ data: docData }, { data: profileData }] = await Promise.all([
       supabase.from("documents").select("*").eq("profile_id", user.id),
       supabase
         .from("profiles")
-        .select("approval_status")
+        .select("approval_status, identity_doc_type")
         .eq("id", user.id)
         .single(),
     ]);
-    if (docData) {
-      setDocs(docData as DocRecord[]);
-      // Auto-detect selected doc type from existing docs
-      if (!selectedDocType) {
-        const hasRgVerso = docData.some((d: any) => d.doc_type === "rg_verso");
-        if (hasRgVerso) {
-          setSelectedDocType("rg");
-        } else if (docData.some((d: any) => d.doc_type === "rg_frente")) {
-          // Could be CNH or passport, default to cnh if only rg_frente
-          setSelectedDocType("cnh");
-        }
+    if (docData) setDocs(docData as DocRecord[]);
+    if (profileData) {
+      setApprovalStatus(profileData.approval_status);
+      const locked = (profileData as any).identity_doc_type as DocIdType | null;
+      if (locked) {
+        setSelectedDocType(locked);
+        setIdentityLocked(true);
       }
     }
-    if (profileData) setApprovalStatus(profileData.approval_status);
   }, [user]);
 
   useEffect(() => {
@@ -126,6 +123,17 @@ const DocumentosPage = () => {
         status: "pending",
       });
     }
+
+    // Trava o tipo de documento de identidade no 1º upload
+    if ((docType === "rg_frente" || docType === "rg_verso") && !identityLocked && selectedDocType) {
+      await supabase
+        .from("profiles")
+        .update({ identity_doc_type: selectedDocType } as any)
+        .eq("id", user.id);
+      setIdentityLocked(true);
+    }
+
+
 
     setProgress(100);
     setTimeout(async () => {
@@ -253,33 +261,60 @@ const DocumentosPage = () => {
             marginTop: 10,
           }}
         >
-          <p style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
-            Selecione seu tipo de documento:
-          </p>
-
-          {/* Type selector buttons */}
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            {docTypes.map((dt) => (
-              <button
-                key={dt}
-                onClick={() => setSelectedDocType(dt)}
+          {identityLocked && selectedDocType ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              <p style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                Tipo selecionado
+              </p>
+              <span
                 style={{
-                  flex: 1,
-                  height: 44,
-                  borderRadius: 12,
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: 14,
-                  fontWeight: selectedDocType === dt ? 600 : 400,
-                  background: selectedDocType === dt ? "#276EF1" : "#F7F7F7",
-                  color: selectedDocType === dt ? "#FFFFFF" : "#767676",
-                  transition: "all 200ms",
+                  background: "#276EF1",
+                  color: "#FFFFFF",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  borderRadius: 20,
+                  padding: "6px 14px",
                 }}
               >
-                {docTypeLabels[dt]}
-              </button>
-            ))}
-          </div>
+                {docTypeLabels[selectedDocType]}
+              </span>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                Selecione seu tipo de documento:
+              </p>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                {docTypes.map((dt) => (
+                  <button
+                    key={dt}
+                    onClick={() => setSelectedDocType(dt)}
+                    style={{
+                      flex: 1,
+                      height: 44,
+                      borderRadius: 12,
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: selectedDocType === dt ? 600 : 400,
+                      background: selectedDocType === dt ? "#276EF1" : "#F7F7F7",
+                      color: selectedDocType === dt ? "#FFFFFF" : "#767676",
+                      transition: "all 200ms",
+                    }}
+                  >
+                    {docTypeLabels[dt]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Expandable upload items */}
           <AnimatePresence mode="wait">
