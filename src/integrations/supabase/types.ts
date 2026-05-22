@@ -1871,6 +1871,7 @@ export type Database = {
           full_name: string | null
           github: string | null
           id: string
+          identity_doc_type: string | null
           instagram: string | null
           is_approved: boolean | null
           is_online: boolean | null
@@ -1917,6 +1918,7 @@ export type Database = {
           full_name?: string | null
           github?: string | null
           id: string
+          identity_doc_type?: string | null
           instagram?: string | null
           is_approved?: boolean | null
           is_online?: boolean | null
@@ -1963,6 +1965,7 @@ export type Database = {
           full_name?: string | null
           github?: string | null
           id?: string
+          identity_doc_type?: string | null
           instagram?: string | null
           is_approved?: boolean | null
           is_online?: boolean | null
