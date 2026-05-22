@@ -124,6 +124,17 @@ const DocumentosPage = () => {
       });
     }
 
+    // Trava o tipo de documento de identidade no 1º upload
+    if ((docType === "rg_frente" || docType === "rg_verso") && !identityLocked && selectedDocType) {
+      await supabase
+        .from("profiles")
+        .update({ identity_doc_type: selectedDocType } as any)
+        .eq("id", user.id);
+      setIdentityLocked(true);
+    }
+
+
+
     setProgress(100);
     setTimeout(async () => {
       setUploading(null);
