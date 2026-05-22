@@ -137,7 +137,8 @@ export default function DeleteAccountSection() {
                     onChange={(e) => setFeedback(e.target.value.slice(0, 200))}
                     placeholder="Quer compartilhar mais detalhes? (opcional)"
                     rows={3}
-                    className="mt-4 w-full rounded-xl border border-[#E5E5E5] p-3 text-[14px] outline-none focus:border-[#276EF1]"
+                    className="mt-4 w-full rounded-xl border border-[#E5E5E5] bg-white p-3 text-[14px] text-[#1a1a1a] placeholder:text-[#9a9a9a] outline-none focus:border-[#276EF1]"
+                    style={{ background: "#FFFFFF", color: "#1a1a1a" }}
                   />
                   <p className="mt-1 text-right text-[11px] text-[#767676]">{feedback.length}/200</p>
 
