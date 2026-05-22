@@ -261,33 +261,60 @@ const DocumentosPage = () => {
             marginTop: 10,
           }}
         >
-          <p style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
-            Selecione seu tipo de documento:
-          </p>
-
-          {/* Type selector buttons */}
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            {docTypes.map((dt) => (
-              <button
-                key={dt}
-                onClick={() => setSelectedDocType(dt)}
+          {identityLocked && selectedDocType ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              <p style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                Tipo selecionado
+              </p>
+              <span
                 style={{
-                  flex: 1,
-                  height: 44,
-                  borderRadius: 12,
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: 14,
-                  fontWeight: selectedDocType === dt ? 600 : 400,
-                  background: selectedDocType === dt ? "#276EF1" : "#F7F7F7",
-                  color: selectedDocType === dt ? "#FFFFFF" : "#767676",
-                  transition: "all 200ms",
+                  background: "#276EF1",
+                  color: "#FFFFFF",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  borderRadius: 20,
+                  padding: "6px 14px",
                 }}
               >
-                {docTypeLabels[dt]}
-              </button>
-            ))}
-          </div>
+                {docTypeLabels[selectedDocType]}
+              </span>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontSize: 14, fontWeight: 500, color: "#000000" }}>
+                Selecione seu tipo de documento:
+              </p>
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                {docTypes.map((dt) => (
+                  <button
+                    key={dt}
+                    onClick={() => setSelectedDocType(dt)}
+                    style={{
+                      flex: 1,
+                      height: 44,
+                      borderRadius: 12,
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: selectedDocType === dt ? 600 : 400,
+                      background: selectedDocType === dt ? "#276EF1" : "#F7F7F7",
+                      color: selectedDocType === dt ? "#FFFFFF" : "#767676",
+                      transition: "all 200ms",
+                    }}
+                  >
+                    {docTypeLabels[dt]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Expandable upload items */}
           <AnimatePresence mode="wait">
