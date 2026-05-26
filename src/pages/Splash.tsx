@@ -106,7 +106,7 @@ const Splash = () => {
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden border-neutral-950"
-      style={{ background: "#0A0A0F" }}
+      style={{ background: "#000000" }}
     >
       {!videoFailed ? (
         <video
@@ -120,7 +120,7 @@ const Splash = () => {
           onEnded={finishSequence}
           onError={() => setVideoFailed(true)}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ background: "#0A0A0F", transform: "scale(0.92)", transformOrigin: "center" }}
+          style={{ background: "#000000", transform: "scale(0.92)", transformOrigin: "center" }}
         />
       ) : (
         // Fallback textual caso o video nao carregue
