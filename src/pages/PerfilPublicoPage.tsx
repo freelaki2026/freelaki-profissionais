@@ -512,7 +512,7 @@ const PerfilPublicoPage = () => {
           </div>
 
           <p className="mt-3 text-center text-[11px] leading-relaxed text-white/30">
-            Fotos (até 5MB) e vídeos até {MAX_VIDEO_SECONDS}s (máx. 150MB) — limite de {MAX_ITEMS} arquivos
+            Fotos (até 5MB) e vídeos até 1min30s (máx. 150MB) — limite de {MAX_ITEMS} arquivos
           </p>
         </div>
       </motion.div>
