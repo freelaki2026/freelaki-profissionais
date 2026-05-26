@@ -57,6 +57,10 @@
     -moz-osx-font-smoothing: grayscale;
     /* Capacitor iOS: respeita notch e home-indicator */
     padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    /* Evita "bounce" branco ao puxar conteúdo no iOS dentro do WebView */
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Garante inputs sempre claros mesmo com modo escuro do sistema (iOS/Android/Chrome force-dark) */
@@ -76,10 +80,6 @@
     -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset;
     -webkit-text-fill-color: hsl(var(--foreground));
     caret-color: hsl(var(--foreground));
-    padding-bottom: env(safe-area-inset-bottom);
-    /* Evita "bounce" branco ao puxar conteúdo no iOS dentro do WebView */
-    overscroll-behavior-y: none;
-    -webkit-tap-highlight-color: transparent;
   }
 }
 
