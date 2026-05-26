@@ -146,7 +146,7 @@ const Splash = () => {
         <div
           className="pointer-events-none absolute inset-x-0 z-20 text-center px-10"
           style={{
-            bottom: "42%",
+            bottom: "30%",
             animation: "splashTaglineIn 500ms ease-out both",
           }}
         >
