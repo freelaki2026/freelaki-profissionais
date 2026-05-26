@@ -31,15 +31,29 @@ const Login = () => {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState<{ code: string; message: string; hint?: string } | null>(null);
 
+  const [deletionConfirm, setDeletionConfirm] = useState<{ userId: string; email: string } | null>(null);
+
   useEffect(() => {
     if (!authLoading && user) {
       cascadeNavigate(user);
     }
+     
   }, [user, authLoading]);
 
   const cascadeNavigate = async (u: any) => {
     if (!u.email_confirmed_at) {
       navigate("/confirmar-email", { replace: true, state: { email: u.email } });
+      return;
+    }
+    // Antes de qualquer redirect, verifica se a conta está em processo de exclusão.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("deletion_requested_at")
+      .eq("id", u.id)
+      .maybeSingle();
+    if (profile?.deletion_requested_at) {
+      // Pergunta se realmente quer acessar a conta em exclusão.
+      setDeletionConfirm({ userId: u.id, email: u.email ?? "" });
       return;
     }
     const { count } = await supabase
@@ -51,6 +65,16 @@ const Login = () => {
     } else {
       navigate("/dashboard", { replace: true });
     }
+  };
+
+  const confirmEnterDeletion = () => {
+    setDeletionConfirm(null);
+    navigate("/conta-em-exclusao", { replace: true });
+  };
+
+  const cancelEnterDeletion = async () => {
+    setDeletionConfirm(null);
+    await supabase.auth.signOut();
   };
 
   const handleLogin = async () => {
@@ -240,6 +264,29 @@ const Login = () => {
             >
               Enviar link
             </FreelakiButton>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirmação ao acessar conta em processo de exclusão */}
+      <Dialog open={!!deletionConfirm} onOpenChange={(open) => { if (!open) cancelEnterDeletion(); }}>
+        <DialogContent className="mx-4 max-w-sm rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Conta em processo de exclusão</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 pt-2">
+            <p className="text-[14px] text-muted-foreground">
+              Esta conta ({deletionConfirm?.email}) está marcada para exclusão. Deseja entrar mesmo assim para reativá-la ou apenas conferir?
+            </p>
+            <FreelakiButton variant="primary" onClick={confirmEnterDeletion}>
+              Sim, acessar conta
+            </FreelakiButton>
+            <button
+              onClick={cancelEnterDeletion}
+              className="h-[52px] w-full rounded-xl border border-border text-[15px] font-semibold text-foreground"
+            >
+              Cancelar e sair
+            </button>
           </div>
         </DialogContent>
       </Dialog>

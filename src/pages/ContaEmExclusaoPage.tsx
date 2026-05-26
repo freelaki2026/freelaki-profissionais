@@ -8,13 +8,15 @@ import { toast } from "sonner";
 
 export default function ContaEmExclusaoPage() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [scheduledFor, setScheduledFor] = useState<Date | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [reactivating, setReactivating] = useState(false);
 
   useEffect(() => {
-    if (!user) { navigate("/login"); return; }
+    // Aguarda o auth carregar antes de decidir qualquer redirect — evita loop login↔dashboard.
+    if (authLoading) return;
+    if (!user) { navigate("/login", { replace: true }); return; }
     supabase.from("profiles")
       .select("deletion_scheduled_for, deletion_requested_at")
       .eq("id", user.id)
@@ -27,7 +29,7 @@ export default function ContaEmExclusaoPage() {
         if (data.deletion_scheduled_for) setScheduledFor(new Date(data.deletion_scheduled_for));
         setLoading(false);
       });
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const daysLeft = scheduledFor
     ? Math.max(0, Math.ceil((scheduledFor.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
