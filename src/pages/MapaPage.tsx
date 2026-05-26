@@ -71,26 +71,108 @@ export default function MapaPage() {
   const { user } = useAuth();
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [geoStatus, setGeoStatus] = useState<"idle" | "requesting" | "granted" | "denied">("idle");
   const [opps, setOpps] = useState<MapOpp[]>([]);
   const [loading, setLoading] = useState(true);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const watchIdRef = useRef<string | number | null>(null);
 
-  // Geolocalização
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setGeoError("Geolocalização não suportada neste dispositivo.");
-      setCoords({ lat: -23.5505, lng: -46.6333 });
-      return;
+  // Geolocalização real — requer gesto do usuário (navegadores bloqueiam pós-await sem isso)
+  const requestLocation = useCallback(async () => {
+    setGeoError(null);
+    setGeoStatus("requesting");
+    try {
+      const isNative = Capacitor.isNativePlatform();
+
+      if (isNative) {
+        // Native: pede permissão explicitamente
+        const perm = await Geolocation.checkPermissions();
+        if (perm.location !== "granted") {
+          const req = await Geolocation.requestPermissions();
+          if (req.location !== "granted") {
+            setGeoStatus("denied");
+            setGeoError("Permissão de localização negada. Habilite nas configurações do aparelho.");
+            return;
+          }
+        }
+        const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoStatus("granted");
+
+        // Watch contínuo para manter posição real
+        const id = await Geolocation.watchPosition(
+          { enableHighAccuracy: true },
+          (p) => {
+            if (p?.coords) setCoords({ lat: p.coords.latitude, lng: p.coords.longitude });
+          }
+        );
+        watchIdRef.current = id;
+        return;
+      }
+
+      // Web
+      if (!navigator.geolocation) {
+        setGeoStatus("denied");
+        setGeoError("Geolocalização não suportada neste navegador.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setGeoStatus("granted");
+          const wid = navigator.geolocation.watchPosition(
+            (p) => setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }),
+            () => {},
+            { enableHighAccuracy: true, maximumAge: 10000 }
+          );
+          watchIdRef.current = wid;
+        },
+        (err) => {
+          setGeoStatus("denied");
+          if (err.code === err.PERMISSION_DENIED) {
+            setGeoError("Permissão negada. Autorize a localização no navegador para ver oportunidades próximas.");
+          } else if (err.code === err.POSITION_UNAVAILABLE) {
+            setGeoError("Localização indisponível. Verifique se o GPS está ativado.");
+          } else if (err.code === err.TIMEOUT) {
+            setGeoError("Tempo esgotado ao localizar você. Tente novamente.");
+          } else {
+            setGeoError("Não foi possível obter sua localização.");
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } catch (e: any) {
+      setGeoStatus("denied");
+      setGeoError(e?.message || "Erro ao acessar localização.");
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {
-        setGeoError("Permissão de localização negada. Mostrando São Paulo como referência.");
-        setCoords({ lat: -23.5505, lng: -46.6333 });
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
   }, []);
+
+  // Auto-tenta se permissão já foi concedida anteriormente (sem prompt)
+  useEffect(() => {
+    (async () => {
+      try {
+        if (Capacitor.isNativePlatform()) {
+          const perm = await Geolocation.checkPermissions();
+          if (perm.location === "granted") requestLocation();
+        } else if (navigator.permissions) {
+          const status = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+          if (status.state === "granted") requestLocation();
+        }
+      } catch {
+        // ignora — usuário usará o botão
+      }
+    })();
+    return () => {
+      if (watchIdRef.current != null) {
+        if (Capacitor.isNativePlatform()) {
+          Geolocation.clearWatch({ id: String(watchIdRef.current) }).catch(() => {});
+        } else {
+          navigator.geolocation.clearWatch(watchIdRef.current as number);
+        }
+      }
+    };
+  }, [requestLocation]);
+
 
   // Buscar oportunidades + realtime
   useEffect(() => {
