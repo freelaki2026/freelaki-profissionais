@@ -181,25 +181,11 @@ const PerfilPublicoPage = () => {
         return;
       }
 
-      // Comprime para MP4 720p (~2.5Mbps) preservando qualidade visual.
-      try {
-        setUploadStage("compressing");
-        const result = await compressVideo(file, {
-          onProgress: (p) => setCompressPct(p),
-        });
-        fileToUpload = result.file;
-        setUploadStage("uploading");
-      } catch (err) {
-        console.error("[compressVideo] erro:", err);
-        toast.error("Não foi possível processar este vídeo. Tente outro arquivo.");
-        setUploading(false);
-        setUploadStage("idle");
-        if (fileRef.current) fileRef.current.value = "";
-        return;
-      }
     }
 
-    const ext = isVideo ? "mp4" : (file.name.split(".").pop() || "jpg");
+    const ext = isVideo
+      ? (file.name.split(".").pop() || "mp4").toLowerCase()
+      : (file.name.split(".").pop() || "jpg");
     const path = `${user.id}/${Date.now()}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
