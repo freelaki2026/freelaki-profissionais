@@ -26,7 +26,7 @@ interface DocRecord {
 
 type DocIdType = "rg" | "cnh" | "passaporte";
 
-const ALL_REQUIRED_TYPES = ["rg_frente", "selfie", "comprovante_residencia"];
+const ALL_REQUIRED_TYPES = ["rg_frente", "selfie"];
 
 const DocumentosPage = () => {
   const navigate = useNavigate();
@@ -434,54 +434,6 @@ const DocumentosPage = () => {
           />
         </div>
 
-        {/* ── COMPROVANTE DE RESIDÊNCIA ── */}
-        <p
-          style={{
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: 2,
-            color: "#767676",
-            marginTop: 20,
-          }}
-        >
-          COMPROVANTE DE RESIDÊNCIA
-        </p>
-
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: 16,
-            padding: 16,
-            marginTop: 10,
-          }}
-        >
-          <div
-            style={{
-              background: "rgba(39,110,241,0.06)",
-              borderRadius: 10,
-              padding: 12,
-              marginBottom: 12,
-              display: "flex",
-              gap: 8,
-              alignItems: "flex-start",
-            }}
-          >
-            <FileText style={{ color: "#276EF1", width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: "#276EF1", lineHeight: 1.5 }}>
-              Conta de luz, água, gás ou telefone. Emitido nos últimos 3 meses. Nome e endereço visíveis.
-            </span>
-          </div>
-
-          <DocUploadArea
-            doc={getDoc("comprovante_residencia")}
-            docType="comprovante_residencia"
-            accept={ALL_ACCEPT}
-            acceptLabel={ALL_LABEL}
-            uploading={uploading === "comprovante_residencia"}
-            progress={progress}
-            onUpload={handleUpload}
-          />
-        </div>
       </motion.div>
     </div>
   );

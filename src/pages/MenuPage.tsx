@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft, User, FileText, MapPin, CreditCard, Landmark,
   HelpCircle, ScrollText, MessageCircle, Shield,
-  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid, Star, Eye, Wrench, Wallet,
+  Info, LogOut, Zap, MessageSquare, DollarSign, LayoutGrid, Star, Eye, Wrench, Wallet, PlayCircle,
 } from "lucide-react";
 import FreelakiButton from "@/components/ui/FreelakiButton";
 import BottomNav from "@/components/dashboard/BottomNav";
@@ -29,6 +29,7 @@ const menuItems = [
   { icon: DollarSign, label: "Ganhos", path: "/ganhos" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
   { icon: MessageSquare, label: "Mensagens", path: "/mensagens" },
+  { icon: PlayCircle, label: "Tutorial do app", path: "/dashboard?tour=replay" },
   { icon: HelpCircle, label: "Ajuda e FAQ", path: "/ajuda" },
   { icon: MessageCircle, label: "Suporte", path: "/suporte" },
   { icon: Shield, label: "Termos de Uso", path: "/termos" },
