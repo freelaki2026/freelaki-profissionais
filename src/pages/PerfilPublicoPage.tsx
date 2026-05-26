@@ -228,7 +228,8 @@ const PerfilPublicoPage = () => {
       .single();
 
     if (insertErr) {
-      toast.error("Erro ao salvar arquivo");
+      console.error("[portfolio insert]", insertErr);
+      toast.error(`Erro ao salvar: ${insertErr.message}`);
     } else if (inserted) {
       setPhotos((prev) => [...prev, inserted as PortfolioItem]);
       toast.success(isVideo ? "Vídeo adicionado!" : "Foto adicionada!");
