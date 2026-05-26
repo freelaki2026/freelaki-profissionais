@@ -188,11 +188,24 @@ const PerfilPublicoPage = () => {
       : (file.name.split(".").pop() || "jpg");
     const path = `${user.id}/${Date.now()}.${ext}`;
 
+    const contentType = fileToUpload.type
+      || (isVideo ? "video/mp4" : "image/jpeg");
+
     const { error: uploadErr } = await supabase.storage
       .from("portfolio")
-      .upload(path, fileToUpload, { contentType: fileToUpload.type, cacheControl: "3600" });
+      .upload(path, fileToUpload, { contentType, cacheControl: "3600", upsert: false });
     if (uploadErr) {
-      toast.error("Erro ao enviar arquivo");
+      const anyErr = uploadErr as any;
+      console.error("[portfolio upload]", {
+        message: anyErr?.message,
+        name: anyErr?.name,
+        statusCode: anyErr?.statusCode,
+        error: anyErr?.error,
+        contentType,
+        size: fileToUpload.size,
+        path,
+      });
+      toast.error(`Erro: ${anyErr?.message || "falha no upload"}`);
       setUploading(false);
       setUploadStage("idle");
       if (fileRef.current) fileRef.current.value = "";
@@ -215,7 +228,8 @@ const PerfilPublicoPage = () => {
       .single();
 
     if (insertErr) {
-      toast.error("Erro ao salvar arquivo");
+      console.error("[portfolio insert]", insertErr);
+      toast.error(`Erro ao salvar: ${insertErr.message}`);
     } else if (inserted) {
       setPhotos((prev) => [...prev, inserted as PortfolioItem]);
       toast.success(isVideo ? "Vídeo adicionado!" : "Foto adicionada!");
