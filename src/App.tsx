@@ -112,6 +112,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter>
         <RoutePrefetcher />
+        <PasswordRecoveryRedirect />
         <ViewTransitionsBridge />
         <ContractCompletionOverlay />
         <PendingReviewEnforcer />
