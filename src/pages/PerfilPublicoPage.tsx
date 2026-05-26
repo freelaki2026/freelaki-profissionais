@@ -501,13 +501,8 @@ const PerfilPublicoPage = () => {
                   <>
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
                     <span className="px-1 text-center text-[9px] font-medium leading-tight text-white/60">
-                      {uploadStage === "compressing"
-                        ? `Otimizando ${compressPct}%`
-                        : "Enviando..."}
+                      Enviando...
                     </span>
-                    {uploadStage === "compressing" && (
-                      <div className="absolute bottom-0 left-0 h-1 bg-[#276EF1] transition-all" style={{ width: `${compressPct}%` }} />
-                    )}
                   </>
                 ) : (
                   <Plus size={22} className="text-white/20" />
@@ -517,7 +512,7 @@ const PerfilPublicoPage = () => {
           </div>
 
           <p className="mt-3 text-center text-[11px] leading-relaxed text-white/30">
-            Fotos (até 5MB) e vídeos até {MAX_VIDEO_SECONDS}s (máx. 300MB, otimizados automaticamente) — limite de {MAX_ITEMS} arquivos
+            Fotos (até 5MB) e vídeos até {MAX_VIDEO_SECONDS}s (máx. 150MB) — limite de {MAX_ITEMS} arquivos
           </p>
         </div>
       </motion.div>
