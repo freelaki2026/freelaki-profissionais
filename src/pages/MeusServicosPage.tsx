@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Info, PencilLine, Trash2, LayoutGrid, Plus } from "lucide-react";
+import { ArrowLeft, Info, PencilLine, Trash2, LayoutGrid, Plus, Link2, ExternalLink } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { AnimatePresence, motion } from "framer-motion";
 import BottomNav from "@/components/dashboard/BottomNav";
@@ -21,7 +21,9 @@ interface ExtraService {
   unit: string | null;
   is_active: boolean | null;
   order_index: number | null;
+  example_url: string | null;
 }
+
 
 const UNIT_OPTIONS = [
   { value: "unidade", label: "unidade" },
@@ -49,7 +51,9 @@ const MeusServicosPage = () => {
   const [modalPrice, setModalPrice] = useState("");
   const [modalUnit, setModalUnit] = useState("unidade");
   const [modalActive, setModalActive] = useState(true);
+  const [modalExampleUrl, setModalExampleUrl] = useState("");
   const [savingModal, setSavingModal] = useState(false);
+
 
   // Delete confirm
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -101,6 +105,7 @@ const MeusServicosPage = () => {
   const openAddModal = () => {
     setEditingExtra(null);
     setModalName(""); setModalDesc(""); setModalPrice(""); setModalUnit("unidade"); setModalActive(true);
+    setModalExampleUrl("");
     setModalOpen(true);
   };
 
@@ -111,14 +116,20 @@ const MeusServicosPage = () => {
     setModalPrice(String(extra.price));
     setModalUnit(extra.unit || "unidade");
     setModalActive(extra.is_active ?? true);
+    setModalExampleUrl(extra.example_url || "");
     setModalOpen(true);
   };
+
 
   const saveModal = async () => {
     if (!userId || !modalName.trim() || !modalPrice.trim()) {
       toast.error("Preencha nome e preço"); return;
     }
     setSavingModal(true);
+    let exampleUrl = modalExampleUrl.trim() || null;
+    if (exampleUrl && !/^https?:\/\//i.test(exampleUrl)) {
+      exampleUrl = "https://" + exampleUrl;
+    }
     const payload = {
       profile_id: userId,
       name: modalName.trim(),
@@ -126,7 +137,9 @@ const MeusServicosPage = () => {
       price: parseFloat(modalPrice),
       unit: modalUnit,
       is_active: modalActive,
+      example_url: exampleUrl,
     };
+
 
     if (editingExtra) {
       const { error } = await supabase.from("professional_extras").update(payload).eq("id", editingExtra.id);
@@ -271,6 +284,17 @@ const MeusServicosPage = () => {
                   <span style={{ fontWeight: 700, fontSize: 16, color: "#276EF1" }}>R$ {formatCurrency(extra.price)}/{extra.unit || "unidade"}</span>
                   <span style={{ background: "#F7F7F7", color: "#767676", borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 500 }}>{extra.unit || "unidade"}</span>
                 </div>
+                {extra.example_url && (
+                  <a
+                    href={extra.example_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#276EF1", textDecoration: "none" }}
+                  >
+                    <ExternalLink size={13} /> Ver exemplo
+                  </a>
+                )}
+
               </div>
             ))}
           </div>
@@ -339,10 +363,30 @@ const MeusServicosPage = () => {
                 </div>
               </div>
 
+              <div style={{ marginTop: 12 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#767676", display: "flex", alignItems: "center", gap: 6 }}>
+                  <Link2 size={13} color="#767676" /> Link de exemplo (opcional)
+                </label>
+                <input
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  value={modalExampleUrl}
+                  onChange={e => setModalExampleUrl(e.target.value)}
+                  placeholder="https://instagram.com/p/... ou link do portfólio"
+                  style={{ width: "100%", height: 44, border: "1px solid #E5E5E5", borderRadius: 10, padding: "0 12px", fontSize: 14, marginTop: 6, outline: "none" }}
+                />
+                <p style={{ fontSize: 11, color: "#767676", marginTop: 4 }}>
+                  Mostre ao cliente um exemplo real desse serviço (vídeo, post, portfólio).
+                </p>
+              </div>
+
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
                 <Switch checked={modalActive} onCheckedChange={setModalActive} />
                 <span style={{ fontSize: 14, fontWeight: 500 }}>Ativo (visível para clientes)</span>
               </div>
+
 
               <button
                 onClick={saveModal}
