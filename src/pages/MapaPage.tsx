@@ -116,31 +116,39 @@ export default function MapaPage() {
         setGeoError("Geolocalização não suportada neste navegador.");
         return;
       }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setGeoStatus("granted");
-          const wid = navigator.geolocation.watchPosition(
-            (p) => setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }),
-            () => {},
-            { enableHighAccuracy: true, maximumAge: 10000 }
-          );
-          watchIdRef.current = wid;
-        },
-        (err) => {
-          setGeoStatus("denied");
-          if (err.code === err.PERMISSION_DENIED) {
-            setGeoError("Permissão negada. Autorize a localização no navegador para ver oportunidades próximas.");
-          } else if (err.code === err.POSITION_UNAVAILABLE) {
-            setGeoError("Localização indisponível. Verifique se o GPS está ativado.");
-          } else if (err.code === err.TIMEOUT) {
-            setGeoError("Tempo esgotado ao localizar você. Tente novamente.");
-          } else {
-            setGeoError("Não foi possível obter sua localização.");
-          }
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
+      const tryGet = (highAccuracy: boolean) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            setGeoStatus("granted");
+            const wid = navigator.geolocation.watchPosition(
+              (p) => setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }),
+              () => {},
+              { enableHighAccuracy: highAccuracy, maximumAge: 15000, timeout: 20000 }
+            );
+            watchIdRef.current = wid;
+          },
+          (err) => {
+            // Fallback: se alta precisão falhou, tenta baixa precisão antes de desistir
+            if (highAccuracy && (err.code === err.POSITION_UNAVAILABLE || err.code === err.TIMEOUT)) {
+              tryGet(false);
+              return;
+            }
+            setGeoStatus("denied");
+            if (err.code === err.PERMISSION_DENIED) {
+              setGeoError("Permissão negada. Autorize a localização no navegador para ver oportunidades próximas.");
+            } else if (err.code === err.POSITION_UNAVAILABLE) {
+              setGeoError("Localização indisponível. Verifique se o GPS/Wi-Fi está ativado. Em previews dentro de iframe a localização pode ser bloqueada — abra o app na URL direta.");
+            } else if (err.code === err.TIMEOUT) {
+              setGeoError("Tempo esgotado ao localizar você. Tente novamente.");
+            } else {
+              setGeoError("Não foi possível obter sua localização.");
+            }
+          },
+          { enableHighAccuracy: highAccuracy, timeout: 15000, maximumAge: highAccuracy ? 0 : 60000 }
+        );
+      };
+      tryGet(true);
     } catch (e: any) {
       setGeoStatus("denied");
       setGeoError(e?.message || "Erro ao acessar localização.");
