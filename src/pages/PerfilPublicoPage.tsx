@@ -9,6 +9,7 @@ import {
   Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package, Play,
 } from "lucide-react";
 import { toast } from "sonner";
+import { compressVideo } from "@/lib/videoCompression";
 
 const SOCIAL_ICONS: Record<string, React.ElementType> = {
   instagram: Instagram,
@@ -181,10 +182,29 @@ const PerfilPublicoPage = () => {
         return;
       }
 
+      // Comprime sempre que > 40MB (limite global do Storage), reduz a ~720p H.264
+      if (file.size > 40 * 1024 * 1024) {
+        try {
+          setUploadStage("uploading");
+          toast.info("Otimizando vídeo, aguarde...");
+          const result = await compressVideo(file, {
+            force: true,
+            onProgress: (pct) => setCompressPct(pct),
+          });
+          fileToUpload = result.file;
+        } catch (err: any) {
+          console.error("[compressVideo]", err);
+          toast.error("Falha ao otimizar vídeo. Tente um arquivo menor.");
+          setUploading(false);
+          setUploadStage("idle");
+          if (fileRef.current) fileRef.current.value = "";
+          return;
+        }
+      }
     }
 
     const ext = isVideo
-      ? (file.name.split(".").pop() || "mp4").toLowerCase()
+      ? "mp4"
       : (file.name.split(".").pop() || "jpg");
     const path = `${user.id}/${Date.now()}.${ext}`;
 
