@@ -9,7 +9,6 @@ import {
   Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package, Play,
 } from "lucide-react";
 import { toast } from "sonner";
-import { compressVideo, prewarmVideoCompressor } from "@/lib/videoCompression";
 
 const SOCIAL_ICONS: Record<string, React.ElementType> = {
   instagram: Instagram,
