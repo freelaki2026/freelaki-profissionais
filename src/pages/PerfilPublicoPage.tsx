@@ -30,7 +30,7 @@ const EQUIPMENT_ICONS: Record<string, React.ElementType> = {
 
 const MAX_ITEMS = 6;
 const MAX_VIDEO_SECONDS = 90;
-const MAX_VIDEO_BYTES = 300 * 1024 * 1024; // 300MB de entrada (será comprimido)
+const MAX_VIDEO_BYTES = 150 * 1024 * 1024; // 150MB
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 interface PortfolioItem {
