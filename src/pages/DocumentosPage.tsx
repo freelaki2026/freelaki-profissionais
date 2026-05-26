@@ -26,7 +26,7 @@ interface DocRecord {
 
 type DocIdType = "rg" | "cnh" | "passaporte";
 
-const ALL_REQUIRED_TYPES = ["rg_frente", "selfie", "comprovante_residencia"];
+const ALL_REQUIRED_TYPES = ["rg_frente", "selfie"];
 
 const DocumentosPage = () => {
   const navigate = useNavigate();
