@@ -284,6 +284,17 @@ const MeusServicosPage = () => {
                   <span style={{ fontWeight: 700, fontSize: 16, color: "#276EF1" }}>R$ {formatCurrency(extra.price)}/{extra.unit || "unidade"}</span>
                   <span style={{ background: "#F7F7F7", color: "#767676", borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 500 }}>{extra.unit || "unidade"}</span>
                 </div>
+                {extra.example_url && (
+                  <a
+                    href={extra.example_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#276EF1", textDecoration: "none" }}
+                  >
+                    <ExternalLink size={13} /> Ver exemplo
+                  </a>
+                )}
+
               </div>
             ))}
           </div>
