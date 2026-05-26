@@ -29,7 +29,7 @@ const EQUIPMENT_ICONS: Record<string, React.ElementType> = {
 };
 
 const MAX_ITEMS = 6;
-const MAX_VIDEO_SECONDS = 90;
+const MAX_VIDEO_SECONDS = 120;
 const MAX_VIDEO_BYTES = 150 * 1024 * 1024; // 150MB
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
@@ -166,7 +166,7 @@ const PerfilPublicoPage = () => {
           throw new Error("Duração inválida");
         }
         if (meta.duration > MAX_VIDEO_SECONDS + 0.5) {
-          toast.error(`Vídeo deve ter no máximo 1min30s`);
+          toast.error(`Vídeo deve ter no máximo 2 minutos`);
           setUploading(false);
           setUploadStage("idle");
           if (fileRef.current) fileRef.current.value = "";
@@ -512,7 +512,7 @@ const PerfilPublicoPage = () => {
           </div>
 
           <p className="mt-3 text-center text-[11px] leading-relaxed text-white/30">
-            Fotos (até 5MB) e vídeos até 1min30s (máx. 150MB) — limite de {MAX_ITEMS} arquivos
+            Fotos (até 5MB) e vídeos até 2min (máx. 150MB) — limite de {MAX_ITEMS} arquivos
           </p>
         </div>
       </motion.div>
