@@ -120,7 +120,7 @@ const Splash = () => {
           onEnded={finishSequence}
           onError={() => setVideoFailed(true)}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ background: "#0A0A0F" }}
+          style={{ background: "#0A0A0F", transform: "scale(0.92)", transformOrigin: "center" }}
         />
       ) : (
         // Fallback textual caso o video nao carregue
