@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,6 +31,7 @@ const ChatClienteUnificadoPage = lazy(() => import("@/pages/ChatClienteUnificado
 const PerfilClientePage = lazy(() => import("@/pages/PerfilClientePage"));
 const PreCadastroPage = lazy(() => import("@/pages/PreCadastroPage"));
 const ConvitePage = lazy(() => import("@/pages/ConvitePage"));
+const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
 
 // Helper para tipar lazy() a partir do mapa de loaders.
 const lazyFromMap = (path: string) =>
@@ -86,6 +88,21 @@ const RoutePrefetcher = () => {
   return null;
 };
 
+/** Redireciona automaticamente para /reset-password quando o Supabase emite PASSWORD_RECOVERY. */
+const PasswordRecoveryRedirect = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" && pathname !== "/reset-password") {
+        navigate("/reset-password", { replace: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate, pathname]);
+  return null;
+};
+
 const App = () => {
   useCapacitorBootstrap();
   return (
@@ -95,6 +112,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter>
         <RoutePrefetcher />
+        <PasswordRecoveryRedirect />
         <ViewTransitionsBridge />
         <ContractCompletionOverlay />
         <PendingReviewEnforcer />
@@ -112,6 +130,7 @@ const App = () => {
             <Route path="/termos" element={<TermosPage />} />
             <Route path="/privacidade" element={<PrivacidadePage />} />
             <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/categorias" element={<ProtectedRoute><CategoriasPage /></ProtectedRoute>} />
 
             {/* Rotas protegidas */}
