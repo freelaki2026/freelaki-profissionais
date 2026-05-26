@@ -1,35 +1,50 @@
+# Inputs com fundo escuro + Mapa tema claro
+
 ## Diagnóstico
 
-Os logs do Supabase Auth confirmam: todas as chamadas `/recover` estão dando **504 timeout** (10s) porque o SMTP custom da Locaweb não responde. O código do app está correto — o problema é 100% configuração de SMTP. Apenas 1 em 6 tentativas conseguiu passar (e mesmo essa demorou 10s).
+**Inputs escuros:** Não é um caso por componente. O app tem tema claro (`--background: 0 0% 100%`), mas `src/index.css` não declara `color-scheme`. No iOS/Safari (e Chrome com "Force Dark"), o sistema aplica automaticamente o esquema escuro do dispositivo a `<input>`, `<textarea>` e `<select>` quando o site não declara explicitamente que é "light". Resultado: o card `bg-white` aparece branco, mas o campo nativo dentro dele fica cinza/preto com texto claro — e quando o nosso CSS força `text-foreground` (preto), o texto preto colide com o fundo escuro do user-agent.
 
-## Plano
+Isso explica por que afeta **todas** as áreas de preenchimento (redes sociais, perfil, cadastro, endereço, bancário, etc.) sem precisar mexer em cada uma.
 
-### 1. Você desativa o SMTP custom no Supabase (ação manual)
-- Acessar **Supabase Dashboard → Authentication → Emails → SMTP Settings**
-- **Desativar** o toggle "Enable Custom SMTP"
-- Salvar
+**Mapa escuro:** `src/pages/MapaPage.tsx` carrega o tile `cartocdn.com/dark_all/...` e força `bg-black` no wrapper + popups/controles escuros via `<style>` inline.
 
-Isso faz o Supabase voltar a usar o servidor de email interno dele (padrão). Limite: **4 emails/hora por projeto** — suficiente para testar agora.
+## Mudanças
 
-### 2. Eu verifico/limpo o código do fluxo de recuperação
-- Confirmar que `useAuth.resetPassword` está chamando `resetPasswordForEmail` com `redirectTo` correto
-- Confirmar que a rota `/reset-password` está pública e funcional
-- Mapear o erro 504/timeout em `src/lib/errors.ts` para mostrar mensagem clara ("Servidor de email temporariamente indisponível, tente novamente") em vez de `ERR-000`
-- Mapear `over_email_send_rate_limit` (429) com mensagem amigável de cooldown
+### 1) `src/index.css` — corrige todos os inputs de uma vez
+- Adicionar `color-scheme: light;` em `:root` para travar form controls em tema claro no iOS/Android/desktop.
+- Reforço defensivo em `@layer base`:
+  ```css
+  input, textarea, select {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-text-fill-color: hsl(var(--foreground)); /* iOS autofill */
+  }
+  input::placeholder, textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+  /* Remove o amarelo do autofill do Chrome/Safari que também vira escuro */
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset;
+    -webkit-text-fill-color: hsl(var(--foreground));
+  }
+  ```
 
-### 3. Validar
-- Após você desativar o SMTP, testar com um email diferente do `thiago.kenned19@gmail.com` (esse pode estar em cooldown)
-- Conferir caixa de entrada **e spam**
-- Confirmar que o link cai em `/reset-password` e permite trocar a senha
+Isso resolve PerfilPage (redes sociais, nome, telefone, bio), Cadastro, Login, ResetPassword, DadosPessoais, DadosBancarios, Endereço, Equipamentos, Suporte etc. — sem editar cada página.
 
-### 4. (Opcional, depois) Migrar para Lovable Emails
-Quando quiser remover o limite de 4/hora e ter branding próprio sem depender da Locaweb, posso configurar o sistema de emails gerenciado da Lovable (domínio próprio, templates customizados, sem timeout). Mas isso é uma segunda etapa — primeiro vamos fazer o básico funcionar.
+### 2) `src/pages/MapaPage.tsx` — tema claro
+- Trocar tile URL de `dark_all` para `light_all` (mesmo provedor CartoDB, drop-in).
+- Wrapper raiz: `bg-black text-white` → `bg-white text-zinc-900`.
+- `<style>` inline: `.leaflet-container` fundo `#f1f5f9`; popup wrapper/tip `#ffffff` com texto `#0a0a0a`; controles zoom fundo branco com borda `#e4e4e7`; attribution sobre `rgba(255,255,255,.7)`.
+- Header flutuante: gradiente `from-white/85 via-white/40 to-transparent`; cards `bg-white/95 border-zinc-200`; ícones/textos para tons escuros.
+- Bottom sheet: `bg-white/95 border-zinc-200`; cards de oportunidade `bg-zinc-50 border-zinc-200` com texto escuro; ícones mantêm acento (azul/amarelo) para contraste.
+- Popup interno do marcador: texto preto, endereço `text-zinc-500`, valor amarelo escuro `#a16207`, botão "Ver detalhes" `bg-zinc-900 text-white`.
+- Empty state (sem geolocalização): mesmas cores invertidas (texto escuro sobre branco), botão "Permitir localização" `bg-zinc-900 text-white`.
 
-## O que NÃO vou fazer
-- Não vou reescrever `ResetPasswordPage`, `useAuth` ou `Login` do zero — eles já estão corretos. Reescrever gastaria créditos sem resolver nada (o problema é SMTP, não código).
-- Não vou mexer em edge functions de email (todas já estão desativadas/removidas).
+## O que NÃO vou mexer
+- Páginas dark intencionais (Login, Cadastro, Splash, Dashboard, etc.) continuam com `bg-black` — o usuário só pediu que **os campos de preenchimento** fiquem brancos, não as telas. O fix do `color-scheme` já garante que os inputs dentro dessas telas escuras tenham fundo branco com texto preto legível.
+- Nenhuma lógica, nenhuma chamada Supabase, nenhum hook.
 
-## Detalhe técnico
-Arquivos que vou tocar apenas se necessário:
-- `src/lib/errors.ts` — adicionar entradas para `over_email_send_rate_limit` e `request_timeout`
-- `src/pages/ResetPasswordPage.tsx` e `src/hooks/useAuth.ts` — apenas leitura para confirmar que estão ok
+## Validação
+- Abrir `/perfil` → adicionar rede social → o input no bottom sheet deve aparecer branco com texto preto.
+- Abrir `/cadastro`, `/login`, `/dados-pessoais` → todos os inputs brancos/legíveis.
+- Abrir `/mapa` → mapa claro, marcadores ainda visíveis, popups legíveis.

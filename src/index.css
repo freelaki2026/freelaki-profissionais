@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --background: 0 0% 100%;
     --foreground: 0 0% 0%;
 
@@ -56,6 +57,25 @@
     -moz-osx-font-smoothing: grayscale;
     /* Capacitor iOS: respeita notch e home-indicator */
     padding-top: env(safe-area-inset-top);
+  }
+
+  /* Garante inputs sempre claros mesmo com modo escuro do sistema (iOS/Android/Chrome force-dark) */
+  input, textarea, select {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    -webkit-text-fill-color: hsl(var(--foreground));
+  }
+  input::placeholder, textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--background)) inset;
+    -webkit-text-fill-color: hsl(var(--foreground));
+    caret-color: hsl(var(--foreground));
     padding-bottom: env(safe-area-inset-bottom);
     /* Evita "bounce" branco ao puxar conteúdo no iOS dentro do WebView */
     overscroll-behavior-y: none;
