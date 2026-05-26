@@ -166,7 +166,7 @@ const PerfilPublicoPage = () => {
           throw new Error("Duração inválida");
         }
         if (meta.duration > MAX_VIDEO_SECONDS + 0.5) {
-          toast.error(`Vídeo deve ter no máximo ${MAX_VIDEO_SECONDS} segundos`);
+          toast.error(`Vídeo deve ter no máximo 1min30s`);
           setUploading(false);
           setUploadStage("idle");
           if (fileRef.current) fileRef.current.value = "";
