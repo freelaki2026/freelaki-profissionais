@@ -236,26 +236,7 @@ const GanhosPage = () => {
       const userId = session.user.id;
       const available = summary.available;
 
-      // 1. PRIMEIRO: registrar saque no banco
-      const { data: withdrawal, error: insertError } = await supabase
-        .from("asaas_withdrawals")
-        .insert({
-          profile_id: userId,
-          amount: available,
-          pix_key: bankAccount.pix_key || bankAccount.account_number,
-          pix_key_type: bankAccount.pix_key_type || "conta",
-          status: "pending",
-        })
-        .select()
-        .single();
-
-      if (insertError || !withdrawal) {
-        toast.error("Erro ao registrar saque. Tente novamente.");
-        setWithdrawing(false);
-        return;
-      }
-
-      // 2. DEPOIS: chamar Edge Function para processar no Asaas
+      // Edge function cria o registro e processa (escrita protegida por service_role)
       const fetchUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/asaas-process-withdrawal`;
       const fetchHeaders = {
         "Content-Type": "application/json",
@@ -266,11 +247,13 @@ const GanhosPage = () => {
         method: "POST",
         headers: fetchHeaders,
         body: JSON.stringify({
-          withdrawal_id: withdrawal.id,
           amount: available,
           profile_id: userId,
+          pix_key: bankAccount.pix_key || bankAccount.account_number,
+          pix_key_type: bankAccount.pix_key_type || "conta",
         }),
       });
+
 
       const result = await response.json();
 

@@ -55,9 +55,9 @@ Deno.serve(async (req) => {
     const uid = user.id;
 
     const body = await req.json().catch(() => ({}));
-    const { withdrawal_id, amount, profile_id } = body || {};
+    let { withdrawal_id, amount, profile_id, pix_key, pix_key_type } = body || {};
 
-    if (!withdrawal_id || !amount) {
+    if (!amount) {
       return new Response(
         JSON.stringify({ error: "invalid_payload", message: "Dados de saque incompletos." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -79,20 +79,54 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 1. Carregar saque registrado
-    const { data: withdrawal, error: wErr } = await supabaseAdmin
-      .from("asaas_withdrawals")
-      .select("*")
-      .eq("id", withdrawal_id)
-      .eq("profile_id", uid)
-      .maybeSingle();
-
-    if (wErr || !withdrawal) {
-      return new Response(
-        JSON.stringify({ error: "withdrawal_not_found", message: "Saque não encontrado." }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // 1. Carregar saque existente OU criar novo (escrita só via service role)
+    let withdrawal: any = null;
+    if (withdrawal_id) {
+      const { data, error: wErr } = await supabaseAdmin
+        .from("asaas_withdrawals")
+        .select("*")
+        .eq("id", withdrawal_id)
+        .eq("profile_id", uid)
+        .maybeSingle();
+      if (wErr || !data) {
+        return new Response(
+          JSON.stringify({ error: "withdrawal_not_found", message: "Saque não encontrado." }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      withdrawal = data;
+    } else {
+      // Buscar chave PIX da conta bancária do usuário caso não tenha vindo no payload
+      if (!pix_key || !pix_key_type) {
+        const { data: bank } = await supabaseAdmin
+          .from("bank_accounts")
+          .select("pix_key, pix_key_type, account_number")
+          .eq("profile_id", uid)
+          .maybeSingle();
+        pix_key = pix_key || bank?.pix_key || bank?.account_number || null;
+        pix_key_type = pix_key_type || bank?.pix_key_type || "conta";
+      }
+      const { data: created, error: cErr } = await supabaseAdmin
+        .from("asaas_withdrawals")
+        .insert({
+          profile_id: uid,
+          amount: value,
+          pix_key,
+          pix_key_type,
+          status: "pending",
+        })
+        .select()
+        .single();
+      if (cErr || !created) {
+        return new Response(
+          JSON.stringify({ error: "withdrawal_create_failed", message: cErr?.message || "Falha ao registrar saque." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      withdrawal = created;
+      withdrawal_id = created.id;
     }
+
 
     if (withdrawal.status === "completed" || withdrawal.status === "processing") {
       return new Response(
