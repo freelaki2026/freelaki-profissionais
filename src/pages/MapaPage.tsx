@@ -299,11 +299,37 @@ export default function MapaPage() {
             ))}
           </MapContainer>
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-500">
-            <Loader2 size={20} className="animate-spin mb-2" />
-            <p className="text-xs">Localizando você…</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-300 px-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center mb-4">
+              {geoStatus === "requesting" ? (
+                <Loader2 size={26} className="animate-spin text-blue-400" />
+              ) : (
+                <Navigation size={26} className="text-blue-400" />
+              )}
+            </div>
+            <p className="text-sm font-medium text-white mb-1">
+              {geoStatus === "requesting" ? "Localizando você…" : "Ative sua localização"}
+            </p>
+            <p className="text-xs text-zinc-500 max-w-xs mb-5">
+              {geoStatus === "requesting"
+                ? "Aguardando o GPS do aparelho responder."
+                : "Para mostrar oportunidades reais próximas de você, precisamos acessar a localização do seu aparelho."}
+            </p>
+            {geoError && (
+              <p className="text-[11px] text-yellow-500/90 mb-3 max-w-xs">{geoError}</p>
+            )}
+            {geoStatus !== "requesting" && (
+              <button
+                type="button"
+                onClick={requestLocation}
+                className="bg-white text-black rounded-full px-5 py-2.5 text-[13px] font-medium active:scale-95 transition-transform shadow-lg"
+              >
+                {geoStatus === "denied" ? "Tentar novamente" : "Permitir localização"}
+              </button>
+            )}
           </div>
         )}
+
       </div>
 
       {/* Header flutuante */}
