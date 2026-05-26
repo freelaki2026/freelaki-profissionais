@@ -88,6 +88,21 @@ const RoutePrefetcher = () => {
   return null;
 };
 
+/** Redireciona automaticamente para /reset-password quando o Supabase emite PASSWORD_RECOVERY. */
+const PasswordRecoveryRedirect = () => {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" && pathname !== "/reset-password") {
+        navigate("/reset-password", { replace: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate, pathname]);
+  return null;
+};
+
 const App = () => {
   useCapacitorBootstrap();
   return (
