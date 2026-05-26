@@ -30,6 +30,7 @@ const ChatClienteUnificadoPage = lazy(() => import("@/pages/ChatClienteUnificado
 const PerfilClientePage = lazy(() => import("@/pages/PerfilClientePage"));
 const PreCadastroPage = lazy(() => import("@/pages/PreCadastroPage"));
 const ConvitePage = lazy(() => import("@/pages/ConvitePage"));
+const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
 
 // Helper para tipar lazy() a partir do mapa de loaders.
 const lazyFromMap = (path: string) =>
