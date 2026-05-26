@@ -105,7 +105,7 @@ const Splash = () => {
 
   return (
     <div
-      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden border-neutral-950"
       style={{ background: "#0A0A0F" }}
     >
       {!videoFailed ? (
