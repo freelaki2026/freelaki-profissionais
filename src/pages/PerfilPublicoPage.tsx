@@ -9,7 +9,6 @@ import {
   Wrench, Camera, Mic, Lightbulb, Smartphone, Laptop, Package, Play,
 } from "lucide-react";
 import { toast } from "sonner";
-import { compressVideo, prewarmVideoCompressor } from "@/lib/videoCompression";
 
 const SOCIAL_ICONS: Record<string, React.ElementType> = {
   instagram: Instagram,
@@ -31,7 +30,7 @@ const EQUIPMENT_ICONS: Record<string, React.ElementType> = {
 
 const MAX_ITEMS = 6;
 const MAX_VIDEO_SECONDS = 90;
-const MAX_VIDEO_BYTES = 300 * 1024 * 1024; // 300MB de entrada (será comprimido)
+const MAX_VIDEO_BYTES = 150 * 1024 * 1024; // 150MB
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 interface PortfolioItem {
@@ -78,16 +77,11 @@ const PerfilPublicoPage = () => {
   const [reviewCount, setReviewCount] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle");
+  const [uploadStage, setUploadStage] = useState<"idle" | "uploading">("idle");
   const [compressPct, setCompressPct] = useState(0);
   const [lightbox, setLightbox] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const [pricing, setPricing] = useState<{ hourly_rate: number | null; daily_rate: number | null } | null>(null);
   const [equipments, setEquipments] = useState<Array<{ id: string; name: string; category: string | null; description: string | null }>>([]);
-
-  // Pré-aquece o compressor (baixa o wasm em background) sem travar a UI.
-  useEffect(() => {
-    prewarmVideoCompressor();
-  }, []);
 
   const socialFields = [
     "instagram", "tiktok", "youtube", "linkedin", "behance",
@@ -187,25 +181,11 @@ const PerfilPublicoPage = () => {
         return;
       }
 
-      // Comprime para MP4 720p (~2.5Mbps) preservando qualidade visual.
-      try {
-        setUploadStage("compressing");
-        const result = await compressVideo(file, {
-          onProgress: (p) => setCompressPct(p),
-        });
-        fileToUpload = result.file;
-        setUploadStage("uploading");
-      } catch (err) {
-        console.error("[compressVideo] erro:", err);
-        toast.error("Não foi possível processar este vídeo. Tente outro arquivo.");
-        setUploading(false);
-        setUploadStage("idle");
-        if (fileRef.current) fileRef.current.value = "";
-        return;
-      }
     }
 
-    const ext = isVideo ? "mp4" : (file.name.split(".").pop() || "jpg");
+    const ext = isVideo
+      ? (file.name.split(".").pop() || "mp4").toLowerCase()
+      : (file.name.split(".").pop() || "jpg");
     const path = `${user.id}/${Date.now()}.${ext}`;
 
     const { error: uploadErr } = await supabase.storage
@@ -521,13 +501,8 @@ const PerfilPublicoPage = () => {
                   <>
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#276EF1] border-t-transparent" />
                     <span className="px-1 text-center text-[9px] font-medium leading-tight text-white/60">
-                      {uploadStage === "compressing"
-                        ? `Otimizando ${compressPct}%`
-                        : "Enviando..."}
+                      Enviando...
                     </span>
-                    {uploadStage === "compressing" && (
-                      <div className="absolute bottom-0 left-0 h-1 bg-[#276EF1] transition-all" style={{ width: `${compressPct}%` }} />
-                    )}
                   </>
                 ) : (
                   <Plus size={22} className="text-white/20" />
@@ -537,7 +512,7 @@ const PerfilPublicoPage = () => {
           </div>
 
           <p className="mt-3 text-center text-[11px] leading-relaxed text-white/30">
-            Fotos (até 5MB) e vídeos até {MAX_VIDEO_SECONDS}s (máx. 300MB, otimizados automaticamente) — limite de {MAX_ITEMS} arquivos
+            Fotos (até 5MB) e vídeos até {MAX_VIDEO_SECONDS}s (máx. 150MB) — limite de {MAX_ITEMS} arquivos
           </p>
         </div>
       </motion.div>
