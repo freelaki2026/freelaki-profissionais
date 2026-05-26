@@ -84,6 +84,31 @@ export const AUTH_ERRORS: Record<string, { message: string; code: string; hint?:
     message: 'Tempo de conexão esgotado.',
     hint: 'Sua internet pode estar lenta. Tente novamente.'
   },
+  'over_email_send_rate_limit': {
+    code: 'AUTH-010',
+    message: 'Aguarde um instante antes de pedir outro email.',
+    hint: 'Por segurança, há um intervalo entre envios. Tente novamente em 1 minuto.'
+  },
+  'For security purposes': {
+    code: 'AUTH-010',
+    message: 'Aguarde um instante antes de pedir outro email.',
+    hint: 'Por segurança, há um intervalo entre envios. Tente novamente em 1 minuto.'
+  },
+  'Email rate limit': {
+    code: 'AUTH-006',
+    message: 'Limite de envio de emails atingido.',
+    hint: 'Aguarde alguns minutos e tente novamente.'
+  },
+  'request_timeout': {
+    code: 'NET-004',
+    message: 'Servidor de email demorou para responder.',
+    hint: 'Tente novamente em alguns instantes.'
+  },
+  'Processing this request timed out': {
+    code: 'NET-004',
+    message: 'Servidor de email demorou para responder.',
+    hint: 'Tente novamente em alguns instantes.'
+  },
   'DEFAULT': {
     code: 'ERR-000',
     message: 'Erro inesperado.',

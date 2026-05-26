@@ -1,70 +1,35 @@
-# Travar tipo de documento de identidade
+## Diagnóstico
 
-## Problema atual
+Os logs do Supabase Auth confirmam: todas as chamadas `/recover` estão dando **504 timeout** (10s) porque o SMTP custom da Locaweb não responde. O código do app está correto — o problema é 100% configuração de SMTP. Apenas 1 em 6 tentativas conseguiu passar (e mesmo essa demorou 10s).
 
-Na tela `/documentos`, o usuário pode escolher entre **RG**, **CNH** ou **Passaporte**. Hoje:
+## Plano
 
-- Os 3 tipos gravam no mesmo `doc_type = "rg_frente"` no banco (CNH e Passaporte reaproveitam), então o app **não sabe qual tipo o usuário realmente escolheu** depois de recarregar a página.
-- O seletor de tipo continua visível mesmo depois de enviar/aprovar/rejeitar, deixando confuso o que foi enviado e permitindo o usuário “trocar” o tipo no meio do caminho.
-- Quando o documento é rejeitado, a UI não destaca claramente qual documento (RG/CNH/Passaporte) foi reprovado e mistura com as outras opções.
+### 1. Você desativa o SMTP custom no Supabase (ação manual)
+- Acessar **Supabase Dashboard → Authentication → Emails → SMTP Settings**
+- **Desativar** o toggle "Enable Custom SMTP"
+- Salvar
 
-## Objetivo
+Isso faz o Supabase voltar a usar o servidor de email interno dele (padrão). Limite: **4 emails/hora por projeto** — suficiente para testar agora.
 
-Uma vez que o usuário envia o 1º arquivo do documento de identidade, os outros 2 tipos **desaparecem da tela**. Só sobra o tipo escolhido — com status (em análise / aprovado / rejeitado) e botão de **Reenviar** quando rejeitado.
+### 2. Eu verifico/limpo o código do fluxo de recuperação
+- Confirmar que `useAuth.resetPassword` está chamando `resetPasswordForEmail` com `redirectTo` correto
+- Confirmar que a rota `/reset-password` está pública e funcional
+- Mapear o erro 504/timeout em `src/lib/errors.ts` para mostrar mensagem clara ("Servidor de email temporariamente indisponível, tente novamente") em vez de `ERR-000`
+- Mapear `over_email_send_rate_limit` (429) com mensagem amigável de cooldown
 
-## Mudanças
+### 3. Validar
+- Após você desativar o SMTP, testar com um email diferente do `thiago.kenned19@gmail.com` (esse pode estar em cooldown)
+- Conferir caixa de entrada **e spam**
+- Confirmar que o link cai em `/reset-password` e permite trocar a senha
 
-### 1. Banco de dados (migration)
+### 4. (Opcional, depois) Migrar para Lovable Emails
+Quando quiser remover o limite de 4/hora e ter branding próprio sem depender da Locaweb, posso configurar o sistema de emails gerenciado da Lovable (domínio próprio, templates customizados, sem timeout). Mas isso é uma segunda etapa — primeiro vamos fazer o básico funcionar.
 
-Adicionar coluna em `profiles` para persistir a escolha:
+## O que NÃO vou fazer
+- Não vou reescrever `ResetPasswordPage`, `useAuth` ou `Login` do zero — eles já estão corretos. Reescrever gastaria créditos sem resolver nada (o problema é SMTP, não código).
+- Não vou mexer em edge functions de email (todas já estão desativadas/removidas).
 
-```text
-profiles.identity_doc_type  text  CHECK IN ('rg','cnh','passaporte')  NULL
-```
-
-- Preenchida automaticamente no 1º upload de documento de identidade.
-- Limpa apenas pelo backoffice se algum dia o documento for invalidado totalmente (fora do escopo desta task).
-
-### 2. `src/pages/DocumentosPage.tsx`
-
-- Carregar `identity_doc_type` junto com `approval_status`.
-- Estado `selectedDocType`:
-  - Se `identity_doc_type` está setado no banco → trava nesse valor (não permite trocar).
-  - Se ainda nulo → mostra os 3 botões normalmente para o usuário escolher.
-- No `handleUpload`, quando o `docType` for de identidade (`rg_frente` ou `rg_verso`) **e** `profiles.identity_doc_type` ainda for `null`, gravar `identity_doc_type = selectedDocType` no mesmo fluxo.
-- Renderização condicional do card "DOCUMENTO DE IDENTIDADE":
-  - **Sem tipo travado**: 3 botões seletores como hoje.
-  - **Com tipo travado**: 
-    - Esconde os 3 botões.
-    - Mostra um header pequeno tipo `RG selecionado` com um link discreto `Trocar tipo` **apenas se** nenhum arquivo ainda foi enviado (caso de borda — improvável depois da gravação, mas defensivo).
-    - Renderiza só o(s) `UploadItem` daquele tipo (RG = 2 itens frente/verso, CNH = 1, Passaporte = 1).
-- Tratamento de rejeição:
-  - O `DocUploadArea` já mostra badge "Rejeitado ✗" + motivo + botão "Reenviar". Como agora só o tipo escolhido aparece, fica claro qual documento precisa reenvio.
-  - Adicionar destaque visual extra no card quando algum doc de identidade está `rejected`: borda vermelha sutil ao redor do `UploadItem` correspondente.
-
-### 3. Atualização do `types.ts`
-
-Após a migration aprovada, regenera automaticamente.
-
-## Fluxos resultantes
-
-```text
-Primeira vez (identity_doc_type = null)
-└── 3 botões [RG] [CNH] [Passaporte] visíveis
-    └── usuário toca em CNH → área de upload CNH aparece
-        └── envia arquivo → grava doc + profiles.identity_doc_type = 'cnh'
-
-Próximas aberturas (identity_doc_type = 'cnh')
-└── Sem botões. Só "CNH" + área de upload com status atual
-    ├── pending  → badge "Em análise"
-    ├── approved → badge "Aprovado ✓"
-    └── rejected → badge "Rejeitado ✗" + motivo + botão "Reenviar"
-```
-
-## Arquivos tocados
-
-- `supabase/migrations/<nova>.sql` — adiciona coluna `identity_doc_type`.
-- `src/pages/DocumentosPage.tsx` — lógica de trava + renderização condicional.
-- `src/integrations/supabase/types.ts` — regenerado.
-
-Selfie e Comprovante de Residência ficam inalterados.
+## Detalhe técnico
+Arquivos que vou tocar apenas se necessário:
+- `src/lib/errors.ts` — adicionar entradas para `over_email_send_rate_limit` e `request_timeout`
+- `src/pages/ResetPasswordPage.tsx` e `src/hooks/useAuth.ts` — apenas leitura para confirmar que estão ok
