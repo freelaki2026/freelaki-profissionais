@@ -77,16 +77,11 @@ const PerfilPublicoPage = () => {
   const [reviewCount, setReviewCount] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadStage, setUploadStage] = useState<"idle" | "compressing" | "uploading">("idle");
+  const [uploadStage, setUploadStage] = useState<"idle" | "uploading">("idle");
   const [compressPct, setCompressPct] = useState(0);
   const [lightbox, setLightbox] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const [pricing, setPricing] = useState<{ hourly_rate: number | null; daily_rate: number | null } | null>(null);
   const [equipments, setEquipments] = useState<Array<{ id: string; name: string; category: string | null; description: string | null }>>([]);
-
-  // Pré-aquece o compressor (baixa o wasm em background) sem travar a UI.
-  useEffect(() => {
-    prewarmVideoCompressor();
-  }, []);
 
   const socialFields = [
     "instagram", "tiktok", "youtube", "linkedin", "behance",
