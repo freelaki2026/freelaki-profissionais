@@ -352,10 +352,30 @@ const MeusServicosPage = () => {
                 </div>
               </div>
 
+              <div style={{ marginTop: 12 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#767676", display: "flex", alignItems: "center", gap: 6 }}>
+                  <Link2 size={13} color="#767676" /> Link de exemplo (opcional)
+                </label>
+                <input
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  value={modalExampleUrl}
+                  onChange={e => setModalExampleUrl(e.target.value)}
+                  placeholder="https://instagram.com/p/... ou link do portfólio"
+                  style={{ width: "100%", height: 44, border: "1px solid #E5E5E5", borderRadius: 10, padding: "0 12px", fontSize: 14, marginTop: 6, outline: "none" }}
+                />
+                <p style={{ fontSize: 11, color: "#767676", marginTop: 4 }}>
+                  Mostre ao cliente um exemplo real desse serviço (vídeo, post, portfólio).
+                </p>
+              </div>
+
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
                 <Switch checked={modalActive} onCheckedChange={setModalActive} />
                 <span style={{ fontSize: 14, fontWeight: 500 }}>Ativo (visível para clientes)</span>
               </div>
+
 
               <button
                 onClick={saveModal}
