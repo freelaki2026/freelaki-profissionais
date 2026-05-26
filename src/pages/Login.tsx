@@ -267,6 +267,29 @@ const Login = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmação ao acessar conta em processo de exclusão */}
+      <Dialog open={!!deletionConfirm} onOpenChange={(open) => { if (!open) cancelEnterDeletion(); }}>
+        <DialogContent className="mx-4 max-w-sm rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Conta em processo de exclusão</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 pt-2">
+            <p className="text-[14px] text-muted-foreground">
+              Esta conta ({deletionConfirm?.email}) está marcada para exclusão. Deseja entrar mesmo assim para reativá-la ou apenas conferir?
+            </p>
+            <FreelakiButton variant="primary" onClick={confirmEnterDeletion}>
+              Sim, acessar conta
+            </FreelakiButton>
+            <button
+              onClick={cancelEnterDeletion}
+              className="h-[52px] w-full rounded-xl border border-border text-[15px] font-semibold text-foreground"
+            >
+              Cancelar e sair
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
