@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Info, PencilLine, Trash2, LayoutGrid, Plus } from "lucide-react";
+import { ArrowLeft, Info, PencilLine, Trash2, LayoutGrid, Plus, Link2, ExternalLink } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { AnimatePresence, motion } from "framer-motion";
 import BottomNav from "@/components/dashboard/BottomNav";
@@ -21,7 +21,9 @@ interface ExtraService {
   unit: string | null;
   is_active: boolean | null;
   order_index: number | null;
+  example_url: string | null;
 }
+
 
 const UNIT_OPTIONS = [
   { value: "unidade", label: "unidade" },
@@ -49,7 +51,9 @@ const MeusServicosPage = () => {
   const [modalPrice, setModalPrice] = useState("");
   const [modalUnit, setModalUnit] = useState("unidade");
   const [modalActive, setModalActive] = useState(true);
+  const [modalExampleUrl, setModalExampleUrl] = useState("");
   const [savingModal, setSavingModal] = useState(false);
+
 
   // Delete confirm
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -101,6 +105,7 @@ const MeusServicosPage = () => {
   const openAddModal = () => {
     setEditingExtra(null);
     setModalName(""); setModalDesc(""); setModalPrice(""); setModalUnit("unidade"); setModalActive(true);
+    setModalExampleUrl("");
     setModalOpen(true);
   };
 
@@ -111,14 +116,20 @@ const MeusServicosPage = () => {
     setModalPrice(String(extra.price));
     setModalUnit(extra.unit || "unidade");
     setModalActive(extra.is_active ?? true);
+    setModalExampleUrl(extra.example_url || "");
     setModalOpen(true);
   };
+
 
   const saveModal = async () => {
     if (!userId || !modalName.trim() || !modalPrice.trim()) {
       toast.error("Preencha nome e preço"); return;
     }
     setSavingModal(true);
+    let exampleUrl = modalExampleUrl.trim() || null;
+    if (exampleUrl && !/^https?:\/\//i.test(exampleUrl)) {
+      exampleUrl = "https://" + exampleUrl;
+    }
     const payload = {
       profile_id: userId,
       name: modalName.trim(),
@@ -126,7 +137,9 @@ const MeusServicosPage = () => {
       price: parseFloat(modalPrice),
       unit: modalUnit,
       is_active: modalActive,
+      example_url: exampleUrl,
     };
+
 
     if (editingExtra) {
       const { error } = await supabase.from("professional_extras").update(payload).eq("id", editingExtra.id);
