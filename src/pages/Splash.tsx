@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const VIDEO_SRC = "/branding/splash-intro.mp4";
 const FALLBACK_DURATION_MS = 5200; // ~duracao do MP4 (5.04s)
-const TAGLINE_HOLD_MS = 1100; // tempo para o usuario ler a tagline antes do redirect
+const TAGLINE_HOLD_MS = 2200; // tempo para o usuario ler a tagline antes do redirect
 
 const Splash = () => {
   const navigate = useNavigate();
@@ -146,7 +146,7 @@ const Splash = () => {
         <div
           className="pointer-events-none absolute inset-x-0 z-20 text-center px-10"
           style={{
-            bottom: "18%",
+            bottom: "42%",
             animation: "splashTaglineIn 500ms ease-out both",
           }}
         >
