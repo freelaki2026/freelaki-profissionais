@@ -29,6 +29,7 @@ const menuItems = [
   { icon: DollarSign, label: "Ganhos", path: "/ganhos" },
   { icon: Wallet, label: "Financeiro", path: "/financeiro" },
   { icon: MessageSquare, label: "Mensagens", path: "/mensagens" },
+  { icon: PlayCircle, label: "Tutorial do app", path: "/dashboard?tour=replay" },
   { icon: HelpCircle, label: "Ajuda e FAQ", path: "/ajuda" },
   { icon: MessageCircle, label: "Suporte", path: "/suporte" },
   { icon: Shield, label: "Termos de Uso", path: "/termos" },
