@@ -1,0 +1,1 @@
+ALTER TABLE public.professional_extras ADD COLUMN IF NOT EXISTS example_url TEXT;
