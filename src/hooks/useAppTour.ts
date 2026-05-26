@@ -15,6 +15,25 @@ export function useAppTour() {
     let cancelled = false;
 
     const run = async () => {
+      // Modo replay: ?tour=replay força o tour novamente (útil para QA/demo).
+      const forceReplay =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("tour") === "replay";
+      if (forceReplay) {
+        localStorage.removeItem(`${LS_KEY}:${user.id}`);
+        await supabase
+          .from("profiles")
+          .update({ tour_completed_at: null })
+          .eq("id", user.id);
+        setTimeout(() => {
+          if (!cancelled) {
+            setStepIndex(0);
+            setOpen(true);
+          }
+        }, 600);
+        setChecked(true);
+        return;
+      }
       // Fast path: localStorage evita piscar do tour entre navegações.
       if (typeof window !== "undefined" && localStorage.getItem(`${LS_KEY}:${user.id}`) === "1") {
         setChecked(true);
