@@ -12,6 +12,7 @@ import { ViewTransitionsBridge } from "@/lib/viewTransitions";
 import { ContractCompletionOverlay } from "@/hooks/useContractCompletionCelebration";
 import { PendingReviewEnforcer } from "@/hooks/usePendingReviewEnforcer";
 import { useCapacitorBootstrap } from "@/hooks/useCapacitorBootstrap";
+import ConfidentialWatermark from "@/components/ConfidentialWatermark";
 
 // Eager: rotas de boot (splash + auth) — leves e iniciais
 import Splash from "@/pages/Splash";
