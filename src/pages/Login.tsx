@@ -108,6 +108,22 @@ const Login = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await signIn("rafael.mendes+demo@freelaki.com", "DemoFreelaki2026!");
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await cascadeNavigate(session.user);
+      }
+    } catch (err: any) {
+      setError(parseError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const isDisabled = !email.trim() || !password.trim();
 
   return (
