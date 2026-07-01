@@ -111,6 +111,7 @@ const App = () => {
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <ConfidentialWatermark />
       <BrowserRouter>
         <RoutePrefetcher />
         <PasswordRecoveryRedirect />
