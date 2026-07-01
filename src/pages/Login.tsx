@@ -237,6 +237,27 @@ const Login = () => {
           Criar conta
         </button>
 
+        {/* Demo Access — para apresentação a investidores */}
+        <div className="mt-5 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[10px] font-semibold tracking-[2px] text-muted-foreground">
+            DEMONSTRAÇÃO
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <button
+          type="button"
+          onClick={handleDemoLogin}
+          disabled={loading}
+          className="mt-3 flex h-[48px] w-full items-center justify-center gap-2 rounded-[14px] border border-dashed border-primary/40 bg-primary/5 text-[14px] font-semibold text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>🚀 Entrar como demo (investidor)</>
+          )}
+        </button>
+
         {/* Footer */}
         <p className="mt-5 text-center text-[12px] text-muted-foreground">
           Ao continuar, você aceita os{" "}
