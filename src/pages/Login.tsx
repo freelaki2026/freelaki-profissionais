@@ -13,7 +13,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import FreelakiButton from "@/components/ui/FreelakiButton";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const Login = () => {
@@ -78,6 +77,10 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      setError({ code: "AUTH", message: "Preencha seu email e sua senha para entrar." });
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -107,8 +110,6 @@ const Login = () => {
       setResetLoading(false);
     }
   };
-
-  const isDisabled = !email.trim() || !password.trim();
 
   return (
     <div className="flex min-h-screen flex-col bg-black">
@@ -199,18 +200,13 @@ const Login = () => {
         )}
 
         {/* Primary CTA */}
-        <button
-          disabled={isDisabled || loading}
+        <FreelakiButton
+          loading={loading}
           onClick={handleLogin}
-          className="mt-7 flex h-[54px] w-full items-center justify-center gap-1 bg-primary text-white font-bold text-[16px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90"
-          style={{ borderRadius: 14 }}
+          className="mt-7 h-[54px] gap-1 rounded-[14px] font-bold text-[16px]"
         >
-          {loading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <>Entrar →</>
-          )}
-        </button>
+          Entrar →
+        </FreelakiButton>
 
         {/* Secondary CTA */}
         <button
