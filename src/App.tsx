@@ -15,15 +15,12 @@ import { useCapacitorBootstrap } from "@/hooks/useCapacitorBootstrap";
 
 // Eager: rotas de boot (splash + auth) — leves e iniciais
 import Splash from "@/pages/Splash";
-import Login from "@/pages/Login";
+import DemoAutoLogin from "@/pages/DemoAutoLogin";
 import NotFound from "@/pages/NotFound";
 import BoasVindasPage from "@/pages/BoasVindasPage";
 
 // Lazy: usa o MESMO loader do routePrefetch (chunk reaproveitado após hover/touchstart).
-const CadastroStep1 = lazy(() => import("@/pages/Cadastro"));
 const PrivacidadePage = lazy(() => import("@/pages/PrivacidadePage"));
-const CadastroStep2 = lazy(() => import("@/pages/CadastroStep2"));
-const CadastroStep3 = lazy(() => import("@/pages/CadastroStep3"));
 const ConfirmarEmailPage = lazy(() => import("@/pages/ConfirmarEmailPage"));
 const OportunidadeDetalhePage = lazy(() => import("@/pages/OportunidadeDetalhePage"));
 const ChatClientePage = lazy(() => import("@/pages/ChatClientePage"));
@@ -121,12 +118,12 @@ const App = () => {
             {/* Rotas públicas */}
             <Route path="/" element={<BoasVindasPage />} />
             <Route path="/splash" element={<Splash />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<DemoAutoLogin />} />
             <Route path="/pre-cadastro" element={<PreCadastroPage />} />
             <Route path="/convite" element={<ConvitePage />} />
-            <Route path="/cadastro" element={<CadastroStep1 />} />
-            <Route path="/cadastro/etapa2" element={<CadastroStep2 />} />
-            <Route path="/cadastro/etapa3" element={<CadastroStep3 />} />
+            <Route path="/cadastro" element={<DemoAutoLogin />} />
+            <Route path="/cadastro/etapa2" element={<DemoAutoLogin />} />
+            <Route path="/cadastro/etapa3" element={<DemoAutoLogin />} />
             <Route path="/termos" element={<TermosPage />} />
             <Route path="/privacidade" element={<PrivacidadePage />} />
             <Route path="/confirmar-email" element={<ConfirmarEmailPage />} />
