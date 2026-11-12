@@ -116,7 +116,7 @@ const App = () => {
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             {/* Rotas públicas */}
-            <Route path="/" element={<BoasVindasPage />} />
+            <Route path="/" element={<DemoAutoLogin />} />
             <Route path="/splash" element={<Splash />} />
             <Route path="/login" element={<DemoAutoLogin />} />
             <Route path="/pre-cadastro" element={<PreCadastroPage />} />
